@@ -1377,340 +1377,6 @@
       </categories>
   </entry>
   <entry>
-    <title>FFT快速傅里叶变换学习笔记</title>
-    <url>/2021/08/06/FFT%E5%BF%AB%E9%80%9F%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h1 id="FFT-快速傅里叶变换学习笔记"><a href="#FFT-快速傅里叶变换学习笔记" class="headerlink" title="FFT 快速傅里叶变换学习笔记"></a>FFT 快速傅里叶变换学习笔记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>考虑到时间及能力有限，并且诸位大佬写的学习笔记已经是十分详尽，本人目前不可能也不打算写一篇详细度超越各位先人的学习笔记，只是帮助自己理清思路，整理过程并且贯彻一些证明。</p>
-<p>自然文章中会有诸多不妥之处，希望各位不吝赐教。</p>
-<p>部分比较简单的前置知识就跳过了。</p>
-<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><ol>
-<li><p>复数基本知识</p>
-</li>
-<li><p>弧度制与三角函数</p>
-</li>
-<li><p>耐心稳定的心态</p>
-</li>
-</ol>
-<h2 id="FFT-简述"><a href="#FFT-简述" class="headerlink" title="FFT 简述"></a>FFT 简述</h2><p>FFT（Fast Fourier Transformation），中文名是 “<strong>快速傅里叶离散变换</strong>”。</p>
-<p>作用是：以 $\mathcal{O(n\log n)}$ 的时间复杂度计算多项式乘法。</p>
-<p>在 OI 中的应用：利用卷积思想，化乘为加，加速多项式乘法计算。</p>
-<h2 id="卷积"><a href="#卷积" class="headerlink" title="卷积"></a>卷积</h2><p>形如 $C[k]=\sum\limits_{i\oplus j=k}A[i]B[j]$​ 的式子称为卷积。</p>
-<p>多项式乘法就是加法卷积。</p>
-<h2 id="多项式的表示"><a href="#多项式的表示" class="headerlink" title="多项式的表示"></a>多项式的表示</h2><p>多项式指的是单项式相加组成的代数式。</p>
-<h3 id="多项式的系数表示"><a href="#多项式的系数表示" class="headerlink" title="多项式的系数表示"></a>多项式的系数表示</h3><p>每一项单项式都有其对应的系数，将系数提炼出来就得到了多项式的系数表示。</p>
-<p>一般的，我们把一个 $n-1$ 次的 $n$ 项多项式表示为：</p>
-<p>$$f(x)=\sum\limits_{i=0}^{n-1}a_i x^i=a_0x^0+a_1x^1+a_2x^2…+a_{n-1}x^{n-1}$$</p>
-<p>系数表示即为：</p>
-<p>$$f(x)={a_0.a_1,a_2…a_{n-1}}$$​</p>
-<p>对于两个 $n$ 项多项式卷积，那么需要枚举每一对系数的乘积结果，复杂度 $\mathcal{O(n^2)}$。</p>
-<h3 id="多项式的点值表示"><a href="#多项式的点值表示" class="headerlink" title="多项式的点值表示"></a>多项式的点值表示</h3><p>给定 $n+1$ 个互不相同的点，我们可以唯一确定一个 $n$ 次多项式函数。</p>
-<p>可以使用 $n+1$ 个点值（有序数对）来描述一个多项式。</p>
-<p>点值表示即为 ：</p>
-<p>$$f(x)={(x_0,f(x_0)),(x_1,f(x_1)),(x_2,f(x_2))…(x_n,f(x_n) )}$$​​</p>
-<p>进行乘法即为函数值相乘，复杂度 $\mathcal{O(n)}$​。</p>
-<p>点值表示远快于暴力卷积。</p>
-<h2 id="基本复数运算"><a href="#基本复数运算" class="headerlink" title="基本复数运算"></a>基本复数运算</h2><p>说是不讲复数，但是怎么样还是应该说一说。</p>
-<p>复数相加为实部虚部对应相加。</p>
-<p>相减同理。</p>
-<p>相乘形式为：</p>
-<p>$$(a+bi)\times (c+di)=ac+adi+bci+bdi^2=(ac-bd)+(ad+bc)i$$​</p>
-<p>相除形式为：</p>
-<p>$$\dfrac{a+bi}{c+di}=\dfrac{(a+bi)(c-di)}{(c+di)(c-di)}=\dfrac{(ac+bd)+(bc-ad)i}{c^2+d^2}=\dfrac{ac+bd}{c^2+d^2}+\dfrac{bc-ad}{c^2+d^2}$$​</p>
-<p>复数相乘还有一个几何意义：模相乘，角相加。</p>
-<p>具体地，$(a_1,\theta_1)(a_2,\theta_2)=(a_1a_2,\theta_1+\theta_2)$​。</p>
-<pre><code class="cpp">struct Complex&#123;
-    double x,y;
-    Complex()&#123;&#125;
-    Complex(const double &amp;_x,const double &amp;_y):x(_x),y(_y)&#123;&#125;;
-
-    inline Complex operator + (const Complex &amp;a)const&#123;
-        return Complex(x+a.x,y+a.y);
-    &#125;
-
-    inline Complex operator - (const Complex &amp;a)const&#123;
-        return Complex(x-a.x,y-a.y);
-    &#125;
-
-    inline Complex operator * (const Complex &amp;a)const&#123;
-        return Complex(x*a.x-y*a.y,x*a.y+y*a.x);
-    &#125;
-
-    inline Complex operator / (const Complex &amp;a)const&#123;
-        double tmp=a.x*a.x+a.y*a.y;
-        return Complex((x*a.x+y*a.y)/tmp,(y*a.x-x*a.y)/tmp);
-    &#125;
-&#125;f[maxn],p[maxn];
-</code></pre>
-<h2 id="单位根"><a href="#单位根" class="headerlink" title="单位根"></a>单位根</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><blockquote>
-<p> $n$ 次单位根 $\omega_n^k$ 是 $n$ 次幂为 $1$ 的复数，即方程 $x^n=1$ 的复数解。</p>
-</blockquote>
-<p>单位根出现在复平面的单位圆上。</p>
-<p>$n$ 次单位根 $n$​ 等分单位圆。</p>
-<p><img src="https://i.loli.net/2021/07/29/S4bs9vC1MENVUyn.png"></p>
-<p>图片来自 @<a href="https://www.luogu.com.cn/user/212283">Aw顿顿</a></p>
-<p>对于单位圆上的点，可以表示为 $\cos \theta+i \sin \theta$。</p>
-<p>从 $1$ 开始，沿着单位圆逆时针给单位根标号：</p>
-<p>$\omega_n^0=1,\omega_n^1$是第二个为单位根…</p>
-<p>$\omega_n^k=\cos\frac{k}{n}2\pi+i\sin\frac{k}{n}2\pi$​。</p>
-<h3 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h3><ol>
-<li><p>$\omega _n ^k=\omega _n ^{k \mod n}$​​​​​​</p>
-</li>
-<li><p>$\omega _n^0=1$</p>
-</li>
-<li><p>$\omega_n ^k=(\omega_n^1)^k$</p>
-<p>（$\omega _n^k=\omega _n^1\times \omega _n^1\times \omega _n^1…\times \omega _n^1$ 共 $k$ 个，可以理解为每次逆时针转动 $\frac{1}{n}$ 个圆周，转了 $k$ 次。或者类比同底数幂相乘 ）</p>
-</li>
-<li><p>$\omega_n^j\times \omega_n^k =\omega_n^{j+k}$​</p>
-</li>
-<li><p>$(\omega _n^k)^{-1}=(\omega_n^{-k})=(\omega_n^{n-k})$</p>
-<p>可以倒过来反向回推：</p>
-<p>$\omega_n^{n-k}\times \omega_n^k=\omega_n^{n-k+k}=\omega_n^n=\omega_n^n=1$</p>
-<p>所以 $(\omega _n^k)^{-1}=\omega_n^{n-k}$</p>
-</li>
-<li><p>$(\omega_n^k)^j=\omega_n^{kj}$​</p>
-</li>
-<li><p>$\omega_{pn}^{pk}=\omega_n^k$</p>
-<p>想象成切蛋糕，多切了几刀，但是相应的多取了几倍。</p>
-</li>
-<li><p>如果 $n$ 是偶数，$\omega_n^{(k+\frac{n}{2})}=-\omega_n^k$ </p>
-<p>$\omega_n^{(k+\frac{n}{2})}=\omega_n^k\times\omega_n^{(\frac{n}{2})}$</p>
-<p>对于 $\omega_n^{(\frac{n}{2})}$​ ，可以理解为把幅角转动 $\frac{1}{2}$​ 个圆周，关于原点对称。</p>
-</li>
-</ol>
-<h3 id="求和引理"><a href="#求和引理" class="headerlink" title="求和引理"></a>求和引理</h3><p>求和引理的一般形式是:</p>
-<p>$$\sum\limits^{n-1}_{i=0}(\omega_n^k)^i=0,(k \ne n)$$</p>
-<p>由等比数列的求和公式可得：</p>
-<p>$$\sum\limits^{n-1}_{i=0}(\omega_n^k)^i=\frac{(\omega_n^k)^n-1}{\omega_n^k-1}=\dfrac{1-1}{1-\omega_n^k}=0$$​</p>
-<p>对于 $(k==n)$</p>
-<p>$$\sum\limits^{n-1}_{i=0}(\omega_n^k)^i=n$$</p>
-<h2 id="DFT-与-IDFT-概述"><a href="#DFT-与-IDFT-概述" class="headerlink" title="DFT 与 IDFT 概述"></a>DFT 与 IDFT 概述</h2><p>把<strong>系数表示</strong>转化为<strong>点值表示</strong>的算法叫做 DFT；</p>
-<p>把<strong>点值表示</strong>转化为<strong>系数表示</strong>的算法叫做 IDFT（或者称为 DFT 的逆运算）</p>
-<p>从系数表示确定点值表示的过程叫做求值，从点值表示确定系数表示的过程叫做插值。</p>
-<h2 id="FFT-快速傅里叶变换"><a href="#FFT-快速傅里叶变换" class="headerlink" title="FFT 快速傅里叶变换"></a>FFT 快速傅里叶变换</h2><p>FFT 是将系数表示转化为点值表示进行计算，之后再转化成系数表示。</p>
-<p>主要过程分为了两步：系数表示转化为点值表示，点值表示转化为系数表示。</p>
-<p>就是 DFT 和 IDFT 了。</p>
-<p>不使用 FFT 直接进行朴素转化是 $\mathcal{O(n^2)}$​ 的。</p>
-<p>考虑更高效的方法。</p>
-<h3 id="DFT（系数表示转化成点值表示）"><a href="#DFT（系数表示转化成点值表示）" class="headerlink" title="DFT（系数表示转化成点值表示）"></a>DFT（系数表示转化成点值表示）</h3><p>设多项式:</p>
-<p> $$A(x)=\sum\limits_{i=0}^{n-1}a_i x^i=a_0x^0+a_1x^1+a_2x^2…+a_{n-1}x^{n-1}$$​</p>
-<p>按奇偶分类（分治思路）：</p>
-<p>$$A(x)=（a_0x^0+a_2x^2+a_4x^4…+a_{n-2}x^{n-2}）$$</p>
-<p>$$+$$</p>
-<p>$$（a_1x^1+a_3x^3+a_5x^5…+a_{n-1}x^{n-1}）$$​​​​</p>
-<p>两边统一次数，提出后面的 $x$：</p>
-<p>$$A(x)=（a_0+a_2x^2+a_4x^4…+a_{n-2}x^{n-2}）$$</p>
-<p>$$+$$</p>
-<p>$$x\times（a_1+a_3x^2+a_5x^4…+a_{n-1}x^{n-2}）$$​</p>
-<p>设两个 $\frac{n}{2}$ 项的多项式 $L(x)$ 和 $R(x)$ ，考虑降低 $A(x)$ 的次数，执行分治过程：</p>
-<p>$$L(x)=（a_0+a_2x^1+a_4x^2…+a_{n-2}x^{\frac{n}{2}-1}）$$</p>
-<p>$$R(x)=（a_1+a_3x^1+a_5x^2…+a_{n-1}x^{\frac{n}{2}-1}）$$​​​​​​​​</p>
-<p>原式可以表示为 $A(x)=L(x^2)+x\times R(x^2)$ </p>
-<p>注意式子中需要带入 $x^2$ ，由于我们为了执行分治降低了次数，现在要保持式子不变。</p>
-<p>之后考虑把单位根 $\omega_n ^k$ 带入原式</p>
-<ul>
-<li><p>$k&lt;\frac{n}{2}$ ，代入 $\omega_n^ k$ :</p>
-<p>$$A(\omega_n^k)=L((\omega_n^k)^2)+\omega_n^k\times R((\omega_n^k)^2)$$​</p>
-<p>根据单位根性质 $7$ $\omega_{pn}^{pk}=\omega_n^k$:</p>
-<p>$$(\omega_n^k)^2=(\omega_n^{2k})=(\omega_{\frac{n}{2}}^{k})$$​</p>
-<p>$$A(\omega_n^k)=L(\omega_{\frac{n}{2}}^{k})+\omega_n^k\times R(\omega_{\frac{n}{2}}^{k})$$​​</p>
-</li>
-</ul>
-<ul>
-<li><p>$k&lt;\frac{n}{2}$,代入 $\omega_n^ {k+\frac{n}{2}}$</p>
-<p>$$A(\omega_n^ {k+\frac{n}{2}})=L((\omega_n^ {k+\frac{n}{2}})^2)+\omega_n^ {k+\frac{n}{2}}\times R((\omega_n^ {k+\frac{n}{2}})^2)$$​</p>
-<p>由单位根的性质 $6$ $(\omega_n^k)^j=\omega_n^{kj}$​得：</p>
-<p>$$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_n^ {2k+n})+\omega_n^ {k+\frac{n}{2}}\times R(\omega _n^{2k+n})$$​</p>
-<p>由单位根的性质 $1$​​ $\omega_n^k=\omega_n^{k\mod n}$​​ 得到：</p>
-<p>$$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_n^ {2k})+\omega_n^ {k+\frac{n}{2}}\times R(\omega _n^{2k})$$​</p>
-<p>由单位根的性质 $7$ $\omega_{pn}^{pk}=\omega_n^k$ 得到：</p>
-<p>$$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_{\frac{n}{2}}^ {k})+\omega_n^ {k+\frac{n}{2}}\times R(\omega_{\frac{n}{2}}^ {k})$$​</p>
-<p>由单位根的性质 $8$ $\omega_n^{(k+\frac{n}{2})}=-\omega_n^k$ 得：</p>
-<p>$$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_{\frac{n}{2}}^ {k})-\omega_n^ {k}\times R(\omega_{\frac{n}{2}}^ {k})$$​</p>
-</li>
-</ul>
-<p>对比两个式子：</p>
-<p>​    $$A(\omega_n^k)=L(\omega_{\frac{n}{2}}^{k})+\omega_n^k\times R(\omega_{\frac{n}{2}}^{k})$$​​</p>
-<p>​    $$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_{\frac{n}{2}}^ {k})-\omega_n^ {k}\times R(\omega_{\frac{n}{2}}^ {k})$$​</p>
-<p>发现右侧只有一个符号的差别。于是他们可以同步计算。</p>
-<p>换句话说，FFT 就是把单位根上下半圆的部分分别带入 $A(x)=L(x^2)+x\times R(x^2)$​  </p>
-<p>于是我们在 $\mathcal{O(n\log n)}$ 时间复杂度内完成了系数表示转成点值表示的过程。</p>
-<h3 id="IDFT-（点值表示转化成系数表示）"><a href="#IDFT-（点值表示转化成系数表示）" class="headerlink" title="IDFT （点值表示转化成系数表示）"></a>IDFT （点值表示转化成系数表示）</h3><p>由于代入时我们选择了单位根，现在我们十分方便地就可以完成 点值表示转化成系数表示。</p>
-<p>首先写出结论：<strong>把 DFT 中的 $\omega_n^1$ 换成 $\omega_n^{-1}$ 做完之后除以 $n$​ 即可</strong>。</p>
-<p>证明与<a href="https://www.luogu.com.cn/blog/command-block/dan-wei-gen-fan-yan-xiao-ji">单位根反演</a>有关。</p>
-<p>设 多项式 $A(x)$ 经过了 DFT 变换之后得到的点值数列为 $G$。</p>
-<p>即 $G=DFT(A)$</p>
-<p>回忆代入的过程，可以得到：</p>
-<p>$G[k]=\sum\limits^{n-1}_{i=0}(\omega_n^k)^iA[i]$​（含义是每一个点值都是把单位根代进每一项中乘以系数得到的）</p>
-<p>结论是 $n\times A[k]=\sum\limits^{n-1}_{i=0}(\omega_n^{-k})^iG[i]$​</p>
-<p>证明：</p>
-<p>把点值代入右边可以得到：</p>
-<p>$$\sum\limits _{i=0} ^{n-1}\left( (\omega_n^{-k})G[i] \right)=\sum\limits _{i=0}^{n-1}\left( \left( \sum\limits^{n-1}_{j=0}(\omega_n^i)^jA[j] \right) \times(\omega_n^{-k})^i \right)$$​​​​​</p>
-<p>化简得到：</p>
-<p>$$\sum\limits^{n-1}_{i=0}\left( (\omega_n^{-k})G[i] \right)=\sum\limits^{n-1}_{i=0}\left( \sum\limits^{n-1}_{j=0}(\omega_n^{i(j-k)})A[j] \right)$$​</p>
-<p>根据<strong>求和引理</strong>分类讨论：</p>
-<ul>
-<li><p>$j=k$ </p>
-<p>贡献是 </p>
-<p>$$\sum\limits^{n-1}_{i=0} \sum\limits^{n-1}_{j=0}(\omega_n^{i(j-k)})A[j] \times[j==k]$$​​​</p>
-<p>$$=\sum\limits^{n-1}_{i=0}\omega_n^{i(k-k)}A[k]$$​​​</p>
-<p>$$=\sum\limits^{n-1}_{i=0}A[k]$$​​</p>
-<p>$$=n\times A[k]$$</p>
-</li>
-<li><p>$j\ne k$</p>
-<p>设 $p=j-k$</p>
-<p>贡献就是</p>
-<p> $$\sum\limits_{i=0}^{n-1}\omega_n^{ip}A[k+p]$$​​</p>
-<p>$$=\omega_n^p\left(\sum\limits_{i=0}^{n-1}\omega_n^{i}\right)A[k+p]$$​​</p>
-<p>等比数列求和得到：</p>
-<p>$$\left(\sum\limits_{i=0}^{n-1}\omega_n^{i}\right)=\dfrac{\omega_n^{np}-1}{\omega_n^{p}-1}=\dfrac{\omega_n^{0}-1}{\omega_n^{p}-1}=0$$​​​</p>
-<p>所以这一部分贡献是 $0$​。</p>
-</li>
-</ul>
-<p>证毕。</p>
-<p>于是把 $G$ 数列当作系数再代入一遍，单位根换成所谓的 $\omega _n^{-1}$ 就行了。</p>
-<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p>有了上述思路，我们就可以开始着手代码实现了。</p>
-<ol>
-<li><p>补充 $n$ 至 $2$ 的整次幂。</p>
-<p>我们上面的过程都是针对 $n$ 是 $2$ 的整次幂进行的，原因是这样可以保证分的足够均匀。</p>
-<p>实际中不满足这个条件？补项就行了。在最高次强行添加系数为 $0$ 的项。</p>
-</li>
-<li><p>预处理单位根</p>
-<p>根据单位根的性质 $3$ $\omega_n ^k=(\omega_n^1)^k$，我们可以把他乘 $n$ 次，就能得到所有想要的单位根。</p>
-<p>第一个单位根是有的，肯定是 $1$。</p>
-<p>第二个单位根 $\omega_n ^1$​ 必然是第一个不与实轴重合的单位根，所以他的坐标就是 $(\cos(\frac{2\pi}{n}),\sin(\frac{2\pi}{n}))$​​</p>
-<pre><code class="cpp">Complex omega(cos(2*Pi/p),sin(2*Pi/p));
-for(re int i=0;i&lt;n;i++)&#123;
-    w[i]=buf;
-    buf=buf*omega;
-&#125;
-</code></pre>
-</li>
-<li><p>蝴蝶变换</p>
-<p>大概意思是递归版效率太低，我们需要找到迭代解法。</p>
-<p>可以发现多项式的第 $i$ 次项到达递归底层时下标为 $i$ 二进制翻转后的数，所以就可以自底向上迭代合并。</p>
-<p>可以 $\mathcal{O(n)}$ 递推求出。</p>
-<pre><code class="cpp">for(re int i=0;i&lt;n;i++)&#123;
-    trans[i]=(trans[i&gt;&gt;1]&gt;&gt;1)|((i&amp;1)?n&gt;&gt;1:0);
-&#125;
-</code></pre>
-<p>具体证明以及    详细信息以后再补，今天没时间了。</p>
-</li>
-</ol>
-<p>CODE:</p>
-<pre><code class="cpp">//#define LawrenceSivan
-
-#include &lt;bits/stdc++.h&gt;
-using namespace std;
-
-typedef long long ll;
-typedef unsigned long long ull;
-
-#define INF 0x3f3f3f3f
-#define re register
-
-const int maxn=1e7+5;
-const int maxm=1;
-const double Pi=acos(-1);
-
-struct Complex&#123;
-    double x,y;
-    Complex()&#123;&#125;
-    Complex(const double &amp;_x,const double &amp;_y):x(_x),y(_y)&#123;&#125;;
-
-    inline Complex operator + (const Complex &amp;a)const&#123;
-        return Complex(x+a.x,y+a.y);
-    &#125;
-
-    inline Complex operator - (const Complex &amp;a)const&#123;
-        return Complex(x-a.x,y-a.y);
-    &#125;
-
-    inline Complex operator * (const Complex &amp;a)const&#123;
-        return Complex(x*a.x-y*a.y,x*a.y+y*a.x);
-    &#125;
-
-    inline Complex operator / (const Complex &amp;a)const&#123;
-        double tmp=a.x*a.x+a.y*a.y;
-        return Complex((x*a.x+y*a.y)/tmp,(y*a.x-x*a.y)/tmp);
-    &#125;
-&#125;f[maxn],p[maxn];
-
-int trans[maxn];
-
-int n,m;
-
-inline void FFT(Complex *f,bool op)&#123;
-    for(re int i=0;i&lt;n;i++)&#123;
-        if(i&lt;trans[i])swap(f[i],f[trans[i]]);
-    &#125;
-    for(re int p=2;p&lt;=n;p&lt;&lt;=1)&#123;
-        int len=p&gt;&gt;1;
-        Complex omega(cos(2*Pi/p),sin(2*Pi/p));
-        if(!op)omega.y*=-1;
-        for(re int k=0;k&lt;n;k+=p)&#123;
-            Complex buf(1,0);
-            for(re int l=k;l&lt;k+len;l++)&#123;
-                Complex tmp=buf*f[l+len];
-                f[l+len]=f[l]-tmp;
-                f[l]=f[l]+tmp;
-                buf=buf*omega;
-            &#125;
-        &#125;
-    &#125;
-&#125;
-
-namespace IO&#123;
-    template&lt;typename T&gt;
-    inline void read(T &amp;x)&#123;
-        x=0;T f=1;char ch=getchar();
-        while (!isdigit(ch)) &#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
-        while (isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
-        x*=f;
-    &#125;
-
-    template &lt;typename T, typename... Args&gt;
-    inline void read(T&amp; t, Args&amp;... args) &#123;
-        read(t); read(args...);
-    &#125;
-
-    template&lt;typename T&gt;
-    void write(T x)&#123;
-        if(x&lt;0)putchar(&#39;-&#39;),x=-x;
-        if(x&gt;9)write(x/10);
-        putchar(x%10+&#39;0&#39;);
-    &#125;
-
-    template&lt;typename T,typename... Args&gt;
-    void write(T t,Args... args)&#123;
-        write(t);putchar(&#39; &#39;);write(args...);
-    &#125;
-&#125;
-
-using namespace IO;
-
-signed main() &#123;
-#ifdef LawrenceSivan
-    freopen(&quot;aa.in&quot;,&quot;r&quot;, stdin);
-    freopen(&quot;aa.out&quot;,&quot;w&quot;, stdout);
-#endif
-    read(n,m);
-    for(re int i=0;i&lt;=n;i++)scanf(&quot;%lf&quot;,&amp;f[i].x);
-    for(re int i=0;i&lt;=m;i++)scanf(&quot;%lf&quot;,&amp;p[i].x);
-    for(m+=n,n=1;n&lt;=m;n&lt;&lt;=1);
-    for(re int i=0;i&lt;n;i++)&#123;
-        trans[i]=(trans[i&gt;&gt;1]&gt;&gt;1)|((i&amp;1)?n&gt;&gt;1:0);
-    &#125;
-    FFT(f,1),FFT(p,1);
-    for(re int i=0;i&lt;n;i++)f[i]=f[i]*p[i];
-    FFT(f,0);
-    for(re int i=0;i&lt;=m;i++)write((int)(f[i].x/n+0.5)),putchar(&#39; &#39;);
-    puts(&quot;&quot;);
-
-    return 0;
-&#125;
-</code></pre>
-]]></content>
-  </entry>
-  <entry>
     <title>CF545E Paths and Trees（最短路径树）</title>
     <url>/2021/06/07/CF545E%20Paths%20and%20Trees%EF%BC%88%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84%E6%A0%91%EF%BC%89/</url>
     <content><![CDATA[<h1 id="CF545E-Paths-and-Trees"><a href="#CF545E-Paths-and-Trees" class="headerlink" title="CF545E Paths and Trees"></a><em>CF545E Paths and Trees</em></h1><h2 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h2><p>学这个的时候看了一些博客，感觉其实这一块网上很多博客和题解其实一些细节没有说太清楚。于是今天主要想说一下关于最短路径树的一些细节与处理问题。</p>
@@ -2052,6 +1718,340 @@ int main()&#123;
 ]]></content>
   </entry>
   <entry>
+    <title>FFT快速傅里叶变换学习笔记</title>
+    <url>/2021/08/06/FFT%E5%BF%AB%E9%80%9F%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h1 id="FFT-快速傅里叶变换学习笔记"><a href="#FFT-快速傅里叶变换学习笔记" class="headerlink" title="FFT 快速傅里叶变换学习笔记"></a>FFT 快速傅里叶变换学习笔记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>考虑到时间及能力有限，并且诸位大佬写的学习笔记已经是十分详尽，本人目前不可能也不打算写一篇详细度超越各位先人的学习笔记，只是帮助自己理清思路，整理过程并且贯彻一些证明。</p>
+<p>自然文章中会有诸多不妥之处，希望各位不吝赐教。</p>
+<p>部分比较简单的前置知识就跳过了。</p>
+<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><ol>
+<li><p>复数基本知识</p>
+</li>
+<li><p>弧度制与三角函数</p>
+</li>
+<li><p>耐心稳定的心态</p>
+</li>
+</ol>
+<h2 id="FFT-简述"><a href="#FFT-简述" class="headerlink" title="FFT 简述"></a>FFT 简述</h2><p>FFT（Fast Fourier Transformation），中文名是 “<strong>快速傅里叶离散变换</strong>”。</p>
+<p>作用是：以 $\mathcal{O(n\log n)}$ 的时间复杂度计算多项式乘法。</p>
+<p>在 OI 中的应用：利用卷积思想，化乘为加，加速多项式乘法计算。</p>
+<h2 id="卷积"><a href="#卷积" class="headerlink" title="卷积"></a>卷积</h2><p>形如 $C[k]=\sum\limits_{i\oplus j=k}A[i]B[j]$​ 的式子称为卷积。</p>
+<p>多项式乘法就是加法卷积。</p>
+<h2 id="多项式的表示"><a href="#多项式的表示" class="headerlink" title="多项式的表示"></a>多项式的表示</h2><p>多项式指的是单项式相加组成的代数式。</p>
+<h3 id="多项式的系数表示"><a href="#多项式的系数表示" class="headerlink" title="多项式的系数表示"></a>多项式的系数表示</h3><p>每一项单项式都有其对应的系数，将系数提炼出来就得到了多项式的系数表示。</p>
+<p>一般的，我们把一个 $n-1$ 次的 $n$ 项多项式表示为：</p>
+<p>$$f(x)=\sum\limits_{i=0}^{n-1}a_i x^i=a_0x^0+a_1x^1+a_2x^2…+a_{n-1}x^{n-1}$$</p>
+<p>系数表示即为：</p>
+<p>$$f(x)={a_0.a_1,a_2…a_{n-1}}$$​</p>
+<p>对于两个 $n$ 项多项式卷积，那么需要枚举每一对系数的乘积结果，复杂度 $\mathcal{O(n^2)}$。</p>
+<h3 id="多项式的点值表示"><a href="#多项式的点值表示" class="headerlink" title="多项式的点值表示"></a>多项式的点值表示</h3><p>给定 $n+1$ 个互不相同的点，我们可以唯一确定一个 $n$ 次多项式函数。</p>
+<p>可以使用 $n+1$ 个点值（有序数对）来描述一个多项式。</p>
+<p>点值表示即为 ：</p>
+<p>$$f(x)={(x_0,f(x_0)),(x_1,f(x_1)),(x_2,f(x_2))…(x_n,f(x_n) )}$$​​</p>
+<p>进行乘法即为函数值相乘，复杂度 $\mathcal{O(n)}$​。</p>
+<p>点值表示远快于暴力卷积。</p>
+<h2 id="基本复数运算"><a href="#基本复数运算" class="headerlink" title="基本复数运算"></a>基本复数运算</h2><p>说是不讲复数，但是怎么样还是应该说一说。</p>
+<p>复数相加为实部虚部对应相加。</p>
+<p>相减同理。</p>
+<p>相乘形式为：</p>
+<p>$$(a+bi)\times (c+di)=ac+adi+bci+bdi^2=(ac-bd)+(ad+bc)i$$​</p>
+<p>相除形式为：</p>
+<p>$$\dfrac{a+bi}{c+di}=\dfrac{(a+bi)(c-di)}{(c+di)(c-di)}=\dfrac{(ac+bd)+(bc-ad)i}{c^2+d^2}=\dfrac{ac+bd}{c^2+d^2}+\dfrac{bc-ad}{c^2+d^2}$$​</p>
+<p>复数相乘还有一个几何意义：模相乘，角相加。</p>
+<p>具体地，$(a_1,\theta_1)(a_2,\theta_2)=(a_1a_2,\theta_1+\theta_2)$​。</p>
+<pre><code class="cpp">struct Complex&#123;
+    double x,y;
+    Complex()&#123;&#125;
+    Complex(const double &amp;_x,const double &amp;_y):x(_x),y(_y)&#123;&#125;;
+
+    inline Complex operator + (const Complex &amp;a)const&#123;
+        return Complex(x+a.x,y+a.y);
+    &#125;
+
+    inline Complex operator - (const Complex &amp;a)const&#123;
+        return Complex(x-a.x,y-a.y);
+    &#125;
+
+    inline Complex operator * (const Complex &amp;a)const&#123;
+        return Complex(x*a.x-y*a.y,x*a.y+y*a.x);
+    &#125;
+
+    inline Complex operator / (const Complex &amp;a)const&#123;
+        double tmp=a.x*a.x+a.y*a.y;
+        return Complex((x*a.x+y*a.y)/tmp,(y*a.x-x*a.y)/tmp);
+    &#125;
+&#125;f[maxn],p[maxn];
+</code></pre>
+<h2 id="单位根"><a href="#单位根" class="headerlink" title="单位根"></a>单位根</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><blockquote>
+<p> $n$ 次单位根 $\omega_n^k$ 是 $n$ 次幂为 $1$ 的复数，即方程 $x^n=1$ 的复数解。</p>
+</blockquote>
+<p>单位根出现在复平面的单位圆上。</p>
+<p>$n$ 次单位根 $n$​ 等分单位圆。</p>
+<p><img src="https://i.loli.net/2021/07/29/S4bs9vC1MENVUyn.png"></p>
+<p>图片来自 @<a href="https://www.luogu.com.cn/user/212283">Aw顿顿</a></p>
+<p>对于单位圆上的点，可以表示为 $\cos \theta+i \sin \theta$。</p>
+<p>从 $1$ 开始，沿着单位圆逆时针给单位根标号：</p>
+<p>$\omega_n^0=1,\omega_n^1$是第二个为单位根…</p>
+<p>$\omega_n^k=\cos\frac{k}{n}2\pi+i\sin\frac{k}{n}2\pi$​。</p>
+<h3 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h3><ol>
+<li><p>$\omega _n ^k=\omega _n ^{k \mod n}$​​​​​​</p>
+</li>
+<li><p>$\omega _n^0=1$</p>
+</li>
+<li><p>$\omega_n ^k=(\omega_n^1)^k$</p>
+<p>（$\omega _n^k=\omega _n^1\times \omega _n^1\times \omega _n^1…\times \omega _n^1$ 共 $k$ 个，可以理解为每次逆时针转动 $\frac{1}{n}$ 个圆周，转了 $k$ 次。或者类比同底数幂相乘 ）</p>
+</li>
+<li><p>$\omega_n^j\times \omega_n^k =\omega_n^{j+k}$​</p>
+</li>
+<li><p>$(\omega _n^k)^{-1}=(\omega_n^{-k})=(\omega_n^{n-k})$</p>
+<p>可以倒过来反向回推：</p>
+<p>$\omega_n^{n-k}\times \omega_n^k=\omega_n^{n-k+k}=\omega_n^n=\omega_n^n=1$</p>
+<p>所以 $(\omega _n^k)^{-1}=\omega_n^{n-k}$</p>
+</li>
+<li><p>$(\omega_n^k)^j=\omega_n^{kj}$​</p>
+</li>
+<li><p>$\omega_{pn}^{pk}=\omega_n^k$</p>
+<p>想象成切蛋糕，多切了几刀，但是相应的多取了几倍。</p>
+</li>
+<li><p>如果 $n$ 是偶数，$\omega_n^{(k+\frac{n}{2})}=-\omega_n^k$ </p>
+<p>$\omega_n^{(k+\frac{n}{2})}=\omega_n^k\times\omega_n^{(\frac{n}{2})}$</p>
+<p>对于 $\omega_n^{(\frac{n}{2})}$​ ，可以理解为把幅角转动 $\frac{1}{2}$​ 个圆周，关于原点对称。</p>
+</li>
+</ol>
+<h3 id="求和引理"><a href="#求和引理" class="headerlink" title="求和引理"></a>求和引理</h3><p>求和引理的一般形式是:</p>
+<p>$$\sum\limits^{n-1}_{i=0}(\omega_n^k)^i=0,(k \ne n)$$</p>
+<p>由等比数列的求和公式可得：</p>
+<p>$$\sum\limits^{n-1}_{i=0}(\omega_n^k)^i=\frac{(\omega_n^k)^n-1}{\omega_n^k-1}=\dfrac{1-1}{1-\omega_n^k}=0$$​</p>
+<p>对于 $(k==n)$</p>
+<p>$$\sum\limits^{n-1}_{i=0}(\omega_n^k)^i=n$$</p>
+<h2 id="DFT-与-IDFT-概述"><a href="#DFT-与-IDFT-概述" class="headerlink" title="DFT 与 IDFT 概述"></a>DFT 与 IDFT 概述</h2><p>把<strong>系数表示</strong>转化为<strong>点值表示</strong>的算法叫做 DFT；</p>
+<p>把<strong>点值表示</strong>转化为<strong>系数表示</strong>的算法叫做 IDFT（或者称为 DFT 的逆运算）</p>
+<p>从系数表示确定点值表示的过程叫做求值，从点值表示确定系数表示的过程叫做插值。</p>
+<h2 id="FFT-快速傅里叶变换"><a href="#FFT-快速傅里叶变换" class="headerlink" title="FFT 快速傅里叶变换"></a>FFT 快速傅里叶变换</h2><p>FFT 是将系数表示转化为点值表示进行计算，之后再转化成系数表示。</p>
+<p>主要过程分为了两步：系数表示转化为点值表示，点值表示转化为系数表示。</p>
+<p>就是 DFT 和 IDFT 了。</p>
+<p>不使用 FFT 直接进行朴素转化是 $\mathcal{O(n^2)}$​ 的。</p>
+<p>考虑更高效的方法。</p>
+<h3 id="DFT（系数表示转化成点值表示）"><a href="#DFT（系数表示转化成点值表示）" class="headerlink" title="DFT（系数表示转化成点值表示）"></a>DFT（系数表示转化成点值表示）</h3><p>设多项式:</p>
+<p> $$A(x)=\sum\limits_{i=0}^{n-1}a_i x^i=a_0x^0+a_1x^1+a_2x^2…+a_{n-1}x^{n-1}$$​</p>
+<p>按奇偶分类（分治思路）：</p>
+<p>$$A(x)=（a_0x^0+a_2x^2+a_4x^4…+a_{n-2}x^{n-2}）$$</p>
+<p>$$+$$</p>
+<p>$$（a_1x^1+a_3x^3+a_5x^5…+a_{n-1}x^{n-1}）$$​​​​</p>
+<p>两边统一次数，提出后面的 $x$：</p>
+<p>$$A(x)=（a_0+a_2x^2+a_4x^4…+a_{n-2}x^{n-2}）$$</p>
+<p>$$+$$</p>
+<p>$$x\times（a_1+a_3x^2+a_5x^4…+a_{n-1}x^{n-2}）$$​</p>
+<p>设两个 $\frac{n}{2}$ 项的多项式 $L(x)$ 和 $R(x)$ ，考虑降低 $A(x)$ 的次数，执行分治过程：</p>
+<p>$$L(x)=（a_0+a_2x^1+a_4x^2…+a_{n-2}x^{\frac{n}{2}-1}）$$</p>
+<p>$$R(x)=（a_1+a_3x^1+a_5x^2…+a_{n-1}x^{\frac{n}{2}-1}）$$​​​​​​​​</p>
+<p>原式可以表示为 $A(x)=L(x^2)+x\times R(x^2)$ </p>
+<p>注意式子中需要带入 $x^2$ ，由于我们为了执行分治降低了次数，现在要保持式子不变。</p>
+<p>之后考虑把单位根 $\omega_n ^k$ 带入原式</p>
+<ul>
+<li><p>$k&lt;\frac{n}{2}$ ，代入 $\omega_n^ k$ :</p>
+<p>$$A(\omega_n^k)=L((\omega_n^k)^2)+\omega_n^k\times R((\omega_n^k)^2)$$​</p>
+<p>根据单位根性质 $7$ $\omega_{pn}^{pk}=\omega_n^k$:</p>
+<p>$$(\omega_n^k)^2=(\omega_n^{2k})=(\omega_{\frac{n}{2}}^{k})$$​</p>
+<p>$$A(\omega_n^k)=L(\omega_{\frac{n}{2}}^{k})+\omega_n^k\times R(\omega_{\frac{n}{2}}^{k})$$​​</p>
+</li>
+</ul>
+<ul>
+<li><p>$k&lt;\frac{n}{2}$,代入 $\omega_n^ {k+\frac{n}{2}}$</p>
+<p>$$A(\omega_n^ {k+\frac{n}{2}})=L((\omega_n^ {k+\frac{n}{2}})^2)+\omega_n^ {k+\frac{n}{2}}\times R((\omega_n^ {k+\frac{n}{2}})^2)$$​</p>
+<p>由单位根的性质 $6$ $(\omega_n^k)^j=\omega_n^{kj}$​得：</p>
+<p>$$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_n^ {2k+n})+\omega_n^ {k+\frac{n}{2}}\times R(\omega _n^{2k+n})$$​</p>
+<p>由单位根的性质 $1$​​ $\omega_n^k=\omega_n^{k\mod n}$​​ 得到：</p>
+<p>$$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_n^ {2k})+\omega_n^ {k+\frac{n}{2}}\times R(\omega _n^{2k})$$​</p>
+<p>由单位根的性质 $7$ $\omega_{pn}^{pk}=\omega_n^k$ 得到：</p>
+<p>$$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_{\frac{n}{2}}^ {k})+\omega_n^ {k+\frac{n}{2}}\times R(\omega_{\frac{n}{2}}^ {k})$$​</p>
+<p>由单位根的性质 $8$ $\omega_n^{(k+\frac{n}{2})}=-\omega_n^k$ 得：</p>
+<p>$$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_{\frac{n}{2}}^ {k})-\omega_n^ {k}\times R(\omega_{\frac{n}{2}}^ {k})$$​</p>
+</li>
+</ul>
+<p>对比两个式子：</p>
+<p>​    $$A(\omega_n^k)=L(\omega_{\frac{n}{2}}^{k})+\omega_n^k\times R(\omega_{\frac{n}{2}}^{k})$$​​</p>
+<p>​    $$A(\omega_n^ {k+\frac{n}{2}})=L(\omega_{\frac{n}{2}}^ {k})-\omega_n^ {k}\times R(\omega_{\frac{n}{2}}^ {k})$$​</p>
+<p>发现右侧只有一个符号的差别。于是他们可以同步计算。</p>
+<p>换句话说，FFT 就是把单位根上下半圆的部分分别带入 $A(x)=L(x^2)+x\times R(x^2)$​  </p>
+<p>于是我们在 $\mathcal{O(n\log n)}$ 时间复杂度内完成了系数表示转成点值表示的过程。</p>
+<h3 id="IDFT-（点值表示转化成系数表示）"><a href="#IDFT-（点值表示转化成系数表示）" class="headerlink" title="IDFT （点值表示转化成系数表示）"></a>IDFT （点值表示转化成系数表示）</h3><p>由于代入时我们选择了单位根，现在我们十分方便地就可以完成 点值表示转化成系数表示。</p>
+<p>首先写出结论：<strong>把 DFT 中的 $\omega_n^1$ 换成 $\omega_n^{-1}$ 做完之后除以 $n$​ 即可</strong>。</p>
+<p>证明与<a href="https://www.luogu.com.cn/blog/command-block/dan-wei-gen-fan-yan-xiao-ji">单位根反演</a>有关。</p>
+<p>设 多项式 $A(x)$ 经过了 DFT 变换之后得到的点值数列为 $G$。</p>
+<p>即 $G=DFT(A)$</p>
+<p>回忆代入的过程，可以得到：</p>
+<p>$G[k]=\sum\limits^{n-1}_{i=0}(\omega_n^k)^iA[i]$​（含义是每一个点值都是把单位根代进每一项中乘以系数得到的）</p>
+<p>结论是 $n\times A[k]=\sum\limits^{n-1}_{i=0}(\omega_n^{-k})^iG[i]$​</p>
+<p>证明：</p>
+<p>把点值代入右边可以得到：</p>
+<p>$$\sum\limits _{i=0} ^{n-1}\left( (\omega_n^{-k})G[i] \right)=\sum\limits _{i=0}^{n-1}\left( \left( \sum\limits^{n-1}_{j=0}(\omega_n^i)^jA[j] \right) \times(\omega_n^{-k})^i \right)$$​​​​​</p>
+<p>化简得到：</p>
+<p>$$\sum\limits^{n-1}_{i=0}\left( (\omega_n^{-k})G[i] \right)=\sum\limits^{n-1}_{i=0}\left( \sum\limits^{n-1}_{j=0}(\omega_n^{i(j-k)})A[j] \right)$$​</p>
+<p>根据<strong>求和引理</strong>分类讨论：</p>
+<ul>
+<li><p>$j=k$ </p>
+<p>贡献是 </p>
+<p>$$\sum\limits^{n-1}_{i=0} \sum\limits^{n-1}_{j=0}(\omega_n^{i(j-k)})A[j] \times[j==k]$$​​​</p>
+<p>$$=\sum\limits^{n-1}_{i=0}\omega_n^{i(k-k)}A[k]$$​​​</p>
+<p>$$=\sum\limits^{n-1}_{i=0}A[k]$$​​</p>
+<p>$$=n\times A[k]$$</p>
+</li>
+<li><p>$j\ne k$</p>
+<p>设 $p=j-k$</p>
+<p>贡献就是</p>
+<p> $$\sum\limits_{i=0}^{n-1}\omega_n^{ip}A[k+p]$$​​</p>
+<p>$$=\omega_n^p\left(\sum\limits_{i=0}^{n-1}\omega_n^{i}\right)A[k+p]$$​​</p>
+<p>等比数列求和得到：</p>
+<p>$$\left(\sum\limits_{i=0}^{n-1}\omega_n^{i}\right)=\dfrac{\omega_n^{np}-1}{\omega_n^{p}-1}=\dfrac{\omega_n^{0}-1}{\omega_n^{p}-1}=0$$​​​</p>
+<p>所以这一部分贡献是 $0$​。</p>
+</li>
+</ul>
+<p>证毕。</p>
+<p>于是把 $G$ 数列当作系数再代入一遍，单位根换成所谓的 $\omega _n^{-1}$ 就行了。</p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p>有了上述思路，我们就可以开始着手代码实现了。</p>
+<ol>
+<li><p>补充 $n$ 至 $2$ 的整次幂。</p>
+<p>我们上面的过程都是针对 $n$ 是 $2$ 的整次幂进行的，原因是这样可以保证分的足够均匀。</p>
+<p>实际中不满足这个条件？补项就行了。在最高次强行添加系数为 $0$ 的项。</p>
+</li>
+<li><p>预处理单位根</p>
+<p>根据单位根的性质 $3$ $\omega_n ^k=(\omega_n^1)^k$，我们可以把他乘 $n$ 次，就能得到所有想要的单位根。</p>
+<p>第一个单位根是有的，肯定是 $1$。</p>
+<p>第二个单位根 $\omega_n ^1$​ 必然是第一个不与实轴重合的单位根，所以他的坐标就是 $(\cos(\frac{2\pi}{n}),\sin(\frac{2\pi}{n}))$​​</p>
+<pre><code class="cpp">Complex omega(cos(2*Pi/p),sin(2*Pi/p));
+for(re int i=0;i&lt;n;i++)&#123;
+    w[i]=buf;
+    buf=buf*omega;
+&#125;
+</code></pre>
+</li>
+<li><p>蝴蝶变换</p>
+<p>大概意思是递归版效率太低，我们需要找到迭代解法。</p>
+<p>可以发现多项式的第 $i$ 次项到达递归底层时下标为 $i$ 二进制翻转后的数，所以就可以自底向上迭代合并。</p>
+<p>可以 $\mathcal{O(n)}$ 递推求出。</p>
+<pre><code class="cpp">for(re int i=0;i&lt;n;i++)&#123;
+    trans[i]=(trans[i&gt;&gt;1]&gt;&gt;1)|((i&amp;1)?n&gt;&gt;1:0);
+&#125;
+</code></pre>
+<p>具体证明以及    详细信息以后再补，今天没时间了。</p>
+</li>
+</ol>
+<p>CODE:</p>
+<pre><code class="cpp">//#define LawrenceSivan
+
+#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+typedef long long ll;
+typedef unsigned long long ull;
+
+#define INF 0x3f3f3f3f
+#define re register
+
+const int maxn=1e7+5;
+const int maxm=1;
+const double Pi=acos(-1);
+
+struct Complex&#123;
+    double x,y;
+    Complex()&#123;&#125;
+    Complex(const double &amp;_x,const double &amp;_y):x(_x),y(_y)&#123;&#125;;
+
+    inline Complex operator + (const Complex &amp;a)const&#123;
+        return Complex(x+a.x,y+a.y);
+    &#125;
+
+    inline Complex operator - (const Complex &amp;a)const&#123;
+        return Complex(x-a.x,y-a.y);
+    &#125;
+
+    inline Complex operator * (const Complex &amp;a)const&#123;
+        return Complex(x*a.x-y*a.y,x*a.y+y*a.x);
+    &#125;
+
+    inline Complex operator / (const Complex &amp;a)const&#123;
+        double tmp=a.x*a.x+a.y*a.y;
+        return Complex((x*a.x+y*a.y)/tmp,(y*a.x-x*a.y)/tmp);
+    &#125;
+&#125;f[maxn],p[maxn];
+
+int trans[maxn];
+
+int n,m;
+
+inline void FFT(Complex *f,bool op)&#123;
+    for(re int i=0;i&lt;n;i++)&#123;
+        if(i&lt;trans[i])swap(f[i],f[trans[i]]);
+    &#125;
+    for(re int p=2;p&lt;=n;p&lt;&lt;=1)&#123;
+        int len=p&gt;&gt;1;
+        Complex omega(cos(2*Pi/p),sin(2*Pi/p));
+        if(!op)omega.y*=-1;
+        for(re int k=0;k&lt;n;k+=p)&#123;
+            Complex buf(1,0);
+            for(re int l=k;l&lt;k+len;l++)&#123;
+                Complex tmp=buf*f[l+len];
+                f[l+len]=f[l]-tmp;
+                f[l]=f[l]+tmp;
+                buf=buf*omega;
+            &#125;
+        &#125;
+    &#125;
+&#125;
+
+namespace IO&#123;
+    template&lt;typename T&gt;
+    inline void read(T &amp;x)&#123;
+        x=0;T f=1;char ch=getchar();
+        while (!isdigit(ch)) &#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
+        while (isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
+        x*=f;
+    &#125;
+
+    template &lt;typename T, typename... Args&gt;
+    inline void read(T&amp; t, Args&amp;... args) &#123;
+        read(t); read(args...);
+    &#125;
+
+    template&lt;typename T&gt;
+    void write(T x)&#123;
+        if(x&lt;0)putchar(&#39;-&#39;),x=-x;
+        if(x&gt;9)write(x/10);
+        putchar(x%10+&#39;0&#39;);
+    &#125;
+
+    template&lt;typename T,typename... Args&gt;
+    void write(T t,Args... args)&#123;
+        write(t);putchar(&#39; &#39;);write(args...);
+    &#125;
+&#125;
+
+using namespace IO;
+
+signed main() &#123;
+#ifdef LawrenceSivan
+    freopen(&quot;aa.in&quot;,&quot;r&quot;, stdin);
+    freopen(&quot;aa.out&quot;,&quot;w&quot;, stdout);
+#endif
+    read(n,m);
+    for(re int i=0;i&lt;=n;i++)scanf(&quot;%lf&quot;,&amp;f[i].x);
+    for(re int i=0;i&lt;=m;i++)scanf(&quot;%lf&quot;,&amp;p[i].x);
+    for(m+=n,n=1;n&lt;=m;n&lt;&lt;=1);
+    for(re int i=0;i&lt;n;i++)&#123;
+        trans[i]=(trans[i&gt;&gt;1]&gt;&gt;1)|((i&amp;1)?n&gt;&gt;1:0);
+    &#125;
+    FFT(f,1),FFT(p,1);
+    for(re int i=0;i&lt;n;i++)f[i]=f[i]*p[i];
+    FFT(f,0);
+    for(re int i=0;i&lt;=m;i++)write((int)(f[i].x/n+0.5)),putchar(&#39; &#39;);
+    puts(&quot;&quot;);
+
+    return 0;
+&#125;
+</code></pre>
+]]></content>
+  </entry>
+  <entry>
     <title>Hexo-Theme-Sakura</title>
     <url>/2018/12/12/Hexo-Theme-Sakura/</url>
     <content><![CDATA[<p>hexo-theme-sakura主题 <a href="https://github.com/honjun/hexo-theme-sakura/blob/master/README.md">English document</a></p>
@@ -2351,200 +2351,6 @@ links:
       <categories>
         <category>技术</category>
       </categories>
-  </entry>
-  <entry>
-    <title>NTT快速数论变换学习笔记</title>
-    <url>/2021/08/15/NTT%E5%BF%AB%E9%80%9F%E6%95%B0%E8%AE%BA%E5%8F%98%E6%8D%A2%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h1 id="NTT-快速数论变换学习笔记"><a href="#NTT-快速数论变换学习笔记" class="headerlink" title="NTT 快速数论变换学习笔记"></a>NTT 快速数论变换学习笔记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>向多项式迈出的勇敢第二步！</p>
-<p><del>虽然也是基础的东西</del>    </p>
-<p>写了这个博客真的是对数论内容有了很多新的认识，也学到了很多新东西。</p>
-<p>甚至解决了很多之前遗留的没有解决的问题。</p>
-<ul>
-<li>以下内容均在剩余系意义下讨论。</li>
-</ul>
-<h2 id="阶"><a href="#阶" class="headerlink" title="阶"></a>阶</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>$a$ 在模 $p$ 意义下的阶：</p>
-<p>最小的整数 $k$ 使得 $a^k\equiv1\ (\mod p)$。</p>
-<p>记为 $δ_p(a)$ 。</p>
-<p>更通俗的说法是幂的最小循环节。</p>
-<h3 id="定理"><a href="#定理" class="headerlink" title="定理"></a>定理</h3><p>上限是 $\varphi(p)$。</p>
-<p>模 $p$ 的阶如果存在，那么一定是 $\varphi(p)$ 的约数。</p>
-<p>证明：</p>
-<ul>
-<li>定理 1：若 $p&gt;1$ 且 $a\perp p$ ，且 $a^n \equiv 1\ (\mod p)$ ，$n&gt;0$ ，则 $δ_p(a)|n$</li>
-<li>定理 2：结合欧拉定理：当 $a,p \in N^+$，并且 $a \perp p$ ，那么有 $a^{\varphi(p)}\equiv 1\ (\mod p)$，并结合定理 1 可知 $δ_p(a)|\varphi(p)$。</li>
-</ul>
-<p>证毕。</p>
-<p>或者以另外一种方式来说：</p>
-<p>如果这个数有阶，那么这个数可以表示为 $g^k$ 的形式。</p>
-<p>能够在 $\varphi(p)$ 大小的环上得到一个 $\dfrac{\varphi(p)}{\gcd(k,\varphi(p))}$ 大小的环，这就是它的阶，这显然是 $\varphi(p)$ 的约数。</p>
-<p>可以从这种角度来理解定理 1 和定理 2。 </p>
-<p>对于 $a \not\perp p$ 的情况，阶认为是 $∞$ 或者不存在。</p>
-<h2 id="原根"><a href="#原根" class="headerlink" title="原根"></a>原根</h2><h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>满足 $δ_p(g)=\varphi(p)$ 的 $g$ （达到上界），我们称之为 $p$ 的原根。</p>
-<h3 id="定理-1"><a href="#定理-1" class="headerlink" title="定理"></a>定理</h3><ul>
-<li>只有形如 $2,4,p^x,2p^x$ 才有原根，其中 $p$ 是奇质数。</li>
-</ul>
-<p>一旦求出了其中一个原根，就可以构造出其他的原根。</p>
-<p>所有的 $g^k$ 当 $(k \perp \varphi(p))$ 时，恰好能够构造出 $\varphi(\varphi(p))$ 个，且不重不漏。</p>
-<ul>
-<li>定理 1：若 $g$ 是 $m$ 的原根，则</li>
-</ul>
-<p>$$g,g^2…g^{\varphi(p)}$$</p>
-<p>各数模 $p$ 的最小剩余，恰好是小于 $p$ 并且与 $p$ 互素的 $\varphi(p)$ 个正整数的一个排列。</p>
-<ul>
-<li>定理 2：每一个质数 $p$ 都有 $\varphi(p-1)$ 个原根。事实上每一个数 $x$ 都有 $\varphi(\varphi(x)$ 个原根（如果他有原根的话）</li>
-</ul>
-<p>推论</p>
-<ul>
-<li>若 $d|(p-1)$ ，则 $x^d \equiv 1\ (\mod p)$ 恰好有 $d$ 个解</li>
-<li>若 $p$ 是质数，且 $d|(p-1)$ ，则阶为 $d$ 的最小剩余 $\mod p$ 的个数为 $\varphi(d)$。</li>
-</ul>
-<h3 id="求法"><a href="#求法" class="headerlink" title="求法"></a>求法</h3><p>由于原根一般不会很大（可以证明 $n$ 的最小原根在 $\mathcal{O(n^{0.25})}$ 级别），因此我们暴力枚举+验证的方法。</p>
-<p>上面我们提到，模 $p$ 的阶如果存在，那么一定是 $\varphi(p)$ 的约数。（详情看上文中 ：阶/定理）</p>
-<p>于是计算阶时，只需要验证 $\varphi(p)$ 的约数即可。</p>
-<p>其实并不需要算出阶是多少,只需要查看阶是否是 $\varphi(p)$ 即可。</p>
-<p>首先将 $\varphi(p)$ 分解质因数：</p>
-<p>$$\varphi(p)=p_1^{c_1}p_2^{c_2}p_3^{c_3}…p_x^{c_x}$$</p>
-<p>注意到 $a^k \equiv 1\ (\mod p)$ ，那么 $a^{ck}\equiv 1\ (\mod p)$。</p>
-<p>可以取出 $ \varphi(p)$​ 的所有质因数 $p_1,p_2,p_3…p_x$​ ，要判断 $g$​ 是否是原根，只需要判断 $g^{\frac{\varphi(p)}{p_i}}\not\equiv 1\ (\mod p)$​ 恒成立，那么 $g$​ 就是 $p$​ 的一个原根。</p>
-<p>这样可以保证不重不漏地覆盖所有其他约数的倍数，并且达不到 $\varphi(p)$ 本身。</p>
-<p>数据不大的时候枚举所有 $\varphi(p)$ 的因子(除本身)也可。</p>
-<h2 id="原根与单位根"><a href="#原根与单位根" class="headerlink" title="原根与单位根"></a>原根与单位根</h2><p>经过对 FFT 的学习，我们发现由于 FFT 需要使用单位根在复平面上进行系列运算，所以决定它必须要使用浮点数，从而引发精度误差。 </p>
-<p>但是在复数域 $\C$ 中，单位根是唯一满足要求的一类数。</p>
-<p>在剩余系意义下我们可以找到单位根的类似物——<strong>原根</strong></p>
-<p>首先考虑一下单位根的独特性质：</p>
-<ol>
-<li><p>$\omega_n^k=(\omega_n^1)^k$</p>
-</li>
-<li><p>$\omega_n^{0\sim(n-1)}$ 必须互不相同</p>
-<p>否则点值重复，插值不正确。</p>
-</li>
-<li><p>$\omega_n^k=\omega_n^{k\mod n}$</p>
-<p>$n$ 是偶数的时候，可以根据对称引理得出求和引理。</p>
-</li>
-</ol>
-<p>通过以上几条性质可以得出，$\omega_n^1$ 在模意义下的阶恰好是 $n$。</p>
-<ol start="4">
-<li><p>$\omega_{2n}^{2k}=\omega_n^k$</p>
-<p>等价于 $(\omega_{2n})^2=\omega_n$</p>
-</li>
-</ol>
-<p>回顾原根的定义，对于一个<strong>素数</strong> $p$ ，如果 $g$ 的阶达到了 $p-1$ 的上界，则称 $g$ 是 $p$ 的原根。</p>
-<p>显然 $n$ 不一定等于 $p-1$ ，所以原根并不能直接使用。</p>
-<p>上面我们提到阶的两个定理以及另一种证明方法。</p>
-<p>$g^k$ 的阶数恰为 $\dfrac{p-1}{\gcd(k,p-1)}$，这个数仍然是 $p-1$ 的约数。</p>
-<p>所以当 $n\not|\ (p-1)$​ 时，找不到阶恰好为 $n$​ 的数。</p>
-<p>当 $n|(p-1)$ 时，$g^\frac{(p-1)}{n}$ 的阶恰好是 $\dfrac{p-1}{\gcd(\frac{p-1}{n},p-1)}=n$</p>
-<p>$(\omega_{2n})^2=(g^{\frac{p-1}{2n}})^2=g^{\frac{p-1}{n}}=(\omega_n^1)^k=\omega_n$</p>
-<p>所以 $g^{\frac{p-1}{n}}$ 满足了上述所有要求！</p>
-<p>至于 $n|(p-1)$ 的要求，事实上在分治过程中，$n$ 往往会被补成 $2$ 的次幂，于是我们只需要保证 $p-1$ 包含很多个因子 $2$ 即可。</p>
-<p>常见的 NTT 模数有 </p>
-<p>$$P=998244353=479∗2^{21}+1,g=3$$</p>
-<p>$$P=1004535809=7∗17∗2^{23}+1,g=3$$</p>
-<h2 id="get-NTT"><a href="#get-NTT" class="headerlink" title="get_NTT!"></a>get_NTT!</h2><pre><code class="cpp">//#define LawrenceSivan
-
-#include &lt;bits/stdc++.h&gt;
-using namespace std;
-
-typedef long long ll;
-typedef unsigned long long ull;
-
-#define INF 0x3f3f3f3f
-#define re register
-
-const int maxn=1e7+5;
-const int mod=998244353;
-const int G=3;
-
-ll qpow(ll a,ll b)&#123;
-    ll res=1;
-    for(;b;b&gt;&gt;=1,a=a*a%mod)&#123;
-        if(b&amp;1)res=res*a%mod;
-    &#125;
-    return res%mod;
-&#125;
-
-const ll invG=qpow(G,mod-2);
-
-ll f[maxn],p[maxn];
-
-int trans[maxn];
-
-int n,m,invn;
-
-inline void NTT(ll *f,bool op)&#123;
-    for(re int i=0;i&lt;n;i++)&#123;
-        if(i&lt;trans[i])swap(f[i],f[trans[i]]);
-    &#125;
-    for(re int p=2;p&lt;=n;p&lt;&lt;=1)&#123;
-        int len=p&gt;&gt;1;
-        int tG=qpow(op?G:invG,(mod-1)/p);
-        for(re int k=0;k&lt;n;k+=p)&#123;
-            ll buf=1;
-            for(re int l=k;l&lt;k+len;l++)&#123;
-                ll tmp=buf*f[l+len]%mod;
-                f[l+len]=f[l]-tmp;
-                if(f[l+len]&lt;0)f[l+len]+=mod;
-                f[l]=f[l]+tmp;
-                if(f[l]&gt;mod)f[l]-=mod;
-                buf=buf*tG%mod;
-            &#125;
-        &#125;
-    &#125;
-&#125;
-
-namespace IO&#123;
-    template&lt;typename T&gt;
-    inline void read(T &amp;x)&#123;
-        x=0;T f=1;char ch=getchar();
-        while (!isdigit(ch)) &#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
-        while (isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
-        x*=f;
-    &#125;
-
-    template &lt;typename T, typename... Args&gt;
-    inline void read(T&amp; t, Args&amp;... args) &#123;
-        read(t); read(args...);
-    &#125;
-
-    template&lt;typename T&gt;
-    void write(T x)&#123;
-        if(x&lt;0)putchar(&#39;-&#39;),x=-x;
-        if(x&gt;9)write(x/10);
-        putchar(x%10+&#39;0&#39;);
-    &#125;
-
-    template&lt;typename T,typename... Args&gt;
-    void write(T t,Args... args)&#123;
-        write(t);putchar(&#39; &#39;);write(args...);
-    &#125;
-&#125;
-
-using namespace IO;
-
-signed main() &#123;
-#ifdef LawrenceSivan
-    freopen(&quot;aa.in&quot;,&quot;r&quot;, stdin);
-    freopen(&quot;aa.out&quot;,&quot;w&quot;, stdout);
-#endif
-    read(n,m);n++,m++;
-    for(re int i=0;i&lt;n;i++)read(f[i]);
-    for(re int i=0;i&lt;m;i++)read(p[i]);
-    for(m+=n,n=1;n&lt;m;n&lt;&lt;=1);
-    for(re int i=0;i&lt;n;i++)&#123;
-        trans[i]=(trans[i&gt;&gt;1]&gt;&gt;1)|((i&amp;1)?n&gt;&gt;1:0);
-    &#125;
-    NTT(f,1),NTT(p,1);
-    for(re int i=0;i&lt;n;i++)f[i]=f[i]*p[i]%mod;
-    NTT(f,0);invn=qpow(n,mod-2);
-    for(re int i=0;i&lt;m-1;i++)write((f[i]*invn)%mod),putchar(&#39; &#39;);
-    puts(&quot;&quot;);
-
-    return 0;
-&#125;
-</code></pre>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://www.luogu.com.cn/blog/command-block/ntt-yu-duo-xiang-shi-quan-jia-tong">NTT与多项式全家桶 by command_block</a></p>
-<p><a href="https://blog.csdn.net/a27038/article/details/77203892">阶 和 原根 by _duadua</a></p>
-]]></content>
   </entry>
   <entry>
     <title>Huffman树（荷马史诗）</title>
@@ -3332,6 +3138,200 @@ int main()&#123;
 ]]></content>
   </entry>
   <entry>
+    <title>NTT快速数论变换学习笔记</title>
+    <url>/2021/08/15/NTT%E5%BF%AB%E9%80%9F%E6%95%B0%E8%AE%BA%E5%8F%98%E6%8D%A2%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h1 id="NTT-快速数论变换学习笔记"><a href="#NTT-快速数论变换学习笔记" class="headerlink" title="NTT 快速数论变换学习笔记"></a>NTT 快速数论变换学习笔记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>向多项式迈出的勇敢第二步！</p>
+<p><del>虽然也是基础的东西</del>    </p>
+<p>写了这个博客真的是对数论内容有了很多新的认识，也学到了很多新东西。</p>
+<p>甚至解决了很多之前遗留的没有解决的问题。</p>
+<ul>
+<li>以下内容均在剩余系意义下讨论。</li>
+</ul>
+<h2 id="阶"><a href="#阶" class="headerlink" title="阶"></a>阶</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>$a$ 在模 $p$ 意义下的阶：</p>
+<p>最小的整数 $k$ 使得 $a^k\equiv1\ (\mod p)$。</p>
+<p>记为 $δ_p(a)$ 。</p>
+<p>更通俗的说法是幂的最小循环节。</p>
+<h3 id="定理"><a href="#定理" class="headerlink" title="定理"></a>定理</h3><p>上限是 $\varphi(p)$。</p>
+<p>模 $p$ 的阶如果存在，那么一定是 $\varphi(p)$ 的约数。</p>
+<p>证明：</p>
+<ul>
+<li>定理 1：若 $p&gt;1$ 且 $a\perp p$ ，且 $a^n \equiv 1\ (\mod p)$ ，$n&gt;0$ ，则 $δ_p(a)|n$</li>
+<li>定理 2：结合欧拉定理：当 $a,p \in N^+$，并且 $a \perp p$ ，那么有 $a^{\varphi(p)}\equiv 1\ (\mod p)$，并结合定理 1 可知 $δ_p(a)|\varphi(p)$。</li>
+</ul>
+<p>证毕。</p>
+<p>或者以另外一种方式来说：</p>
+<p>如果这个数有阶，那么这个数可以表示为 $g^k$ 的形式。</p>
+<p>能够在 $\varphi(p)$ 大小的环上得到一个 $\dfrac{\varphi(p)}{\gcd(k,\varphi(p))}$ 大小的环，这就是它的阶，这显然是 $\varphi(p)$ 的约数。</p>
+<p>可以从这种角度来理解定理 1 和定理 2。 </p>
+<p>对于 $a \not\perp p$ 的情况，阶认为是 $∞$ 或者不存在。</p>
+<h2 id="原根"><a href="#原根" class="headerlink" title="原根"></a>原根</h2><h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>满足 $δ_p(g)=\varphi(p)$ 的 $g$ （达到上界），我们称之为 $p$ 的原根。</p>
+<h3 id="定理-1"><a href="#定理-1" class="headerlink" title="定理"></a>定理</h3><ul>
+<li>只有形如 $2,4,p^x,2p^x$ 才有原根，其中 $p$ 是奇质数。</li>
+</ul>
+<p>一旦求出了其中一个原根，就可以构造出其他的原根。</p>
+<p>所有的 $g^k$ 当 $(k \perp \varphi(p))$ 时，恰好能够构造出 $\varphi(\varphi(p))$ 个，且不重不漏。</p>
+<ul>
+<li>定理 1：若 $g$ 是 $m$ 的原根，则</li>
+</ul>
+<p>$$g,g^2…g^{\varphi(p)}$$</p>
+<p>各数模 $p$ 的最小剩余，恰好是小于 $p$ 并且与 $p$ 互素的 $\varphi(p)$ 个正整数的一个排列。</p>
+<ul>
+<li>定理 2：每一个质数 $p$ 都有 $\varphi(p-1)$ 个原根。事实上每一个数 $x$ 都有 $\varphi(\varphi(x)$ 个原根（如果他有原根的话）</li>
+</ul>
+<p>推论</p>
+<ul>
+<li>若 $d|(p-1)$ ，则 $x^d \equiv 1\ (\mod p)$ 恰好有 $d$ 个解</li>
+<li>若 $p$ 是质数，且 $d|(p-1)$ ，则阶为 $d$ 的最小剩余 $\mod p$ 的个数为 $\varphi(d)$。</li>
+</ul>
+<h3 id="求法"><a href="#求法" class="headerlink" title="求法"></a>求法</h3><p>由于原根一般不会很大（可以证明 $n$ 的最小原根在 $\mathcal{O(n^{0.25})}$ 级别），因此我们暴力枚举+验证的方法。</p>
+<p>上面我们提到，模 $p$ 的阶如果存在，那么一定是 $\varphi(p)$ 的约数。（详情看上文中 ：阶/定理）</p>
+<p>于是计算阶时，只需要验证 $\varphi(p)$ 的约数即可。</p>
+<p>其实并不需要算出阶是多少,只需要查看阶是否是 $\varphi(p)$ 即可。</p>
+<p>首先将 $\varphi(p)$ 分解质因数：</p>
+<p>$$\varphi(p)=p_1^{c_1}p_2^{c_2}p_3^{c_3}…p_x^{c_x}$$</p>
+<p>注意到 $a^k \equiv 1\ (\mod p)$ ，那么 $a^{ck}\equiv 1\ (\mod p)$。</p>
+<p>可以取出 $ \varphi(p)$​ 的所有质因数 $p_1,p_2,p_3…p_x$​ ，要判断 $g$​ 是否是原根，只需要判断 $g^{\frac{\varphi(p)}{p_i}}\not\equiv 1\ (\mod p)$​ 恒成立，那么 $g$​ 就是 $p$​ 的一个原根。</p>
+<p>这样可以保证不重不漏地覆盖所有其他约数的倍数，并且达不到 $\varphi(p)$ 本身。</p>
+<p>数据不大的时候枚举所有 $\varphi(p)$ 的因子(除本身)也可。</p>
+<h2 id="原根与单位根"><a href="#原根与单位根" class="headerlink" title="原根与单位根"></a>原根与单位根</h2><p>经过对 FFT 的学习，我们发现由于 FFT 需要使用单位根在复平面上进行系列运算，所以决定它必须要使用浮点数，从而引发精度误差。 </p>
+<p>但是在复数域 $\C$ 中，单位根是唯一满足要求的一类数。</p>
+<p>在剩余系意义下我们可以找到单位根的类似物——<strong>原根</strong></p>
+<p>首先考虑一下单位根的独特性质：</p>
+<ol>
+<li><p>$\omega_n^k=(\omega_n^1)^k$</p>
+</li>
+<li><p>$\omega_n^{0\sim(n-1)}$ 必须互不相同</p>
+<p>否则点值重复，插值不正确。</p>
+</li>
+<li><p>$\omega_n^k=\omega_n^{k\mod n}$</p>
+<p>$n$ 是偶数的时候，可以根据对称引理得出求和引理。</p>
+</li>
+</ol>
+<p>通过以上几条性质可以得出，$\omega_n^1$ 在模意义下的阶恰好是 $n$。</p>
+<ol start="4">
+<li><p>$\omega_{2n}^{2k}=\omega_n^k$</p>
+<p>等价于 $(\omega_{2n})^2=\omega_n$</p>
+</li>
+</ol>
+<p>回顾原根的定义，对于一个<strong>素数</strong> $p$ ，如果 $g$ 的阶达到了 $p-1$ 的上界，则称 $g$ 是 $p$ 的原根。</p>
+<p>显然 $n$ 不一定等于 $p-1$ ，所以原根并不能直接使用。</p>
+<p>上面我们提到阶的两个定理以及另一种证明方法。</p>
+<p>$g^k$ 的阶数恰为 $\dfrac{p-1}{\gcd(k,p-1)}$，这个数仍然是 $p-1$ 的约数。</p>
+<p>所以当 $n\not|\ (p-1)$​ 时，找不到阶恰好为 $n$​ 的数。</p>
+<p>当 $n|(p-1)$ 时，$g^\frac{(p-1)}{n}$ 的阶恰好是 $\dfrac{p-1}{\gcd(\frac{p-1}{n},p-1)}=n$</p>
+<p>$(\omega_{2n})^2=(g^{\frac{p-1}{2n}})^2=g^{\frac{p-1}{n}}=(\omega_n^1)^k=\omega_n$</p>
+<p>所以 $g^{\frac{p-1}{n}}$ 满足了上述所有要求！</p>
+<p>至于 $n|(p-1)$ 的要求，事实上在分治过程中，$n$ 往往会被补成 $2$ 的次幂，于是我们只需要保证 $p-1$ 包含很多个因子 $2$ 即可。</p>
+<p>常见的 NTT 模数有 </p>
+<p>$$P=998244353=479∗2^{21}+1,g=3$$</p>
+<p>$$P=1004535809=7∗17∗2^{23}+1,g=3$$</p>
+<h2 id="get-NTT"><a href="#get-NTT" class="headerlink" title="get_NTT!"></a>get_NTT!</h2><pre><code class="cpp">//#define LawrenceSivan
+
+#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+typedef long long ll;
+typedef unsigned long long ull;
+
+#define INF 0x3f3f3f3f
+#define re register
+
+const int maxn=1e7+5;
+const int mod=998244353;
+const int G=3;
+
+ll qpow(ll a,ll b)&#123;
+    ll res=1;
+    for(;b;b&gt;&gt;=1,a=a*a%mod)&#123;
+        if(b&amp;1)res=res*a%mod;
+    &#125;
+    return res%mod;
+&#125;
+
+const ll invG=qpow(G,mod-2);
+
+ll f[maxn],p[maxn];
+
+int trans[maxn];
+
+int n,m,invn;
+
+inline void NTT(ll *f,bool op)&#123;
+    for(re int i=0;i&lt;n;i++)&#123;
+        if(i&lt;trans[i])swap(f[i],f[trans[i]]);
+    &#125;
+    for(re int p=2;p&lt;=n;p&lt;&lt;=1)&#123;
+        int len=p&gt;&gt;1;
+        int tG=qpow(op?G:invG,(mod-1)/p);
+        for(re int k=0;k&lt;n;k+=p)&#123;
+            ll buf=1;
+            for(re int l=k;l&lt;k+len;l++)&#123;
+                ll tmp=buf*f[l+len]%mod;
+                f[l+len]=f[l]-tmp;
+                if(f[l+len]&lt;0)f[l+len]+=mod;
+                f[l]=f[l]+tmp;
+                if(f[l]&gt;mod)f[l]-=mod;
+                buf=buf*tG%mod;
+            &#125;
+        &#125;
+    &#125;
+&#125;
+
+namespace IO&#123;
+    template&lt;typename T&gt;
+    inline void read(T &amp;x)&#123;
+        x=0;T f=1;char ch=getchar();
+        while (!isdigit(ch)) &#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
+        while (isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
+        x*=f;
+    &#125;
+
+    template &lt;typename T, typename... Args&gt;
+    inline void read(T&amp; t, Args&amp;... args) &#123;
+        read(t); read(args...);
+    &#125;
+
+    template&lt;typename T&gt;
+    void write(T x)&#123;
+        if(x&lt;0)putchar(&#39;-&#39;),x=-x;
+        if(x&gt;9)write(x/10);
+        putchar(x%10+&#39;0&#39;);
+    &#125;
+
+    template&lt;typename T,typename... Args&gt;
+    void write(T t,Args... args)&#123;
+        write(t);putchar(&#39; &#39;);write(args...);
+    &#125;
+&#125;
+
+using namespace IO;
+
+signed main() &#123;
+#ifdef LawrenceSivan
+    freopen(&quot;aa.in&quot;,&quot;r&quot;, stdin);
+    freopen(&quot;aa.out&quot;,&quot;w&quot;, stdout);
+#endif
+    read(n,m);n++,m++;
+    for(re int i=0;i&lt;n;i++)read(f[i]);
+    for(re int i=0;i&lt;m;i++)read(p[i]);
+    for(m+=n,n=1;n&lt;m;n&lt;&lt;=1);
+    for(re int i=0;i&lt;n;i++)&#123;
+        trans[i]=(trans[i&gt;&gt;1]&gt;&gt;1)|((i&amp;1)?n&gt;&gt;1:0);
+    &#125;
+    NTT(f,1),NTT(p,1);
+    for(re int i=0;i&lt;n;i++)f[i]=f[i]*p[i]%mod;
+    NTT(f,0);invn=qpow(n,mod-2);
+    for(re int i=0;i&lt;m-1;i++)write((f[i]*invn)%mod),putchar(&#39; &#39;);
+    puts(&quot;&quot;);
+
+    return 0;
+&#125;
+</code></pre>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://www.luogu.com.cn/blog/command-block/ntt-yu-duo-xiang-shi-quan-jia-tong">NTT与多项式全家桶 by command_block</a></p>
+<p><a href="https://blog.csdn.net/a27038/article/details/77203892">阶 和 原根 by _duadua</a></p>
+]]></content>
+  </entry>
+  <entry>
     <title>P2569 股票交易（单调队列优化DP）</title>
     <url>/2021/05/02/P2569%20%E8%82%A1%E7%A5%A8%E4%BA%A4%E6%98%93%EF%BC%88%E5%8D%95%E8%B0%83%E9%98%9F%E5%88%97%E4%BC%98%E5%8C%96DP%EF%BC%89/</url>
     <content><![CDATA[<h1 id="单调队列优化DP"><a href="#单调队列优化DP" class="headerlink" title="单调队列优化DP"></a>单调队列优化DP</h1><p><a href="https://www.luogu.com.cn/problem/P2569">题目传送门</a></p>
@@ -3463,6 +3463,161 @@ int main() &#123;
 </code></pre>
 <h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p><strong>1，对于决策转移时，有明显单调性的情况，对于状态移动时，转移决策重复度较大。都可用单调队列优化。（滑动窗口）</strong></p>
 <p><strong>2，对于单调性要主动发现，主动往那方面想</strong></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>P3960 列队（动态开点线段树）</title>
+    <url>/2021/04/21/P3960%20%E5%88%97%E9%98%9F%EF%BC%88%E5%8A%A8%E6%80%81%E5%BC%80%E7%82%B9%E7%BA%BF%E6%AE%B5%E6%A0%91%EF%BC%89/</url>
+    <content><![CDATA[<p>我们都知道，线段树是一种效率较高的数据结构。但是它有一个缺点，就是我们需要的空间比较大。对于权值线段树，如果我们的值域比较大，那么我们所需要的空间就是惊人的，于是我们需要采取一些策略来解决这个问题。</p>
+<p>在线段树的应用过程中，我们可以发现，在每次修改与查询操作的时候，我们只需要针对从根节点开始最多的 $log(n)$ 个节点进行操作就可以了，那么可以发现其他的很多节点其实并没有用上，那么我们可不可以在用到某一个区间的时候动态地把他开出来而不是一次性全部开出来呢？</p>
+<p>答案是肯定的，我们完全可以在一开始开出一个根节点代表$[1-n]$，在需要用到某个区间的时候再把这个区间所对的节点开出来供我们使用。</p>
+<p>这样的话，可以发现我们舍弃了线段树的二倍编码原则，而是采用用变量记录形式来记录编号，并且在递归访问的时候，把每个节点代表的区间作为参数传递。</p>
+<pre><code class="cpp">struct node&#123;
+    int ls,rs;
+    int data;
+&#125;st[maxn&lt;&lt;1];
+
+int cnt;
+int build()&#123;
+    cnt++;
+    st[cnt].ls=st[cnt].rs=st[cnt].data=0;
+    return cnt;
+&#125;
+</code></pre>
+<p>动态开点线段树比较好的例题是 <a href="https://www.luogu.com.cn/problem/P3960">P3960 [NOIP2017 提高组] 列队</a></p>
+<p>经过观察我们可以发现，每次离队所影响的最多只是当前位置还有这一排的最后一个位置以及最后一列最后一行的位置；</p>
+<p>于是我们可以考虑用一个支持单点修改的线段树，建立$n + 1$棵，前$n$棵代表第$n$行前$m - 1$个答案，第$n+1$棵表示最后一列。</p>
+<p>第一步：我们所操作的是一个长相很规整的的矩形，根据题目的操作要求，我们可以将其分为n+1个区间，即$n \times m$的矩形分为，$n \times (m-1)$的矩形和$1 \times n$ 的矩形，红色的矩形每一行算作一个区间，最后蓝色的一列独自成为一个区间，一共$n+1$个区间。</p>
+<p><img src="https://i.loli.net/2021/06/02/QyPMTo369ezxNLr.png" alt="axujukr0.png"></p>
+<p>每我们的操作就是从所有红区间中，当输入x,y时，即代表我们要将第$x4=$的红区间的第$y$个数取出来，$[y+1,m]$的数往前挪一位，然后蓝区间的第$x$个数就会空出，然后将蓝区间的$[x+1,n]$的数往前挪一位，蓝区间的最后一位，也就是整个矩形的右下角会空出，最后，将取出的数放入右下角这个空即可</p>
+<p><img src="https://i.loli.net/2021/06/02/kRbmpVPuMIfcUs4.png" alt="4at8sjkv.png"></p>
+<p>第二步：我们因为此时的区间不是在移动就是在提取，所以是维护区间，所以自然想到了线段树，因为是维护多个区间，即多个根。所以此时要用到主席树.</p>
+<p>第三步：一个区间约有$n$个数，如果每个数都往前挪一位，$q$次询问，每次询问带有$n$次挪移，那么我们考虑不挪动，而是给即将空出来的位置打上标记，表示这个数已经被用过，因为区间最后会再加一个数进来，所以区间长度不变。两种方式最后留下的区间等价</p>
+<p><img src="https://i.loli.net/2021/06/02/jQRChYNidyUcaPp.png" alt="081t1gd4.png"></p>
+<p>CODE：</p>
+<pre><code class="cpp">//#define LawrenceSivan
+
+#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+typedef long long ll;
+typedef unsigned long long ull;
+#define re register
+const int maxn=3e5+5;
+
+int n,m,q,now;
+int cnt,Max;
+
+ll ans;
+
+struct node&#123;
+    int ls,rs,size;//size:当前区间内有多少个数没有被标记
+    ll val;
+    
+    node()&#123;&#125;
+    node(const int _ls,const int _rs,const int _size,const ll _val):
+        ls(_ls),rs(_rs),size(_size),val(_val)&#123;&#125;
+&#125;st[maxn&lt;&lt;5];//严格来讲应该开 Q * log2(N)，也就是20倍 ，为了方便与保险，我们直接开32倍
+
+int ins[maxn],root[maxn];
+//ins[i]记录第i棵树插入了多少个新数
+//root[i]记录第i棵树的根节点
+
+inline int len(int l,int r)&#123;
+    if(now==n+1)&#123;
+        if(r&lt;=n)return r-l+1;
+        if(l&lt;=n)return n-l+1;
+        return 0;
+    &#125;
+    if(r&lt;m)return r-l+1;
+    if(l&lt;m)return (m-1)-l+1;
+    
+    return 0;
+&#125;
+
+ll query(int &amp;rt,int l,int r,int pos)&#123;
+    if(!rt)&#123;//动态开点
+        rt=++cnt;
+        st[rt].size=len(l,r);
+        
+        if(l==r)&#123;
+            if(now==n+1)st[rt].val=1ll*l*m;
+            else st[rt].val=1ll*(now-1)*m+l;
+        &#125;
+    &#125;
+    st[rt].size--;这个区间有一个数被取出
+    if(l==r)return st[rt].val;
+    
+    int mid=(l+r)&gt;&gt;1;
+    if(!st[rt].ls &amp;&amp;len(l,mid)&gt;=pos||st[st[rt].ls].size&gt;=pos)&#123;
+        query(st[rt].ls,l,mid,pos);
+    &#125;
+    else&#123;
+        int tmp;
+        if(!st[rt].ls)tmp=len(l,mid);
+        else tmp=st[st[rt].ls].size;
+        return query(st[rt].rs,mid+1,r,pos-tmp);
+    &#125;
+&#125;
+
+void modify(int &amp;rt,int l,int r,int pos,ll num)&#123;
+    if(!rt)&#123;
+        rt=++cnt;
+        st[rt].size=len(l,r);
+        if(l==r)&#123;
+            st[rt].val=num;
+        &#125;    
+    &#125;
+    
+    ++st[rt].size;//这个区间末尾有一个人进去
+    if(l==r)return;
+    
+    int mid=(l+r)&gt;&gt;1;
+    if(pos&lt;=mid)modify(st[rt].ls,l,mid,pos,num);
+    else modify(st[rt].rs,mid+1,r,pos,num);
+&#125;
+
+inline int read() &#123;
+    int x = 0, f = 1;char ch = getchar();
+    while (!isdigit(ch)) &#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
+    while (isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
+    return x * f;
+&#125;
+
+int main() &#123;
+#ifdef LawrenceSivan
+    freopen(&quot;aa.in&quot;, &quot;r&quot;, stdin);
+    freopen(&quot;aa.out&quot;, &quot;w&quot;, stdout);
+#endif
+    n=read();m=read();q=read();
+    Max=max(n,m)+q;//一共有q次离队，于是最多有q个人再次进队，于是最大也就是队列长度加上他们本身（因为我们取出以后在位置进行标记，相当于占上了位置
+    
+    while(q--)&#123;
+        int x=read(),y=read();
+        if(y==m)&#123;//如果是最后一列
+            now=n+1;//那么一定要放到那个单独的区间里面去，也就是上面说到的蓝色区域
+            ans=query(root[now],1,Max,x); 
+        &#125;
+        else&#123;
+            now=x;//否则，那么一定在红色区域
+            ans=query(root[now],1,Max,y);
+        &#125; 
+        
+        printf(&quot;%lld\n&quot;,ans);//输出答案
+        
+        now=n+1;//让被选出的人进入蓝色区域的最后一个位置
+        modify(root[now],1,Max,n+(++ins[now]),ans);
+        
+        if(y!=m)&#123;
+            ans=query(root[now],1,Max,x);
+            now=x;
+            modify(root[now],1,Max,m-1+(++ins[now]),ans);
+        &#125;
+    &#125;
+    
+    return 0;
+&#125;
+</code></pre>
 ]]></content>
   </entry>
   <entry>
@@ -3960,161 +4115,6 @@ int main()&#123;
 
 
 
-    return 0;
-&#125;
-</code></pre>
-]]></content>
-  </entry>
-  <entry>
-    <title>P3960 列队（动态开点线段树）</title>
-    <url>/2021/04/21/P3960%20%E5%88%97%E9%98%9F%EF%BC%88%E5%8A%A8%E6%80%81%E5%BC%80%E7%82%B9%E7%BA%BF%E6%AE%B5%E6%A0%91%EF%BC%89/</url>
-    <content><![CDATA[<p>我们都知道，线段树是一种效率较高的数据结构。但是它有一个缺点，就是我们需要的空间比较大。对于权值线段树，如果我们的值域比较大，那么我们所需要的空间就是惊人的，于是我们需要采取一些策略来解决这个问题。</p>
-<p>在线段树的应用过程中，我们可以发现，在每次修改与查询操作的时候，我们只需要针对从根节点开始最多的 $log(n)$ 个节点进行操作就可以了，那么可以发现其他的很多节点其实并没有用上，那么我们可不可以在用到某一个区间的时候动态地把他开出来而不是一次性全部开出来呢？</p>
-<p>答案是肯定的，我们完全可以在一开始开出一个根节点代表$[1-n]$，在需要用到某个区间的时候再把这个区间所对的节点开出来供我们使用。</p>
-<p>这样的话，可以发现我们舍弃了线段树的二倍编码原则，而是采用用变量记录形式来记录编号，并且在递归访问的时候，把每个节点代表的区间作为参数传递。</p>
-<pre><code class="cpp">struct node&#123;
-    int ls,rs;
-    int data;
-&#125;st[maxn&lt;&lt;1];
-
-int cnt;
-int build()&#123;
-    cnt++;
-    st[cnt].ls=st[cnt].rs=st[cnt].data=0;
-    return cnt;
-&#125;
-</code></pre>
-<p>动态开点线段树比较好的例题是 <a href="https://www.luogu.com.cn/problem/P3960">P3960 [NOIP2017 提高组] 列队</a></p>
-<p>经过观察我们可以发现，每次离队所影响的最多只是当前位置还有这一排的最后一个位置以及最后一列最后一行的位置；</p>
-<p>于是我们可以考虑用一个支持单点修改的线段树，建立$n + 1$棵，前$n$棵代表第$n$行前$m - 1$个答案，第$n+1$棵表示最后一列。</p>
-<p>第一步：我们所操作的是一个长相很规整的的矩形，根据题目的操作要求，我们可以将其分为n+1个区间，即$n \times m$的矩形分为，$n \times (m-1)$的矩形和$1 \times n$ 的矩形，红色的矩形每一行算作一个区间，最后蓝色的一列独自成为一个区间，一共$n+1$个区间。</p>
-<p><img src="https://i.loli.net/2021/06/02/QyPMTo369ezxNLr.png" alt="axujukr0.png"></p>
-<p>每我们的操作就是从所有红区间中，当输入x,y时，即代表我们要将第$x4=$的红区间的第$y$个数取出来，$[y+1,m]$的数往前挪一位，然后蓝区间的第$x$个数就会空出，然后将蓝区间的$[x+1,n]$的数往前挪一位，蓝区间的最后一位，也就是整个矩形的右下角会空出，最后，将取出的数放入右下角这个空即可</p>
-<p><img src="https://i.loli.net/2021/06/02/kRbmpVPuMIfcUs4.png" alt="4at8sjkv.png"></p>
-<p>第二步：我们因为此时的区间不是在移动就是在提取，所以是维护区间，所以自然想到了线段树，因为是维护多个区间，即多个根。所以此时要用到主席树.</p>
-<p>第三步：一个区间约有$n$个数，如果每个数都往前挪一位，$q$次询问，每次询问带有$n$次挪移，那么我们考虑不挪动，而是给即将空出来的位置打上标记，表示这个数已经被用过，因为区间最后会再加一个数进来，所以区间长度不变。两种方式最后留下的区间等价</p>
-<p><img src="https://i.loli.net/2021/06/02/jQRChYNidyUcaPp.png" alt="081t1gd4.png"></p>
-<p>CODE：</p>
-<pre><code class="cpp">//#define LawrenceSivan
-
-#include &lt;bits/stdc++.h&gt;
-using namespace std;
-
-typedef long long ll;
-typedef unsigned long long ull;
-#define re register
-const int maxn=3e5+5;
-
-int n,m,q,now;
-int cnt,Max;
-
-ll ans;
-
-struct node&#123;
-    int ls,rs,size;//size:当前区间内有多少个数没有被标记
-    ll val;
-    
-    node()&#123;&#125;
-    node(const int _ls,const int _rs,const int _size,const ll _val):
-        ls(_ls),rs(_rs),size(_size),val(_val)&#123;&#125;
-&#125;st[maxn&lt;&lt;5];//严格来讲应该开 Q * log2(N)，也就是20倍 ，为了方便与保险，我们直接开32倍
-
-int ins[maxn],root[maxn];
-//ins[i]记录第i棵树插入了多少个新数
-//root[i]记录第i棵树的根节点
-
-inline int len(int l,int r)&#123;
-    if(now==n+1)&#123;
-        if(r&lt;=n)return r-l+1;
-        if(l&lt;=n)return n-l+1;
-        return 0;
-    &#125;
-    if(r&lt;m)return r-l+1;
-    if(l&lt;m)return (m-1)-l+1;
-    
-    return 0;
-&#125;
-
-ll query(int &amp;rt,int l,int r,int pos)&#123;
-    if(!rt)&#123;//动态开点
-        rt=++cnt;
-        st[rt].size=len(l,r);
-        
-        if(l==r)&#123;
-            if(now==n+1)st[rt].val=1ll*l*m;
-            else st[rt].val=1ll*(now-1)*m+l;
-        &#125;
-    &#125;
-    st[rt].size--;这个区间有一个数被取出
-    if(l==r)return st[rt].val;
-    
-    int mid=(l+r)&gt;&gt;1;
-    if(!st[rt].ls &amp;&amp;len(l,mid)&gt;=pos||st[st[rt].ls].size&gt;=pos)&#123;
-        query(st[rt].ls,l,mid,pos);
-    &#125;
-    else&#123;
-        int tmp;
-        if(!st[rt].ls)tmp=len(l,mid);
-        else tmp=st[st[rt].ls].size;
-        return query(st[rt].rs,mid+1,r,pos-tmp);
-    &#125;
-&#125;
-
-void modify(int &amp;rt,int l,int r,int pos,ll num)&#123;
-    if(!rt)&#123;
-        rt=++cnt;
-        st[rt].size=len(l,r);
-        if(l==r)&#123;
-            st[rt].val=num;
-        &#125;    
-    &#125;
-    
-    ++st[rt].size;//这个区间末尾有一个人进去
-    if(l==r)return;
-    
-    int mid=(l+r)&gt;&gt;1;
-    if(pos&lt;=mid)modify(st[rt].ls,l,mid,pos,num);
-    else modify(st[rt].rs,mid+1,r,pos,num);
-&#125;
-
-inline int read() &#123;
-    int x = 0, f = 1;char ch = getchar();
-    while (!isdigit(ch)) &#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
-    while (isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
-    return x * f;
-&#125;
-
-int main() &#123;
-#ifdef LawrenceSivan
-    freopen(&quot;aa.in&quot;, &quot;r&quot;, stdin);
-    freopen(&quot;aa.out&quot;, &quot;w&quot;, stdout);
-#endif
-    n=read();m=read();q=read();
-    Max=max(n,m)+q;//一共有q次离队，于是最多有q个人再次进队，于是最大也就是队列长度加上他们本身（因为我们取出以后在位置进行标记，相当于占上了位置
-    
-    while(q--)&#123;
-        int x=read(),y=read();
-        if(y==m)&#123;//如果是最后一列
-            now=n+1;//那么一定要放到那个单独的区间里面去，也就是上面说到的蓝色区域
-            ans=query(root[now],1,Max,x); 
-        &#125;
-        else&#123;
-            now=x;//否则，那么一定在红色区域
-            ans=query(root[now],1,Max,y);
-        &#125; 
-        
-        printf(&quot;%lld\n&quot;,ans);//输出答案
-        
-        now=n+1;//让被选出的人进入蓝色区域的最后一个位置
-        modify(root[now],1,Max,n+(++ins[now]),ans);
-        
-        if(y!=m)&#123;
-            ans=query(root[now],1,Max,x);
-            now=x;
-            modify(root[now],1,Max,m-1+(++ins[now]),ans);
-        &#125;
-    &#125;
-    
     return 0;
 &#125;
 </code></pre>
@@ -6978,6 +6978,22 @@ int main() &#123;
 ]]></content>
   </entry>
   <entry>
+    <title>另一方面的我 and something to say</title>
+    <url>/2021/08/20/%E5%8F%A6%E4%B8%80%E6%96%B9%E9%9D%A2%E7%9A%84%E6%88%91%20and%20something%20to%20say/</url>
+    <content><![CDATA[<div class="hbe hbe-container" id="hexo-blog-encrypt" data-wpm="Sorry, this password doesn't seem right, please try again." data-whm="Sorry, this article cannot be verified, but you can still see the decrypted content.">
+  <script id="hbeData" type="hbeData" data-hmacdigest="afb092dc020918ed1307c4780d3fde9959bcfcd6da384cd57ff859d7063fd66c">3e1e28159ab5230800ebe203077c055810203a8134c8b40bb112c29cc2166c320de2f4ddbe581a30a98dc82955ccbd02854f8e30fd2a557bbef118e87b74281485a1749009d1210430b64d5eb71b3021b6718c6b66a6aab1df3ea14045eb03dd52fd5414543d0e9c700a7ddedae33209e7a6eee451e945fe6887e006b930d0fe6f7a7a3cd6cfff6708ef91d8fac99b56781e43d0b0349593f592d70460b1079f2209e8424e0eb69b7ac8215905aab6c7670646708cef36d30d7a966d792e74e8cb8ceac8808b677663735e245120ad4d64b00651c74d80d83c02b20341d92e706eaaa2e86bdfa5c8e5accf5784d2d84f1fbfee92fcfce57491eb834681ff8bd0eb23377864796dc57ff66249cbbee5bdd0200004ecc34dad0d9692505472b6e6844abf193ec6c0498cacdddd74444b3b728b5040cac76ebf58cdd1abef8f08b1d852686c673476e0571f7a70e00edbc09ce251d2c455bcd3aa6bac1ecda360b8826c6365ac01c72e3371a34e805d4557aaeba1055b162e6900f3be6b659ba1842b560cd851762d2b53192d62c97a2a31b1146b6c6e565ab326aa10d707eb02f5d6ab29f1520eb6dd14aa8fdbe89cb88e995e37c40560316a59e8232fd56efeff2c1b97f6031d6e5eca9ef6a8f0561d2b45c014ee39fddbcc5de5d8c9e331ff47d7b032b73e09f2086f5603a8cb595b493f23842f2c7aaf3b002ca9ae2269c4876390fd93b0c153b95a14bb30dd3de2ddcf7d9a87ad4d9204be5f3d7e226ca2e5eaaa9d5c918e998c74a2302289b6b31379a6f2a38683ca78f4e4805b7edf5f34</script>
+  <div class="hbe hbe-content">
+    <div class="hbe hbe-input hbe-input-default">
+      <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
+      <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">You must enter the password to read.</span>
+      </label>
+    </div>
+  </div>
+</div>
+<script data-pjax src="/lib/hbe.js"></script><link href="/css/hbe.style.css" rel="stylesheet" type="text/css">]]></content>
+  </entry>
+  <entry>
     <title>十五数码问题（IDA*）</title>
     <url>/2021/04/15/%E5%8D%81%E4%BA%94%E6%95%B0%E7%A0%81%E9%97%AE%E9%A2%98%EF%BC%88IDA-%EF%BC%89/</url>
     <content><![CDATA[<p><del>这个题可真是快调死我了</del></p>
@@ -7161,20 +7177,13 @@ int main()&#123;
 ]]></content>
   </entry>
   <entry>
-    <title>另一方面的我 and something to say</title>
-    <url>/2021/08/20/%E5%8F%A6%E4%B8%80%E6%96%B9%E9%9D%A2%E7%9A%84%E6%88%91%20and%20something%20to%20say/</url>
-    <content><![CDATA[<div class="hbe hbe-container" id="hexo-blog-encrypt" data-wpm="Sorry, this password doesn't seem right, please try again." data-whm="Sorry, this article cannot be verified, but you can still see the decrypted content.">
-  <script id="hbeData" type="hbeData" data-hmacdigest="afb092dc020918ed1307c4780d3fde9959bcfcd6da384cd57ff859d7063fd66c">3e1e28159ab5230800ebe203077c055810203a8134c8b40bb112c29cc2166c320de2f4ddbe581a30a98dc82955ccbd02854f8e30fd2a557bbef118e87b74281485a1749009d1210430b64d5eb71b3021b6718c6b66a6aab1df3ea14045eb03dd52fd5414543d0e9c700a7ddedae33209e7a6eee451e945fe6887e006b930d0fe6f7a7a3cd6cfff6708ef91d8fac99b56781e43d0b0349593f592d70460b1079f2209e8424e0eb69b7ac8215905aab6c7670646708cef36d30d7a966d792e74e8cb8ceac8808b677663735e245120ad4d64b00651c74d80d83c02b20341d92e706eaaa2e86bdfa5c8e5accf5784d2d84f1fbfee92fcfce57491eb834681ff8bd0eb23377864796dc57ff66249cbbee5bdd0200004ecc34dad0d9692505472b6e6844abf193ec6c0498cacdddd74444b3b728b5040cac76ebf58cdd1abef8f08b1d852686c673476e0571f7a70e00edbc09ce251d2c455bcd3aa6bac1ecda360b8826c6365ac01c72e3371a34e805d4557aaeba1055b162e6900f3be6b659ba1842b560cd851762d2b53192d62c97a2a31b1146b6c6e565ab326aa10d707eb02f5d6ab29f1520eb6dd14aa8fdbe89cb88e995e37c40560316a59e8232fd56efeff2c1b97f6031d6e5eca9ef6a8f0561d2b45c014ee39fddbcc5de5d8c9e331ff47d7b032b73e09f2086f5603a8cb595b493f23842f2c7aaf3b002ca9ae2269c4876390fd93b0c153b95a14bb30dd3de2ddcf7d9a87ad4d9204be5f3d7e226ca2e5eaaa9d5c918e998c74a2302289b6b31379a6f2a38683ca78f4e4805b7edf5f34</script>
-  <div class="hbe hbe-content">
-    <div class="hbe hbe-input hbe-input-default">
-      <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
-      <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
-        <span class="hbe hbe-input-label-content hbe-input-label-content-default">You must enter the password to read.</span>
-      </label>
-    </div>
-  </div>
-</div>
-<script data-pjax src="/lib/hbe.js"></script><link href="/css/hbe.style.css" rel="stylesheet" type="text/css">]]></content>
+    <title>图集</title>
+    <url>/2018/05/28/%E5%9B%BE%E9%9B%86/</url>
+    <content><![CDATA[<p>这个页面是图集</p>
+]]></content>
+      <tags>
+        <tag>图集</tag>
+      </tags>
   </entry>
   <entry>
     <title>悦读</title>
@@ -7183,15 +7192,6 @@ int main()&#123;
 ]]></content>
       <tags>
         <tag>悦读</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>图集</title>
-    <url>/2018/05/28/%E5%9B%BE%E9%9B%86/</url>
-    <content><![CDATA[<p>这个页面是图集</p>
-]]></content>
-      <tags>
-        <tag>图集</tag>
       </tags>
   </entry>
   <entry>
@@ -9329,6 +9329,340 @@ int main()&#123;
 ]]></content>
   </entry>
   <entry>
+    <title>计算几何小结</title>
+    <url>/2021/04/29/%E8%AE%A1%E7%AE%97%E5%87%A0%E4%BD%95%E5%B0%8F%E7%BB%93/</url>
+    <content><![CDATA[<h1 id="计算几何小结"><a href="#计算几何小结" class="headerlink" title="计算几何小结"></a>计算几何小结</h1><h2 id="向量线段相关"><a href="#向量线段相关" class="headerlink" title="向量线段相关"></a>向量线段相关</h2><h3 id="点积："><a href="#点积：" class="headerlink" title="点积："></a>点积：</h3><p>$a.x * b.x+a.y*b.y$</p>
+<h3 id="叉积："><a href="#叉积：" class="headerlink" title="叉积："></a>叉积：</h3><p>$a.x<em>b.y-a.y</em>b.x$</p>
+<p><img src="https://i.loli.net/2021/06/02/psAiKfeI5baqoLY.png" alt="35txwufh.png"></p>
+<h3 id="转角公式："><a href="#转角公式：" class="headerlink" title="转角公式："></a>转角公式：</h3><p>逆时针旋转角度$B$</p>
+<p>原：$(cosAr,sinAr)$</p>
+<p>现：$(cos(A+B)r,sin(A+B)r)=((cosAcosB-sinAsinB)r,(sinAcosB+cosAsinB)r)$</p>
+<p>即：$(x,y)-&gt;(xcosB-ysinB,xsinB+ycosB)$</p>
+<h3 id="极角排序："><a href="#极角排序：" class="headerlink" title="极角排序："></a>极角排序：</h3><p>两种方法：</p>
+<h4 id="方法一：-atan2"><a href="#方法一：-atan2" class="headerlink" title="方法一：$atan2()$"></a>方法一：$atan2()$</h4><p>这是一个给定三角形对边和邻边算角的函数，在$cmath$库中<br>对每个向量求$angle=atan2(a.y,a.x)$后直接排序即可</p>
+<h4 id="方法二：叉积"><a href="#方法二：叉积" class="headerlink" title="方法二：叉积"></a>方法二：叉积</h4><p>叉积的正负可以判断左右关系，所以在最大跨角不超过180度的时候可以非常好地实现，否则有可能随机一个起点绕好几圈（我比较倾向于这个）</p>
+<h3 id="两直线夹角："><a href="#两直线夹角：" class="headerlink" title="两直线夹角："></a>两直线夹角：</h3><p>若两个向量都是从原点出发，则可以很方便地用<br>$\theta=atan2(x \times y,x*y)$</p>
+<p>叉积是平行四边形，底乘高；点积是底乘投影。<br>更特殊点，该夹角是有向夹角，从$x$向量旋转到$y$，逆时针是正角、顺时针是负角。</p>
+<h3 id="两直线交点："><a href="#两直线交点：" class="headerlink" title="两直线交点："></a>两直线交点：</h3><p>面积比-&gt;线段比-&gt;定比分点</p>
+<pre><code class="cpp">node crosss(node a1,node a2,node b1,node b2)&#123;
+    node a=a2-a1,b=b2-b1,c=b1-a1;
+    if(fabs(b*a)&lt;1e-12) return (node)&#123;-1e9,-1e9&#125;;//平行
+    double t=(b*c)/(b*a);
+    return a1+(a^t);
+&#125;
+</code></pre>
+<p><img src="https://i.loli.net/2021/06/02/Zpez9UratE12uVH.png" alt="3o8fi5tk.png"></p>
+<h3 id="判断两直线是否相交："><a href="#判断两直线是否相交：" class="headerlink" title="判断两直线是否相交："></a>判断两直线是否相交：</h3><p>$a1,a2,b1,b2$为两条直线的两个端点<br>如果满足$(b1-a1)×(b1-a2)$和$(b2-a1)×(b2-a2)$不同号，并且$(a1-b1)×(a1-b2)$和$(a2-b1)×(a2-b2)$不同号，则两线段相交，叫跨立实验。</p>
+<h2 id="多边形相关："><a href="#多边形相关：" class="headerlink" title="多边形相关："></a>多边形相关：</h2><h3 id="凸包："><a href="#凸包：" class="headerlink" title="凸包："></a>凸包：</h3><p>找到最下的点设为原点，将剩下的点用叉积极角排序<br>用单调栈维护凸包，当叉积为非负时需要弹栈</p>
+<pre><code class="cpp">struct node&#123;
+    double x,y;
+    inline bool operator &lt; (node a)const&#123;return x&lt;a.x||(x==a.x&amp;&amp;y&lt;a.y);&#125;
+&#125;p[maxn],st[maxn];
+
+inline double v_pro(node a,node b,node c)&#123;
+    return (b.x-a.x)*(c.y-a.y)-(c.x-a.x)*(b.y-a.y);
+&#125;
+
+int main()&#123;
+    sort(p+1,p+1+n);
+    
+    st[0]=p[1];
+    for(re int i=1;i&lt;=n;i++)&#123;
+        while(top&amp;&amp;v_pro(st[top],st[top-1],p[i])&gt;=0)--top;
+        st[++top]=p[i];
+    &#125;
+    
+       st[top=0]=p[n];
+    for(re int i=n-1;i;i--)&#123;
+        while(top&amp;&amp;v_pro(st[top],st[top-1],p[i])&gt;=0)--top;
+        st[++top]=p[i];    
+    &#125; 
+&#125;
+</code></pre>
+<h3 id="判断点是否在多边形内："><a href="#判断点是否在多边形内：" class="headerlink" title="判断点是否在多边形内："></a>判断点是否在多边形内：</h3><p>从该点向右引射线，与多边形交奇数次即在其内。<br>顺时针$+1$，逆时针$-1$，注意与顶点重合的情况</p>
+<p>$CF375C\ \ \ \ \  Circling Round Treasures$</p>
+<h3 id="判断点是否在凸包内："><a href="#判断点是否在凸包内：" class="headerlink" title="判断点是否在凸包内："></a>判断点是否在凸包内：</h3><p>先判定和边界的关系<br>然后找到与其极角相邻的两点，凭此判断<br>须保证$A[1]=(0,0)$</p>
+<pre><code class="cpp">ll inside(node a)&#123;
+    if(a*A[1]&gt;0||A[tot]*a&gt;0) return 0;
+    ll pos=lower_bound(A+1,A+tot+1,a,cmp2)-A-1;
+    return (a-A[pos])*(A[pos%tot+1]-A[pos])&lt;=0;
+&#125;
+</code></pre>
+<h3 id="求多边形面积："><a href="#求多边形面积：" class="headerlink" title="求多边形面积："></a>求多边形面积：</h3><p>逆时针极角排序后直接用叉积求</p>
+<pre><code class="cpp">double CalcS()&#123;
+    double res=0;
+    for(int i=2;i&lt;node;i++) res+=(A[i]-A[1])*(A[i+1]-A[1]);
+    return res/2;
+&#125;
+</code></pre>
+<h3 id="三角形重心："><a href="#三角形重心：" class="headerlink" title="三角形重心："></a>三角形重心：</h3><p>三点各坐标的平均值$(\frac{x_1+x_2+x_3}{3},\frac{y_1+y_2+y_3}{3})$</p>
+<h2 id="算法："><a href="#算法：" class="headerlink" title="算法："></a>算法：</h2><h3 id="旋转卡壳："><a href="#旋转卡壳：" class="headerlink" title="旋转卡壳："></a>旋转卡壳：</h3><p>利用凸包上一些奇妙的单调性，求解</p>
+<p>多边形直径</p>
+<p>多边形宽度</p>
+<p>最小面积矩形覆盖</p>
+<p>等等</p>
+<pre><code class="cpp">#include&lt;bits/stdc++.h&gt;
+using namespace std;
+
+typedef long long ll;
+#define re register
+const int maxn=5e4+5;
+#define INF 0x3f3f3f3f3f3f3f3f
+
+struct node&#123;
+    int x,y;
+    
+&#125;p[maxn],p0,s[maxn];
+
+int n,top;
+
+ll ans=INF;
+
+inline bool cmp(node a,node b)&#123;
+    double A=atan2(a.y-p0.y,a.x-p0.x);
+    double B=atan2(b.y-p0.y,b.x-p0.x);
+    if(A!=B)return A&lt;B;
+    return a.x&lt;b.x;
+&#125;
+
+inline ll V_pro(int x1,int y1,int x2,int y2)&#123;//Vector product
+    return (1ll*x1*y2-1ll*x2*y1);
+&#125;
+
+inline ll compare(node a,node b,node c)&#123;
+    return V_pro((b.x-a.x),(b.y-a.y),(c.x-a.x),(c.y-a.y));
+&#125;
+
+inline void find()&#123;
+    p0=(node)&#123;INF,INF&#125;;
+    int k=0;
+    for(re int i=0;i&lt;n;i++)&#123;
+        if(p0.y&gt;p[i].y||(p0.y==p[i].y&amp;&amp;p0.x&gt;p[i].x))&#123;
+            p0=p[i];
+            k=i;
+        &#125;
+    &#125;
+    swap(p[k],p[0]);
+    sort(p+1,p+n,cmp);
+    s[0]=p[0],s[1]=p[1];
+    top=1;
+    for(re int i=2;i&lt;n;i++)&#123;
+        while(top&amp;&amp;compare(s[top-1],p[i],s[top])&gt;=0)top--;
+        s[++top]=p[i];
+    &#125;
+&#125;
+
+inline ll dis(node a,node b)&#123;
+    return 1ll*(a.x-b.x)*(a.x-b.x)+1ll*(a.y-b.y)*(a.y-b.y);
+&#125;
+
+ll getmax()&#123;
+    ll tmp=0;
+    if(top==1)&#123;
+        return dis(s[0],s[1]);
+    &#125;
+    s[++top]=s[0];
+    int j=2;
+    for(re int i=0;i&lt;top;i++)&#123;
+        while(compare(s[i],s[i+1],s[j])&lt;compare(s[i],s[i+1],s[j+1]))&#123;
+            j=(j+1)%top;
+        &#125;
+        tmp=max(tmp,max(dis(s[i],s[j]),dis(s[i+1],s[j])));
+    &#125;
+    return tmp;
+&#125;
+
+inline int read()&#123;
+    int x=0,f=1;char ch=getchar();
+    while(!isdigit(ch))&#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
+    while(isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
+    return x*f;
+&#125;
+
+int main()&#123;
+#ifdef LawrenceSivan
+    freopen(&quot;aa.in&quot;,&quot;r&quot;,stdin);
+    freopen(&quot;aa.out&quot;,&quot;w&quot;,stdout);
+#endif
+
+    n=read();
+    for(re int i=0;i&lt;n;i++)&#123;
+        p[i].x=read();p[i].y=read();
+    &#125;
+    
+    find();
+    ans=getmax();
+    
+    printf(&quot;%lld\n&quot;,ans);
+
+    return 0;
+&#125;
+</code></pre>
+<h3 id="闵可夫斯基和"><a href="#闵可夫斯基和" class="headerlink" title="闵可夫斯基和:"></a>闵可夫斯基和:</h3><h4 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h4><p>闵可夫斯基和 $(Minkowski\ sum)$是两个欧几里得空间的点集的和，也称为这两个空间的膨胀集，以德国数学家闵可夫斯基命名。点集A与B的闵可夫斯基和被定义为：</p>
+<p>$A+B={ a+b|a∈A,b∈B}$</p>
+<p>若推广至流形的连续集，闵可夫斯基和从几何上的直观体现即是A集合沿B的边际连续运动一周扫过的区域与B集合本身的并集，也可以是B沿着A的边界连续运动扫过区域与A自身的并集。</p>
+<p><img src="https://i.loli.net/2021/06/02/1A3inyQOSWXvJHC.png" alt="w1jracm7.png"></p>
+<h4 id="求法："><a href="#求法：" class="headerlink" title="求法："></a>求法：</h4><p>通过几何直观体现我们可以发现，其实闵可夫斯基和上的每一个边都是由原来的凸包平移得来的。于是我们的闵可夫斯基和其实就是要合并两个凸包。</p>
+<p>针对其中任意一个凸包，首先极角已经是有序的了，于是在合并过程中，我们只需要进行归并排序，将两个凸包进行合并就可以了。</p>
+<p>例题：<a href="https://www.luogu.com.cn/problem/P4557">P4557 [JSOI2018]战争</a></p>
+<p>题意：给出两个点集A,B，以及q次询问。对于每次询问，给出一个向量，然后点集B向向量平移，若平移后的点集A与点集B构成的两个多边形存在交点则输出1，否则输出0。</p>
+<p>通过读题我们可以知道，如果平移其中一个凸包后与另一个凸包有交点，那么一定满足：$a∈A,b∈B$,若移动向量为$c$,则存在$b+c=a$,移项得到$c=a-b$,,于是我们可以构造出一个闵可夫斯基和$C={ a+(-b)}$，之后我们只需要判断移动向量是否在我们构造的$C$中就可以了。</p>
+<h5 id="判断向量是否在凸包内："><a href="#判断向量是否在凸包内：" class="headerlink" title="判断向量是否在凸包内："></a>判断向量是否在凸包内：</h5><p>判断方法：首先判断和边界的关系，之后找到与其极角相邻的两点，凭此判断即可。</p>
+<p><strong>需要注意的是，我们的原点$(0,0)$是A[1]</strong></p>
+<pre><code class="cpp">ll inside(node a)&#123;
+    if(a*A[1]&gt;0||A[tot]*a&gt;0) return 0;
+    ll pos=lower_bound(A+1,A+tot+1,a,cmp2)-A-1;
+    return (a-A[pos])*(A[pos%tot+1]-A[pos])&lt;=0;
+&#125;
+</code></pre>
+<h5 id="求凸包："><a href="#求凸包：" class="headerlink" title="求凸包："></a>求凸包：</h5><pre><code class="cpp">inline void convex(node *B,ll &amp;n)&#123;
+    sort(B+1,B+1+n,cmp1);
+    p=B[1];
+    st[top=1]=1;
+    for(re ll i=1;i&lt;=n;i++)&#123;
+        B[i]=B[i]-p;
+    &#125;
+    sort(B+2,B+1+n,cmp2);
+    for(re ll i=2;i&lt;=n;i++)&#123;
+        while(top&gt;1&amp;&amp;(B[i]-B[st[top-1]])*(B[st[top]]-B[st[top-1]])&gt;=0)top--;
+        st[++top]=i;
+    &#125;
+    for(re ll i=1;i&lt;=top;i++)&#123;
+        B[i]=B[st[i]]+p;
+    &#125;
+    n=top,B[n+1]=B[1];
+&#125;
+</code></pre>
+<h5 id="合并两个凸包："><a href="#合并两个凸包：" class="headerlink" title="合并两个凸包："></a>合并两个凸包：</h5><pre><code class="cpp">inline void Minkowski()&#123;
+    for(re ll i=1;i&lt;n;i++)&#123;
+        s1[i]=C1[i+1]-C1[i];
+        s1[n]=C1[1]-C1[n];
+    &#125;
+    for(re ll i=1;i&lt;m;i++)&#123;
+        s2[i]=C2[i+1]-C2[i];
+        s2[m]=C2[1]-C2[m];
+    &#125;
+    A[tot=1]=C1[1]+C2[1];
+    ll cnt1=1,cnt2=1;
+    while(cnt1&lt;=n&amp;&amp;cnt2&lt;=m)++tot,A[tot]=A[tot-1]+(s1[cnt1]*s2[cnt2]&gt;=0?s1[cnt1++]:s2[cnt2++]);
+    while(cnt1&lt;=n)++tot,A[tot]=A[tot-1]+s1[cnt1++];
+    while(cnt2&lt;=m)++tot,A[tot]=A[tot-1]+s2[cnt2++];
+&#125;
+</code></pre>
+<h4 id="CODE"><a href="#CODE" class="headerlink" title="CODE:"></a>CODE:</h4><pre><code class="cpp">//#define LawrenceSivan
+
+#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+typedef long long ll;
+typedef unsigned long long ull;
+#define INF 0x3f3f3f3f
+#define re register
+const int maxn=1e5+5;
+const int maxm=1;
+
+ll n,m,q;
+ll st[maxn],top=1,tot;
+
+
+struct node&#123;
+    ll x,y;
+    node operator - (node A) &#123;return (node)&#123;x-A.x,y-A.y&#125;;&#125;
+    node operator + (node A) &#123;return (node)&#123;x+A.x,y+A.y&#125;;&#125;
+    ll operator * (node A) const &#123;return x*A.y-y*A.x;&#125;//vector_product
+    ll len() const &#123;return x*x+y*y;&#125;
+&#125;s1[maxn],s2[maxn],A[maxn],C1[maxn],C2[maxn],p;
+
+inline bool cmp1(node A,node B)&#123;
+    return A.y&lt;B.y||(A.y==B.y&amp;&amp;A.x&lt;B.x);
+&#125;
+inline bool cmp2(node A,node B)&#123;
+    return A*B&gt;0||(A*B==0&amp;&amp;A.len()&lt;B.len());
+&#125;
+
+inline void convex(node *B,ll &amp;n)&#123;
+    sort(B+1,B+1+n,cmp1);
+    p=B[1];
+    st[top=1]=1;
+    for(re ll i=1;i&lt;=n;i++)&#123;
+        B[i]=B[i]-p;
+    &#125;
+    sort(B+2,B+1+n,cmp2);
+    for(re ll i=2;i&lt;=n;i++)&#123;
+        while(top&gt;1&amp;&amp;(B[i]-B[st[top-1]])*(B[st[top]]-B[st[top-1]])&gt;=0)top--;
+        st[++top]=i;
+    &#125;
+    for(re ll i=1;i&lt;=top;i++)&#123;
+        B[i]=B[st[i]]+p;
+    &#125;
+    n=top,B[n+1]=B[1];
+&#125;
+
+inline void Minkowski()&#123;
+    for(re ll i=1;i&lt;n;i++)&#123;
+        s1[i]=C1[i+1]-C1[i];
+        s1[n]=C1[1]-C1[n];
+    &#125;
+    for(re ll i=1;i&lt;m;i++)&#123;
+        s2[i]=C2[i+1]-C2[i];
+        s2[m]=C2[1]-C2[m];
+    &#125;
+    A[tot=1]=C1[1]+C2[1];
+    ll cnt1=1,cnt2=1;
+    while(cnt1&lt;=n&amp;&amp;cnt2&lt;=m)++tot,A[tot]=A[tot-1]+(s1[cnt1]*s2[cnt2]&gt;=0?s1[cnt1++]:s2[cnt2++]);
+    while(cnt1&lt;=n)++tot,A[tot]=A[tot-1]+s1[cnt1++];
+    while(cnt2&lt;=m)++tot,A[tot]=A[tot-1]+s2[cnt2++];
+&#125;
+
+ll inside(node a)&#123;
+    if(a*A[1]&gt;0||A[tot]*a&gt;0) return 0;
+    ll pos=lower_bound(A+1,A+tot+1,a,cmp2)-A-1;
+    return (a-A[pos])*(A[pos%tot+1]-A[pos])&lt;=0;
+&#125;
+
+inline ll read()&#123;
+    ll x=0, f=1;char ch=getchar();
+    while (!isdigit(ch)) &#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
+    while (isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
+    return x*f;
+&#125;
+
+int main() &#123;
+#ifdef LawrenceSivan
+    freopen(&quot;aa.in&quot;, &quot;r&quot;, stdin);
+    freopen(&quot;aa.out&quot;, &quot;w&quot;, stdout);
+#endif
+    n=read();m=read();q=read();
+    
+    for(re ll i=1;i&lt;=n;i++)&#123;
+        C1[i].x=read();C1[i].y=read();
+    &#125;
+    convex(C1,n);
+    
+    for(re ll i=1;i&lt;=m;i++)&#123;
+        C2[i].x=-read();C2[i].y=-read();
+    &#125;
+    convex(C2,m);
+    
+    Minkowski();
+    
+    convex(A,tot);
+    
+    p=A[1];
+    for(re ll i=tot;i&gt;=1;i--)A[i]=A[i]-A[1];
+    
+    while(q--)&#123;
+        A[0].x=read();A[0].y=read();
+        printf(&quot;%lld\n&quot;,inside(A[0]-p));
+        
+    &#125;
+
+    return 0;
+&#125;
+</code></pre>
+]]></content>
+  </entry>
+  <entry>
     <title>莫队全家桶</title>
     <url>/2021/04/22/%E8%8E%AB%E9%98%9F%E5%85%A8%E5%AE%B6%E6%A1%B6/</url>
     <content><![CDATA[<p><strong>今天学习了莫队</strong><br><del>实在是太有魅力了</del></p>
@@ -10930,340 +11264,6 @@ int main() &#123;
       <categories>
         <category>资源</category>
       </categories>
-  </entry>
-  <entry>
-    <title>计算几何小结</title>
-    <url>/2021/04/29/%E8%AE%A1%E7%AE%97%E5%87%A0%E4%BD%95%E5%B0%8F%E7%BB%93/</url>
-    <content><![CDATA[<h1 id="计算几何小结"><a href="#计算几何小结" class="headerlink" title="计算几何小结"></a>计算几何小结</h1><h2 id="向量线段相关"><a href="#向量线段相关" class="headerlink" title="向量线段相关"></a>向量线段相关</h2><h3 id="点积："><a href="#点积：" class="headerlink" title="点积："></a>点积：</h3><p>$a.x * b.x+a.y*b.y$</p>
-<h3 id="叉积："><a href="#叉积：" class="headerlink" title="叉积："></a>叉积：</h3><p>$a.x<em>b.y-a.y</em>b.x$</p>
-<p><img src="https://i.loli.net/2021/06/02/psAiKfeI5baqoLY.png" alt="35txwufh.png"></p>
-<h3 id="转角公式："><a href="#转角公式：" class="headerlink" title="转角公式："></a>转角公式：</h3><p>逆时针旋转角度$B$</p>
-<p>原：$(cosAr,sinAr)$</p>
-<p>现：$(cos(A+B)r,sin(A+B)r)=((cosAcosB-sinAsinB)r,(sinAcosB+cosAsinB)r)$</p>
-<p>即：$(x,y)-&gt;(xcosB-ysinB,xsinB+ycosB)$</p>
-<h3 id="极角排序："><a href="#极角排序：" class="headerlink" title="极角排序："></a>极角排序：</h3><p>两种方法：</p>
-<h4 id="方法一：-atan2"><a href="#方法一：-atan2" class="headerlink" title="方法一：$atan2()$"></a>方法一：$atan2()$</h4><p>这是一个给定三角形对边和邻边算角的函数，在$cmath$库中<br>对每个向量求$angle=atan2(a.y,a.x)$后直接排序即可</p>
-<h4 id="方法二：叉积"><a href="#方法二：叉积" class="headerlink" title="方法二：叉积"></a>方法二：叉积</h4><p>叉积的正负可以判断左右关系，所以在最大跨角不超过180度的时候可以非常好地实现，否则有可能随机一个起点绕好几圈（我比较倾向于这个）</p>
-<h3 id="两直线夹角："><a href="#两直线夹角：" class="headerlink" title="两直线夹角："></a>两直线夹角：</h3><p>若两个向量都是从原点出发，则可以很方便地用<br>$\theta=atan2(x \times y,x*y)$</p>
-<p>叉积是平行四边形，底乘高；点积是底乘投影。<br>更特殊点，该夹角是有向夹角，从$x$向量旋转到$y$，逆时针是正角、顺时针是负角。</p>
-<h3 id="两直线交点："><a href="#两直线交点：" class="headerlink" title="两直线交点："></a>两直线交点：</h3><p>面积比-&gt;线段比-&gt;定比分点</p>
-<pre><code class="cpp">node crosss(node a1,node a2,node b1,node b2)&#123;
-    node a=a2-a1,b=b2-b1,c=b1-a1;
-    if(fabs(b*a)&lt;1e-12) return (node)&#123;-1e9,-1e9&#125;;//平行
-    double t=(b*c)/(b*a);
-    return a1+(a^t);
-&#125;
-</code></pre>
-<p><img src="https://i.loli.net/2021/06/02/Zpez9UratE12uVH.png" alt="3o8fi5tk.png"></p>
-<h3 id="判断两直线是否相交："><a href="#判断两直线是否相交：" class="headerlink" title="判断两直线是否相交："></a>判断两直线是否相交：</h3><p>$a1,a2,b1,b2$为两条直线的两个端点<br>如果满足$(b1-a1)×(b1-a2)$和$(b2-a1)×(b2-a2)$不同号，并且$(a1-b1)×(a1-b2)$和$(a2-b1)×(a2-b2)$不同号，则两线段相交，叫跨立实验。</p>
-<h2 id="多边形相关："><a href="#多边形相关：" class="headerlink" title="多边形相关："></a>多边形相关：</h2><h3 id="凸包："><a href="#凸包：" class="headerlink" title="凸包："></a>凸包：</h3><p>找到最下的点设为原点，将剩下的点用叉积极角排序<br>用单调栈维护凸包，当叉积为非负时需要弹栈</p>
-<pre><code class="cpp">struct node&#123;
-    double x,y;
-    inline bool operator &lt; (node a)const&#123;return x&lt;a.x||(x==a.x&amp;&amp;y&lt;a.y);&#125;
-&#125;p[maxn],st[maxn];
-
-inline double v_pro(node a,node b,node c)&#123;
-    return (b.x-a.x)*(c.y-a.y)-(c.x-a.x)*(b.y-a.y);
-&#125;
-
-int main()&#123;
-    sort(p+1,p+1+n);
-    
-    st[0]=p[1];
-    for(re int i=1;i&lt;=n;i++)&#123;
-        while(top&amp;&amp;v_pro(st[top],st[top-1],p[i])&gt;=0)--top;
-        st[++top]=p[i];
-    &#125;
-    
-       st[top=0]=p[n];
-    for(re int i=n-1;i;i--)&#123;
-        while(top&amp;&amp;v_pro(st[top],st[top-1],p[i])&gt;=0)--top;
-        st[++top]=p[i];    
-    &#125; 
-&#125;
-</code></pre>
-<h3 id="判断点是否在多边形内："><a href="#判断点是否在多边形内：" class="headerlink" title="判断点是否在多边形内："></a>判断点是否在多边形内：</h3><p>从该点向右引射线，与多边形交奇数次即在其内。<br>顺时针$+1$，逆时针$-1$，注意与顶点重合的情况</p>
-<p>$CF375C\ \ \ \ \  Circling Round Treasures$</p>
-<h3 id="判断点是否在凸包内："><a href="#判断点是否在凸包内：" class="headerlink" title="判断点是否在凸包内："></a>判断点是否在凸包内：</h3><p>先判定和边界的关系<br>然后找到与其极角相邻的两点，凭此判断<br>须保证$A[1]=(0,0)$</p>
-<pre><code class="cpp">ll inside(node a)&#123;
-    if(a*A[1]&gt;0||A[tot]*a&gt;0) return 0;
-    ll pos=lower_bound(A+1,A+tot+1,a,cmp2)-A-1;
-    return (a-A[pos])*(A[pos%tot+1]-A[pos])&lt;=0;
-&#125;
-</code></pre>
-<h3 id="求多边形面积："><a href="#求多边形面积：" class="headerlink" title="求多边形面积："></a>求多边形面积：</h3><p>逆时针极角排序后直接用叉积求</p>
-<pre><code class="cpp">double CalcS()&#123;
-    double res=0;
-    for(int i=2;i&lt;node;i++) res+=(A[i]-A[1])*(A[i+1]-A[1]);
-    return res/2;
-&#125;
-</code></pre>
-<h3 id="三角形重心："><a href="#三角形重心：" class="headerlink" title="三角形重心："></a>三角形重心：</h3><p>三点各坐标的平均值$(\frac{x_1+x_2+x_3}{3},\frac{y_1+y_2+y_3}{3})$</p>
-<h2 id="算法："><a href="#算法：" class="headerlink" title="算法："></a>算法：</h2><h3 id="旋转卡壳："><a href="#旋转卡壳：" class="headerlink" title="旋转卡壳："></a>旋转卡壳：</h3><p>利用凸包上一些奇妙的单调性，求解</p>
-<p>多边形直径</p>
-<p>多边形宽度</p>
-<p>最小面积矩形覆盖</p>
-<p>等等</p>
-<pre><code class="cpp">#include&lt;bits/stdc++.h&gt;
-using namespace std;
-
-typedef long long ll;
-#define re register
-const int maxn=5e4+5;
-#define INF 0x3f3f3f3f3f3f3f3f
-
-struct node&#123;
-    int x,y;
-    
-&#125;p[maxn],p0,s[maxn];
-
-int n,top;
-
-ll ans=INF;
-
-inline bool cmp(node a,node b)&#123;
-    double A=atan2(a.y-p0.y,a.x-p0.x);
-    double B=atan2(b.y-p0.y,b.x-p0.x);
-    if(A!=B)return A&lt;B;
-    return a.x&lt;b.x;
-&#125;
-
-inline ll V_pro(int x1,int y1,int x2,int y2)&#123;//Vector product
-    return (1ll*x1*y2-1ll*x2*y1);
-&#125;
-
-inline ll compare(node a,node b,node c)&#123;
-    return V_pro((b.x-a.x),(b.y-a.y),(c.x-a.x),(c.y-a.y));
-&#125;
-
-inline void find()&#123;
-    p0=(node)&#123;INF,INF&#125;;
-    int k=0;
-    for(re int i=0;i&lt;n;i++)&#123;
-        if(p0.y&gt;p[i].y||(p0.y==p[i].y&amp;&amp;p0.x&gt;p[i].x))&#123;
-            p0=p[i];
-            k=i;
-        &#125;
-    &#125;
-    swap(p[k],p[0]);
-    sort(p+1,p+n,cmp);
-    s[0]=p[0],s[1]=p[1];
-    top=1;
-    for(re int i=2;i&lt;n;i++)&#123;
-        while(top&amp;&amp;compare(s[top-1],p[i],s[top])&gt;=0)top--;
-        s[++top]=p[i];
-    &#125;
-&#125;
-
-inline ll dis(node a,node b)&#123;
-    return 1ll*(a.x-b.x)*(a.x-b.x)+1ll*(a.y-b.y)*(a.y-b.y);
-&#125;
-
-ll getmax()&#123;
-    ll tmp=0;
-    if(top==1)&#123;
-        return dis(s[0],s[1]);
-    &#125;
-    s[++top]=s[0];
-    int j=2;
-    for(re int i=0;i&lt;top;i++)&#123;
-        while(compare(s[i],s[i+1],s[j])&lt;compare(s[i],s[i+1],s[j+1]))&#123;
-            j=(j+1)%top;
-        &#125;
-        tmp=max(tmp,max(dis(s[i],s[j]),dis(s[i+1],s[j])));
-    &#125;
-    return tmp;
-&#125;
-
-inline int read()&#123;
-    int x=0,f=1;char ch=getchar();
-    while(!isdigit(ch))&#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
-    while(isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
-    return x*f;
-&#125;
-
-int main()&#123;
-#ifdef LawrenceSivan
-    freopen(&quot;aa.in&quot;,&quot;r&quot;,stdin);
-    freopen(&quot;aa.out&quot;,&quot;w&quot;,stdout);
-#endif
-
-    n=read();
-    for(re int i=0;i&lt;n;i++)&#123;
-        p[i].x=read();p[i].y=read();
-    &#125;
-    
-    find();
-    ans=getmax();
-    
-    printf(&quot;%lld\n&quot;,ans);
-
-    return 0;
-&#125;
-</code></pre>
-<h3 id="闵可夫斯基和"><a href="#闵可夫斯基和" class="headerlink" title="闵可夫斯基和:"></a>闵可夫斯基和:</h3><h4 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h4><p>闵可夫斯基和 $(Minkowski\ sum)$是两个欧几里得空间的点集的和，也称为这两个空间的膨胀集，以德国数学家闵可夫斯基命名。点集A与B的闵可夫斯基和被定义为：</p>
-<p>$A+B={ a+b|a∈A,b∈B}$</p>
-<p>若推广至流形的连续集，闵可夫斯基和从几何上的直观体现即是A集合沿B的边际连续运动一周扫过的区域与B集合本身的并集，也可以是B沿着A的边界连续运动扫过区域与A自身的并集。</p>
-<p><img src="https://i.loli.net/2021/06/02/1A3inyQOSWXvJHC.png" alt="w1jracm7.png"></p>
-<h4 id="求法："><a href="#求法：" class="headerlink" title="求法："></a>求法：</h4><p>通过几何直观体现我们可以发现，其实闵可夫斯基和上的每一个边都是由原来的凸包平移得来的。于是我们的闵可夫斯基和其实就是要合并两个凸包。</p>
-<p>针对其中任意一个凸包，首先极角已经是有序的了，于是在合并过程中，我们只需要进行归并排序，将两个凸包进行合并就可以了。</p>
-<p>例题：<a href="https://www.luogu.com.cn/problem/P4557">P4557 [JSOI2018]战争</a></p>
-<p>题意：给出两个点集A,B，以及q次询问。对于每次询问，给出一个向量，然后点集B向向量平移，若平移后的点集A与点集B构成的两个多边形存在交点则输出1，否则输出0。</p>
-<p>通过读题我们可以知道，如果平移其中一个凸包后与另一个凸包有交点，那么一定满足：$a∈A,b∈B$,若移动向量为$c$,则存在$b+c=a$,移项得到$c=a-b$,,于是我们可以构造出一个闵可夫斯基和$C={ a+(-b)}$，之后我们只需要判断移动向量是否在我们构造的$C$中就可以了。</p>
-<h5 id="判断向量是否在凸包内："><a href="#判断向量是否在凸包内：" class="headerlink" title="判断向量是否在凸包内："></a>判断向量是否在凸包内：</h5><p>判断方法：首先判断和边界的关系，之后找到与其极角相邻的两点，凭此判断即可。</p>
-<p><strong>需要注意的是，我们的原点$(0,0)$是A[1]</strong></p>
-<pre><code class="cpp">ll inside(node a)&#123;
-    if(a*A[1]&gt;0||A[tot]*a&gt;0) return 0;
-    ll pos=lower_bound(A+1,A+tot+1,a,cmp2)-A-1;
-    return (a-A[pos])*(A[pos%tot+1]-A[pos])&lt;=0;
-&#125;
-</code></pre>
-<h5 id="求凸包："><a href="#求凸包：" class="headerlink" title="求凸包："></a>求凸包：</h5><pre><code class="cpp">inline void convex(node *B,ll &amp;n)&#123;
-    sort(B+1,B+1+n,cmp1);
-    p=B[1];
-    st[top=1]=1;
-    for(re ll i=1;i&lt;=n;i++)&#123;
-        B[i]=B[i]-p;
-    &#125;
-    sort(B+2,B+1+n,cmp2);
-    for(re ll i=2;i&lt;=n;i++)&#123;
-        while(top&gt;1&amp;&amp;(B[i]-B[st[top-1]])*(B[st[top]]-B[st[top-1]])&gt;=0)top--;
-        st[++top]=i;
-    &#125;
-    for(re ll i=1;i&lt;=top;i++)&#123;
-        B[i]=B[st[i]]+p;
-    &#125;
-    n=top,B[n+1]=B[1];
-&#125;
-</code></pre>
-<h5 id="合并两个凸包："><a href="#合并两个凸包：" class="headerlink" title="合并两个凸包："></a>合并两个凸包：</h5><pre><code class="cpp">inline void Minkowski()&#123;
-    for(re ll i=1;i&lt;n;i++)&#123;
-        s1[i]=C1[i+1]-C1[i];
-        s1[n]=C1[1]-C1[n];
-    &#125;
-    for(re ll i=1;i&lt;m;i++)&#123;
-        s2[i]=C2[i+1]-C2[i];
-        s2[m]=C2[1]-C2[m];
-    &#125;
-    A[tot=1]=C1[1]+C2[1];
-    ll cnt1=1,cnt2=1;
-    while(cnt1&lt;=n&amp;&amp;cnt2&lt;=m)++tot,A[tot]=A[tot-1]+(s1[cnt1]*s2[cnt2]&gt;=0?s1[cnt1++]:s2[cnt2++]);
-    while(cnt1&lt;=n)++tot,A[tot]=A[tot-1]+s1[cnt1++];
-    while(cnt2&lt;=m)++tot,A[tot]=A[tot-1]+s2[cnt2++];
-&#125;
-</code></pre>
-<h4 id="CODE"><a href="#CODE" class="headerlink" title="CODE:"></a>CODE:</h4><pre><code class="cpp">//#define LawrenceSivan
-
-#include &lt;bits/stdc++.h&gt;
-using namespace std;
-
-typedef long long ll;
-typedef unsigned long long ull;
-#define INF 0x3f3f3f3f
-#define re register
-const int maxn=1e5+5;
-const int maxm=1;
-
-ll n,m,q;
-ll st[maxn],top=1,tot;
-
-
-struct node&#123;
-    ll x,y;
-    node operator - (node A) &#123;return (node)&#123;x-A.x,y-A.y&#125;;&#125;
-    node operator + (node A) &#123;return (node)&#123;x+A.x,y+A.y&#125;;&#125;
-    ll operator * (node A) const &#123;return x*A.y-y*A.x;&#125;//vector_product
-    ll len() const &#123;return x*x+y*y;&#125;
-&#125;s1[maxn],s2[maxn],A[maxn],C1[maxn],C2[maxn],p;
-
-inline bool cmp1(node A,node B)&#123;
-    return A.y&lt;B.y||(A.y==B.y&amp;&amp;A.x&lt;B.x);
-&#125;
-inline bool cmp2(node A,node B)&#123;
-    return A*B&gt;0||(A*B==0&amp;&amp;A.len()&lt;B.len());
-&#125;
-
-inline void convex(node *B,ll &amp;n)&#123;
-    sort(B+1,B+1+n,cmp1);
-    p=B[1];
-    st[top=1]=1;
-    for(re ll i=1;i&lt;=n;i++)&#123;
-        B[i]=B[i]-p;
-    &#125;
-    sort(B+2,B+1+n,cmp2);
-    for(re ll i=2;i&lt;=n;i++)&#123;
-        while(top&gt;1&amp;&amp;(B[i]-B[st[top-1]])*(B[st[top]]-B[st[top-1]])&gt;=0)top--;
-        st[++top]=i;
-    &#125;
-    for(re ll i=1;i&lt;=top;i++)&#123;
-        B[i]=B[st[i]]+p;
-    &#125;
-    n=top,B[n+1]=B[1];
-&#125;
-
-inline void Minkowski()&#123;
-    for(re ll i=1;i&lt;n;i++)&#123;
-        s1[i]=C1[i+1]-C1[i];
-        s1[n]=C1[1]-C1[n];
-    &#125;
-    for(re ll i=1;i&lt;m;i++)&#123;
-        s2[i]=C2[i+1]-C2[i];
-        s2[m]=C2[1]-C2[m];
-    &#125;
-    A[tot=1]=C1[1]+C2[1];
-    ll cnt1=1,cnt2=1;
-    while(cnt1&lt;=n&amp;&amp;cnt2&lt;=m)++tot,A[tot]=A[tot-1]+(s1[cnt1]*s2[cnt2]&gt;=0?s1[cnt1++]:s2[cnt2++]);
-    while(cnt1&lt;=n)++tot,A[tot]=A[tot-1]+s1[cnt1++];
-    while(cnt2&lt;=m)++tot,A[tot]=A[tot-1]+s2[cnt2++];
-&#125;
-
-ll inside(node a)&#123;
-    if(a*A[1]&gt;0||A[tot]*a&gt;0) return 0;
-    ll pos=lower_bound(A+1,A+tot+1,a,cmp2)-A-1;
-    return (a-A[pos])*(A[pos%tot+1]-A[pos])&lt;=0;
-&#125;
-
-inline ll read()&#123;
-    ll x=0, f=1;char ch=getchar();
-    while (!isdigit(ch)) &#123;if(ch==&#39;-&#39;)f=-1;ch=getchar();&#125;
-    while (isdigit(ch))&#123;x=x*10+(ch^48);ch=getchar();&#125;
-    return x*f;
-&#125;
-
-int main() &#123;
-#ifdef LawrenceSivan
-    freopen(&quot;aa.in&quot;, &quot;r&quot;, stdin);
-    freopen(&quot;aa.out&quot;, &quot;w&quot;, stdout);
-#endif
-    n=read();m=read();q=read();
-    
-    for(re ll i=1;i&lt;=n;i++)&#123;
-        C1[i].x=read();C1[i].y=read();
-    &#125;
-    convex(C1,n);
-    
-    for(re ll i=1;i&lt;=m;i++)&#123;
-        C2[i].x=-read();C2[i].y=-read();
-    &#125;
-    convex(C2,m);
-    
-    Minkowski();
-    
-    convex(A,tot);
-    
-    p=A[1];
-    for(re ll i=tot;i&gt;=1;i--)A[i]=A[i]-A[1];
-    
-    while(q--)&#123;
-        A[0].x=read();A[0].y=read();
-        printf(&quot;%lld\n&quot;,inside(A[0]-p));
-        
-    &#125;
-
-    return 0;
-&#125;
-</code></pre>
-]]></content>
   </entry>
   <entry>
     <title>转载</title>
