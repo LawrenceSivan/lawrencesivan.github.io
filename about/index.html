@@ -400,6 +400,20 @@ bot_ui_ini()
 
       <!-- .entry-content -->
       
+<div id="vcomments"></div>
+<script>
+  window.onload = function(){
+      var valine = new Valine();
+      valine.init({
+        el: '#vcomments',
+        appId: "dIwCuws5ndk9l6KNX62Yp2v6-gzGzoHsz",
+        appKey: "5KBdadEbfMMamh1KsfIlVDqD",
+        path: window.location.pathname,
+        placeholder: "总之岁月漫长，然而值得等待。"
+      })
+  }
+</script>
+
       <div style="text-align:center; width: 100%" class="social-share share-mobile" data-disabled="diandian, tencent"></div>
       <footer class="post-footer">
         <div class="post-lincenses"><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="nofollow"><i class="fa fa-creative-commons" aria-hidden="true"></i> 知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a></div>
