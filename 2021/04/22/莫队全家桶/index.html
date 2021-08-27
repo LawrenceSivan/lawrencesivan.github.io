@@ -793,7 +793,7 @@ int main() &#123;
 <h3 id="前置知识-欧拉序"><a href="#前置知识-欧拉序" class="headerlink" title="前置知识 欧拉序"></a>前置知识 欧拉序</h3><p>众所周知，我们对树的遍历通常是两种序。<del>如果不知道那你现在知道了</del></p>
 <p>分别是 $DFS$ 序和欧拉序。首先来区别一下这两种序。</p>
 <h4 id="DFS序"><a href="#DFS序" class="headerlink" title="DFS序"></a>DFS序</h4><p>如图，我们的 $dfs$ 一般是这样的</p>
-<p><img src="https://cdn.luogu.com.cn/upload/image_hosting/xuar7g8t.png" alt="dfs"></p>
+<p><img src="https://i.loli.net/2021/08/27/cLCYfWh8tNX1xb7.png" alt="dfs"></p>
 <p>这张图的dfs序为A-B-D-E-G-C-F-H</p>
 <p>好 $DFS$ 就说完了。</p>
 <p><del>什么？？这就说完了？</del></p>
@@ -801,7 +801,7 @@ int main() &#123;
 <p>接下来进入正题，欧拉序！</p>
 <h4 id="欧拉序"><a href="#欧拉序" class="headerlink" title="欧拉序"></a>欧拉序</h4><p>欧拉序<strong>就是从根结点出发，按dfs的顺序在绕回原点所经过所有点的顺序</strong></p>
 <p>所以对于这棵树，他的欧拉序就是这样的：</p>
-<p><img src="https://cdn.luogu.com.cn/upload/image_hosting/bt9j4wzf.png" alt="欧拉序"></p>
+<p><img src="https://i.loli.net/2021/08/27/Mmb6Pj3ZfkFgtD7.png" alt="img"></p>
 <p>欧拉序为A-B-D-D-E-G-G-E-B-C-F-H-H-F-C-A</p>
 <p>其实欧拉序是有两种的，一种是记录入度个，另一个是入度和出度都记录。</p>
 <p>树上莫队用的是第二种，也就是我们上面说到的这种。</p>
@@ -814,14 +814,14 @@ int main() &#123;
 <h4 id="情况一："><a href="#情况一：" class="headerlink" title="情况一："></a>情况一：</h4><p>如果 $LCA(x,y)=x$ ，这显然说明 $x$,$y$ 在同一条路径上。</p>
 <p>于是我们取出 $st[x]$ 到 $st[y]$ 这一段区间，有的点会出现两次，有的点出现一次，应该明确出现两次的点对答案是没有贡献的，因为它进入了递归又在回溯时出去了，这证明这条路径一定是不经过这个子树的，于是我们只需要统计路径上出现两次的点。</p>
 <p>我们拿上面的图来举例子：</p>
-<p><img src="https://cdn.luogu.com.cn/upload/image_hosting/bt9j4wzf.png" alt="欧拉序"></p>
+<p><img src="https://i.loli.net/2021/08/27/Mmb6Pj3ZfkFgtD7.png" alt="欧拉序"></p>
 <p>如果两个点分别是 $A$,$G$ ,那么 $st[A]-st[G]$ 显然是 $A-B-D-D-E-G$</p>
 <p>出现两次的点是 $D$。</p>
 <p>于是我们发现我们的路径 $A-G$ 上恰好是没有点 $D$ 的，于是……</p>
 <p>懂了吧</p>
 <h4 id="情况二："><a href="#情况二：" class="headerlink" title="情况二："></a>情况二：</h4><p>如果 $LCA(x,y) \ne x$ ，这显然说明 $x$,$y$ 在两棵不同的子树内。</p>
 <p>于是我们取出 $ed[x]-st[y]$</p>
-<p><img src="https://cdn.luogu.com.cn/upload/image_hosting/bt9j4wzf.png" alt="欧拉序"></p>
+<p><img src="https://i.loli.net/2021/08/27/Mmb6Pj3ZfkFgtD7.png" alt="欧拉序"></p>
 <p>依然对于这张图，我们举例子：</p>
 <p>如果两个点分别是 $D$,$C$</p>
 <p>于是 $ed[D]-st[C]$ 显然就是：</p>

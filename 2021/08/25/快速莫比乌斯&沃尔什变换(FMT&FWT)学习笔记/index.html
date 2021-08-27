@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
   
-  <title itemprop="name">LawrenceSivan</title>
+  <title itemprop="name">快速莫比乌斯&amp;沃尔什变换(FMT&amp;FWT)学习笔记 | LawrenceSivan</title>
   
     <link rel="shortcut icon" href="/images/favicon.ico">
   
@@ -354,227 +354,173 @@
   </div>
 </header>
 
-      <div class="blank" style="padding-top: 0px;"></div>
+      <link rel="stylesheet" type="text/css" href="/css/sharejs.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.css">
+<div class="pattern-center-blank"></div>
+
+  <div class="pattern-center single-center">
+    <!-- 有配图默认渲染第一张 -->
+    <div class="pattern-attachment-img lazyload" style="background-image: url(https://i.loli.net/2021/08/25/Vk1wgbxQWcTPhJB.jpg);" src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/loader/orange.progress-bar-stripe-loader.svg" data-src="https://i.loli.net/2021/08/25/Vk1wgbxQWcTPhJB.jpg">
+    </div>
+    <header class="pattern-header single-header">
+      <h1 class="entry-title">
+      快速莫比乌斯&沃尔什变换(FMT&FWT)学习笔记</h1>
+      <p class="entry-census">
+        <span>
+          <a href="https://lawrencesivan.github.io/">
+            <img src="/images/avatar.jpg">
+          </a>
+        </span>
+        <span>
+          <a href="https://lawrencesivan.github.io/">LawrenceSivan</a>
+        </span>
+        <span class="bull">
+        ·</span>
+        2021-8-25<span class="bull">
+        ·</span>
+      <span id="busuanzi_value_page_pv"></span>次阅读</p>
+    </header>
+  </div>
+
 <div id="content" class="site-content">
-  
-  <div class="notice" style="margin-top:60px">
-    <i class="iconfont icon-notification">
-    </i>
-    <div class="notice-content">Github博客搭建完成！，文章将同步更新至洛谷，Cnblogs和Github。</div>
-  </div>
-  
-  <div class="top-feature-row">
-  <h1 class="fes-title" style="font-family: 'Ubuntu', sans-serif;">
-  <i class="fa fa-anchor" aria-hidden="true">
-  </i>
-  START:DASH!!</h1>
-  
-  <div class="top-feature-v2">
-    <div class="the-feature square from_left_and_right">
-      <a href="/theme-sakura/" target="_blank">
-        <div class="img">
-          <img src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/startdash/sakura.md.png">
-        </div>
-        <div class="info">
-          <h3>Sakura</h3>
-          <p>本站 hexo 主题</p>
-        </div>
-      </a>
-    </div>
-  </div>
-  
-  <div class="top-feature-v2">
-    <div class="the-feature square from_left_and_right">
-      <a href="https://space.bilibili.com/671229125" target="_blank">
-        <div class="img">
-          <img src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/startdash/bilibili.jpg">
-        </div>
-        <div class="info">
-          <h3>Bilibili</h3>
-          <p>博主的b站视频</p>
-        </div>
-      </a>
-    </div>
-  </div>
-  
-</div>
   <div id="primary" class="content-area">
     <main id="main" class="site-main" role="main">
-      <h1 class="main-title" style="font-family: 'Ubuntu', sans-serif;">
-      <i class="fa fa-envira" aria-hidden="true"></i>
-      Discovery</h1>
+      <article id="post-1" class="post-1 post type-post status-publish format-standard has-post-thumbnail hentry category-uncategorized">
+        <div class="toc"></div>
+        <!--<div class="toc-entry-content"><!-- 套嵌目录使用（主要为了支援评论）-->
+        
+        <div class="entry-content">
+          <h1 id="快速莫比乌斯-amp-沃尔什变换-FMT-amp-FWT-学习笔记"><a href="#快速莫比乌斯-amp-沃尔什变换-FMT-amp-FWT-学习笔记" class="headerlink" title="快速莫比乌斯&amp;沃尔什变换(FMT&amp;FWT)学习笔记"></a>快速莫比乌斯&amp;沃尔什变换(FMT&amp;FWT)学习笔记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>就是这个混蛋玩意我学了两个晚上才搞定 /fn</p>
+<p><del>其实是因为一直在摸鱼，导致……</del></p>
+<p>好了于是今晚决定不摸！</p>
+<h2 id="位运算卷积"><a href="#位运算卷积" class="headerlink" title="位运算卷积"></a>位运算卷积</h2><p>之前提到了 FFT（快速傅里叶变换）、NTT（快速数论变换），他们都是对于加法卷积(多项式乘法)的快速变换。</p>
+<p>回忆一下卷积的一般形式是：</p>
+<p>$$\sum\limits_{i\oplus j=k}{A[i]B[j]}$$</p>
+<p>根据上式我们可以给出位运算卷积的定义：</p>
+<p>将第 $i$ 项与第 $j$ 项的乘积贡献到第 $i\oplus j$ 项，其中 $\oplus$ 是一种位运算。</p>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>大致思路与 FFT 一致，首先进行正变换，之后逐位相乘，最后经过逆变换得出答案。</p>
+<h2 id="或卷积（FWT-or）"><a href="#或卷积（FWT-or）" class="headerlink" title="或卷积（FWT_or）"></a>或卷积（FWT_or）</h2><p>要求：</p>
+<p>$$C[i]=\sum\limits_{j|k=i}{A[j]B[k]}$$</p>
+<h3 id="正变换-（FWT）"><a href="#正变换-（FWT）" class="headerlink" title="正变换 （FWT）"></a>正变换 （FWT）</h3><p>有个显然的性质是 $j|i=i,k|i=i \rightarrow(j|k)|i=i$。</p>
+<p>于是可以构造：</p>
+<p>$$FWT[A]<em>i=\sum\limits</em>{j|i=i}{A[j]}$$</p>
+<p>意义是下标的子集对应位置之和。</p>
+<p>$j|i$ 表示 $j$ 是 $i$ 的子集。</p>
+<p>于是有：</p>
+<p>$$FWT[A]\times FWT[B]=\left(\sum\limits_{j|i=i}{A[j]}\right)\left(\sum\limits_{k|i=i}{B[k]}\right)$$</p>
+<p>$$=\sum\limits_{j|i=i}\sum\limits_{k|i=i}{A[j]B[k]}$$</p>
+<p>$$=\sum\limits_{(j|k)|i=i}{A[j]B[k]}$$</p>
+<p>$$=FWT[C]$$</p>
+<p>依照这个思路，我们就完成了正变换。</p>
+<p>直接做显然是 $\mathcal{O(n^2)}$ 的。</p>
+<p>考虑如何快速实现这个过程：</p>
+<p>回忆 FFT 的实现过程，我们通过分治降低了复杂度。</p>
+<p>于是将整个区间分成两部分，进行分治。</p>
+<p>对于一个长度为 $2^n$ 的多项式，我们使用 $A_0$ 表示前 $2^{n-1}$ 项，$A_1$ 表示后 $2^{n-1}$ 项。</p>
+<p>可以发现，对于 $A_0$ ，他的下标最高位一定是 $0$，于是他的子集只能是自己的子集。</p>
+<p>对于 $A_1$ 由于最高位是 $1$，所以它的子集除了包括自己的部分，还要包括 $A_0$ 的部分。</p>
+<p>于是可以写出以下式子：</p>
+<p>$$FWT[A]= \begin{cases}{\text{merge}(FWT[A_0],FWT[A_0]+FWT[A_1]),(n&gt;0)}\{A,(n=0)}\end{cases} $$</p>
+<p>其中， $\text{merge}$ 表示拼接，$+$ 表示对应位置相加。</p>
+<p>这就是分治手段。</p>
+<h3 id="逆变换-IFWT"><a href="#逆变换-IFWT" class="headerlink" title="逆变换 (IFWT)"></a>逆变换 (IFWT)</h3><p>满足 $A=IFWT(FWT(A))$。</p>
+<h4 id="感性理解-amp-做法"><a href="#感性理解-amp-做法" class="headerlink" title="感性理解&amp;做法"></a>感性理解&amp;做法</h4><p>嗯，写这个主要是为了方便 <del>（逃</del></p>
+<p>把正变换的符号换一下就行了。</p>
+<p>由 </p>
+<p>$${\text{merge}(FWT[A_0],FWT[A_0]+FWT[A_1]),(n&gt;0)}$$ </p>
+<p>得：</p>
+<p>$$IFWT(FWT(A))=merge(IFWT(FWT(A_0)),IFWT(FWT(A_1))-IFWT(FWT(A_0)))$$</p>
+<p>简单一点就是：</p>
+<p>$$A=merge(A_0,A_1-A_0)$$</p>
+<p>感性理解就是前缀和与差分的关系。</p>
+<h4 id="理性理解-amp-证明"><a href="#理性理解-amp-证明" class="headerlink" title="理性理解&amp;证明"></a>理性理解&amp;证明</h4><p>证明：</p>
+<p>现在我们已知 $FWT[A]_0,FWT[A]_1$ ，要求出 $A_0,A_1$。</p>
+<p>根据上面提到的 $A_0$ 的子集只包括自己的那一部分，得到：</p>
+<p>$$FWT[A]_0=FWT[A_0]$$</p>
+<p>所以:</p>
+<p>$$A_0=IFWT(FWT(A_0))=IFWT(FWT(A)_0)$$</p>
+<p>依据上面提到的 $A_1$ 还要包括 $A_0$ 的那一部分，得到：</p>
+<p>$$FWT[A]_1=FWT[A_0]+FWT[A_1]$$</p>
+<p>$$FWT[A_1]=FWT[A]_1-FWT[A_0]=FWT[A]_1-FWT[A]_0$$</p>
+<p>所以：</p>
+<p>$$A_1=IFWT(FWT(A_1))=IFWT(FWT[A]_1-FWT[A]_0)$$</p>
+<p>之后合并：</p>
+<p>$$A=merge(IFWT(FWT(A)_0),IFWT(FWT[A]_1-FWT[A]_0))$$</p>
+
+        </div>
+        <!-- .entry-content -->
+        <div style="text-align:center; width: 100%" class="social-share share-mobile" data-disabled="diandian, tencent"></div>
+        <footer class="post-footer">
+          <div class="post-lincenses"><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="nofollow"><i class="fa fa-creative-commons" aria-hidden="true"></i> 知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a></div>
+          <div class="post-tags">
+          </div>
+          <div class="post-share">
+            <div class="social-share sharehidden share-component"></div>
+            <i class="iconfont show-share icon-forward"></i>
+          </div>
+        </footer><!-- .entry-footer -->
+      </article>
+      <!-- #post-## -->
+      <div class="toc" style="background: none;"></div>
+      <section class="post-squares nextprev">
+        
+        
+          
+            <div class="post-nepre full next">
+          
+            <a href="/2021/08/20/%E5%8F%A6%E4%B8%80%E6%96%B9%E9%9D%A2%E7%9A%84%E6%88%91%20and%20something%20to%20say/" rel="next">
+              <div class="background">
+                <img class="lazyload" src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/loader/orange.progress-bar-stripe-loader.svg" data-src="https://i.loli.net/2021/08/20/3bdP2aDWHsFn694.jpg" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;" onerror="imgError(this,3)" src="https://i.loli.net/2021/08/20/3bdP2aDWHsFn694.jpg">
+              </div>
+              <span class="label">
+              Next Post</span>
+              <div class="info">
+                <h3>
+                另一方面的我 and something to say</h3>
+                <hr>
+              </div>
+            </a>
+          </div>
+        
+      </section>
       
-  <!-- 首页默认取最最新文章集 -->
-  
-    
-<article  class="post post-list-thumb post-list-thumb-left"  class="post post-list-thumb" itemscope="" itemtype="https://schema.org/BlogPosting">
+<div id="vcomments"></div>
+<script>
+  window.onload = function(){
+      var valine = new Valine();
+      valine.init({
+        el: '#vcomments',
+        appId: "dIwCuws5ndk9l6KNX62Yp2v6-gzGzoHsz",
+        appKey: "5KBdadEbfMMamh1KsfIlVDqD",
+        path: window.location.pathname,
+        placeholder: "总之岁月漫长，然而值得等待。"
+      })
+  }
+</script>
 
-  <div class="post-thumb">
-    <a href="/2018/05/28/%E5%9B%BE%E9%9B%86/">
-      <img class="lazyload" onerror="imgError(this,3)" src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/loader/orange.progress-bar-stripe-loader.svg" data-src="https://i.loli.net/2021/06/08/3lzhXI5OiGqMREQ.jpg">
-    </a>
-  </div>
-  <div class="post-content-wrap">
-    <div class="post-content">
-      <div class="post-date">
-        <i class="iconfont icon-time">
-        </i>2018-5-28 21:05</div>
-      <a href="/2018/05/28/%E5%9B%BE%E9%9B%86/" class="post-title">
-        <h3>图集</h3>
-      </a>
-      <div class="post-meta">
-        <span><i class="fa fa-tags"></i>
-        
-            <a href="/tags/%E5%9B%BE%E9%9B%86/">图集<em>·</em></a>
-          
-        </span>
-        <span>
-          <i class="iconfont icon-file"></i>
-          
-        </span>
-      </div>
-      <div class="float-content">
-        <p></p>
-        <div class="post-bottom">
-          <a href="/2018/05/28/%E5%9B%BE%E9%9B%86/" class="button-normal">
-            <i class="iconfont icon-caidan"></i>
-          </a>
+      <section class="author-profile">
+        <div class="info" itemprop="author" itemscope="" itemtype="https://schema.org/Person">
+          <a href="https://lawrencesivan.github.io/" class="profile gravatar"><img src="/images/avatar.jpg" itemprop="image" alt="LawrenceSivan" height="70" width="70"></a>
+          <div class="meta">
+            <span class="title">Author</span>
+            <h3 itemprop="name">
+            <a href="https://lawrencesivan.github.io/" itemprop="url" rel="author">LawrenceSivan</a>
+            </h3>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-</article>
-  
-    
-<article  class="post post-list-thumb" itemscope="" itemtype="https://schema.org/BlogPosting">
-
-  <div class="post-thumb">
-    <a href="/2018/05/28/%E8%BD%AC%E8%BD%BD/">
-      <img class="lazyload" onerror="imgError(this,3)" src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/loader/orange.progress-bar-stripe-loader.svg" data-src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/other/image-404.png">
-    </a>
-  </div>
-  <div class="post-content-wrap">
-    <div class="post-content">
-      <div class="post-date">
-        <i class="iconfont icon-time">
-        </i>2018-5-28 21:05</div>
-      <a href="/2018/05/28/%E8%BD%AC%E8%BD%BD/" class="post-title">
-        <h3>转载</h3>
-      </a>
-      <div class="post-meta">
-        <span><i class="fa fa-tags"></i>
-        
-        </span>
-        <span>
-          <i class="iconfont icon-file"></i>
-          
-            <a href="/categories/%E8%BD%AC%E8%BD%BD/">转载</a>
-          
-        </span>
-      </div>
-      <div class="float-content">
-        <p></p>
-        <div class="post-bottom">
-          <a href="/2018/05/28/%E8%BD%AC%E8%BD%BD/" class="button-normal">
-            <i class="iconfont icon-caidan"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</article>
-  
-    
-<article  class="post post-list-thumb post-list-thumb-left"  class="post post-list-thumb" itemscope="" itemtype="https://schema.org/BlogPosting">
-
-  <div class="post-thumb">
-    <a href="/2018/05/28/%E9%9A%8F%E6%83%B3/">
-      <img class="lazyload" onerror="imgError(this,3)" src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/loader/orange.progress-bar-stripe-loader.svg" data-src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/other/image-404.png">
-    </a>
-  </div>
-  <div class="post-content-wrap">
-    <div class="post-content">
-      <div class="post-date">
-        <i class="iconfont icon-time">
-        </i>2018-5-28 21:05</div>
-      <a href="/2018/05/28/%E9%9A%8F%E6%83%B3/" class="post-title">
-        <h3>随想</h3>
-      </a>
-      <div class="post-meta">
-        <span><i class="fa fa-tags"></i>
-        
-        </span>
-        <span>
-          <i class="iconfont icon-file"></i>
-          
-            <a href="/categories/%E9%9A%8F%E6%83%B3/">随想</a>
-          
-        </span>
-      </div>
-      <div class="float-content">
-        <p></p>
-        <div class="post-bottom">
-          <a href="/2018/05/28/%E9%9A%8F%E6%83%B3/" class="button-normal">
-            <i class="iconfont icon-caidan"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</article>
-  
-    
-<article  class="post post-list-thumb" itemscope="" itemtype="https://schema.org/BlogPosting">
-
-  <div class="post-thumb">
-    <a href="/2018/05/28/%E8%B5%84%E6%BA%90/">
-      <img class="lazyload" onerror="imgError(this,3)" src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/loader/orange.progress-bar-stripe-loader.svg" data-src="https://cdn.jsdelivr.net/gh/honjun/cdn@1.6/img/other/image-404.png">
-    </a>
-  </div>
-  <div class="post-content-wrap">
-    <div class="post-content">
-      <div class="post-date">
-        <i class="iconfont icon-time">
-        </i>2018-5-28 21:05</div>
-      <a href="/2018/05/28/%E8%B5%84%E6%BA%90/" class="post-title">
-        <h3>资源</h3>
-      </a>
-      <div class="post-meta">
-        <span><i class="fa fa-tags"></i>
-        
-        </span>
-        <span>
-          <i class="iconfont icon-file"></i>
-          
-            <a href="/categories/%E8%B5%84%E6%BA%90/">资源</a>
-          
-        </span>
-      </div>
-      <div class="float-content">
-        <p></p>
-        <div class="post-bottom">
-          <a href="/2018/05/28/%E8%B5%84%E6%BA%90/" class="button-normal">
-            <i class="iconfont icon-caidan"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</article>
-  
-
-
-    </main>
-      <!-- 首页默认取最最新文章集 -->
-    <!-- 
-      <nav class="navigator">
-        
-        <a class="extend prev" rel="prev" href="/page/3/">&lt;i class&#x3D;&quot;iconfont icon-back&quot;&gt;&lt;&#x2F;i&gt;</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
-      </nav>
-     -->
-  </div>
-  
+        <hr>
+        <p><i class="iconfont icon-write"></i>I was so much older then, I’m younger than that now.</p>
+      </section>
+    </main><!-- #main -->
+  </div><!-- #primary -->
 </div>
+
+
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/latest.js?config=TeX-MML-AM_CHTML"></script>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  </script>
+
 
     </div>    
     <div class="ins-search">
