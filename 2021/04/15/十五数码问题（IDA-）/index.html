@@ -599,11 +599,175 @@
 <p>对于估价函数，我们可以考虑曼哈顿距离，估价函数的值等同于当前状态下所有非 $0$ 的数字到目标位置的曼哈顿距离之和。</p>
 <p>而且对于$15$数码问题，我们可以得出以下结论：十五数码和八数码判断是否有解的方法不同，八数码$0$的移动不影响其余$7$个数字逆序数的奇偶性，而十五数码$0$的左右移动不影响其余$15$个数逆序数的奇偶性 （顺序不变），但上下移动改变奇偶（移动三次），加上$0$的话$16$个数逆序数左右改变（移动一次），上下也改变（移动$7$次），需要注意每次移动$0$的距离奇偶性也改变（$0$到目标位置的曼哈顿距离不是加1就是减一），所以$16$个数逆序数与$0$的距离之和$s$的奇偶性不因$0$的滑动而改变，初始时$s$是奇数，所以只有$s$是奇数的状态才是可到达的.</p>
 <p>于是我们在搜之前先判一下有没有解：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-title">check</span><span class="hljs-params">()</span></span>&#123;<span class="hljs-comment">//check it is the ans or not</span><br>    <span class="hljs-type">int</span> cnt=<span class="hljs-number">0</span>,tot=<span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">4</span>;++i)&#123;<br>    	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=<span class="hljs-number">4</span>;++j)&#123;<br>    		puz[tot]=tmp[i][j];<br>    		tot++;<br>		&#125;<br>	&#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">16</span>;++i)&#123;<br>        <span class="hljs-keyword">if</span> (puz[i]==<span class="hljs-number">0</span>)<br>            cnt+=<span class="hljs-number">3</span>-i/<span class="hljs-number">4</span>;<br>        <span class="hljs-keyword">else</span>&#123;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;i;++j)&#123;<br>            	<span class="hljs-keyword">if</span> (puz[j] &amp;&amp; puz[j]&gt;puz[i])&#123;<br>            		cnt++;<br>				&#125;<br>			&#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> !(cnt&amp;<span class="hljs-number">1</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-title">check</span><span class="hljs-params">()</span></span>&#123;<span class="hljs-comment">//check it is the ans or not</span>
+    <span class="hljs-type">int</span> cnt=<span class="hljs-number">0</span>,tot=<span class="hljs-number">0</span>;
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">4</span>;++i)&#123;
+    	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=<span class="hljs-number">4</span>;++j)&#123;
+    		puz[tot]=tmp[i][j];
+    		tot++;
+		&#125;
+	&#125;
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">16</span>;++i)&#123;
+        <span class="hljs-keyword">if</span> (puz[i]==<span class="hljs-number">0</span>)
+            cnt+=<span class="hljs-number">3</span>-i/<span class="hljs-number">4</span>;
+        <span class="hljs-keyword">else</span>&#123;
+            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;i;++j)&#123;
+            	<span class="hljs-keyword">if</span> (puz[j] &amp;&amp; puz[j]&gt;puz[i])&#123;
+            		cnt++;
+				&#125;
+			&#125;
+        &#125;
+    &#125;
+    <span class="hljs-keyword">return</span> !(cnt&amp;<span class="hljs-number">1</span>);
+&#125;</code></pre>
 
 <p>之后我们还需要加入一个剪枝：永远不要走和上一步相反的路；</p>
 <p>大概就这些</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><br><span class="hljs-type">int</span> x,y,cnt; <br><span class="hljs-type">int</span> tmp[<span class="hljs-number">5</span>][<span class="hljs-number">5</span>];<br><span class="hljs-type">int</span> puz[<span class="hljs-number">16</span>]; <br><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> goal[<span class="hljs-number">5</span>][<span class="hljs-number">5</span>]=&#123;<br>	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>&#125;,<br>	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>&#125;,<br>	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>&#125;,<br>	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">9</span>,<span class="hljs-number">10</span>,<span class="hljs-number">11</span>,<span class="hljs-number">12</span>&#125;,<br>	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">13</span>,<span class="hljs-number">14</span>,<span class="hljs-number">15</span>,<span class="hljs-number">0</span>&#125;<br>&#125;;<br><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> dx[<span class="hljs-number">4</span>]=&#123;<span class="hljs-number">0</span>,<span class="hljs-number">1</span>,<span class="hljs-number">-1</span>,<span class="hljs-number">0</span>&#125;;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> dy[<span class="hljs-number">4</span>]=&#123;<span class="hljs-number">1</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">-1</span>&#125;;<br><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> px[<span class="hljs-number">16</span>]=&#123;<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">3</span>,<span class="hljs-number">3</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">4</span>,<span class="hljs-number">4</span>&#125;;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> py[<span class="hljs-number">16</span>]=&#123;<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>&#125;;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">mabs</span><span class="hljs-params">(<span class="hljs-type">int</span> a)</span></span>&#123;<br>	<span class="hljs-keyword">return</span> a&gt;<span class="hljs-number">0</span>?a:-a;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-title">check</span><span class="hljs-params">()</span></span>&#123;<span class="hljs-comment">//check it is the ans or not</span><br>    <span class="hljs-type">int</span> cnt=<span class="hljs-number">0</span>,tot=<span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">4</span>;++i)&#123;<br>    	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=<span class="hljs-number">4</span>;++j)&#123;<br>    		puz[tot]=tmp[i][j];<br>    		tot++;<br>		&#125;<br>	&#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">16</span>;++i)&#123;<br>        <span class="hljs-keyword">if</span> (puz[i]==<span class="hljs-number">0</span>)<br>            cnt+=<span class="hljs-number">3</span>-i/<span class="hljs-number">4</span>;<br>        <span class="hljs-keyword">else</span>&#123;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;i;++j)&#123;<br>            	<span class="hljs-keyword">if</span> (puz[j] &amp;&amp; puz[j]&gt;puz[i])&#123;<br>            		cnt++;<br>				&#125;<br>			&#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> !(cnt&amp;<span class="hljs-number">1</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">evaluate</span><span class="hljs-params">()</span></span>&#123;<span class="hljs-comment">//judge it can get the ans or not</span><br>    <span class="hljs-type">int</span> res=<span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">4</span>;i++)&#123;<br>    	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=<span class="hljs-number">4</span>;j++)&#123;<br>    		<span class="hljs-keyword">if</span>(tmp[i][j]==<span class="hljs-number">0</span>)<span class="hljs-keyword">continue</span>;<br>       	 	res+=<span class="hljs-built_in">mabs</span>(i-px[tmp[i][j]])+<span class="hljs-built_in">mabs</span>(j-py[tmp[i][j]]);<br>    	&#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> res;<br>&#125; <br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">getway</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(dx[i]==<span class="hljs-number">-1</span>)<span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;<br>	<span class="hljs-keyword">if</span>(dx[i]==<span class="hljs-number">1</span>)<span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">if</span>(dy[i]==<span class="hljs-number">-1</span>)<span class="hljs-keyword">return</span> <span class="hljs-number">4</span>;<br>	<span class="hljs-keyword">if</span>(dy[i]==<span class="hljs-number">1</span>)<span class="hljs-keyword">return</span> <span class="hljs-number">3</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-title">test</span><span class="hljs-params">(<span class="hljs-type">int</span> i,<span class="hljs-type">int</span> pre)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(dx[i]==<span class="hljs-number">-1</span>&amp;&amp;pre==<span class="hljs-number">1</span>)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>	<span class="hljs-keyword">if</span>(dx[i]==<span class="hljs-number">1</span>&amp;&amp;pre==<span class="hljs-number">2</span>)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>	<span class="hljs-keyword">if</span>(dy[i]==<span class="hljs-number">-1</span>&amp;&amp;pre==<span class="hljs-number">3</span>)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>	<span class="hljs-keyword">if</span>(dy[i]==<span class="hljs-number">1</span>&amp;&amp;pre==<span class="hljs-number">4</span>)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>	<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">IDA_star</span><span class="hljs-params">(<span class="hljs-type">int</span> step,<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y,<span class="hljs-type">int</span> pre)</span></span>&#123;<span class="hljs-comment">//do it</span><br>	<span class="hljs-type">int</span> eva=<span class="hljs-built_in">evaluate</span>();<br>	<span class="hljs-keyword">if</span>(!eva)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>	<br>	<span class="hljs-keyword">if</span>(step+eva&gt;cnt)<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	<br>	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">4</span>;i++)&#123; <br>        <span class="hljs-type">int</span> xx=x+dx[i];<br>        <span class="hljs-type">int</span> yy=y+dy[i];<br>        <span class="hljs-keyword">if</span>(xx&gt;<span class="hljs-number">4</span>||xx&lt;<span class="hljs-number">1</span>||yy&gt;<span class="hljs-number">4</span>||yy&lt;<span class="hljs-number">1</span>||<span class="hljs-built_in">test</span>(i,pre))<span class="hljs-keyword">continue</span>;<br>        <span class="hljs-built_in">swap</span>(tmp[xx][yy],tmp[x][y]);<br>        <span class="hljs-keyword">if</span>(<span class="hljs-built_in">IDA_star</span>(step<span class="hljs-number">+1</span>,xx,yy,<span class="hljs-built_in">getway</span>(i)))<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;		<br>		<span class="hljs-built_in">swap</span>(tmp[xx][yy],tmp[x][y]);<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>	<span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>	<span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>	<span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>	<span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;puzzle.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);<br>	<span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;puzzle.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">4</span>;i++)&#123;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=<span class="hljs-number">4</span>;j++)&#123;<br>			tmp[i][j]=<span class="hljs-built_in">read</span>();<br>			<span class="hljs-keyword">if</span>(tmp[i][j]==<span class="hljs-number">0</span>)x=i,y=j;<br>		&#125;<br>	&#125;<br>	<span class="hljs-comment">/*for(re int i=1;i&lt;=4;i++)&#123;</span><br><span class="hljs-comment">		for(re int j=1;j&lt;=4;j++)&#123;</span><br><span class="hljs-comment">			cout&lt;&lt;tmp[i][j]&lt;&lt;&quot; &quot;;</span><br><span class="hljs-comment">		&#125;</span><br><span class="hljs-comment">		cout&lt;&lt;endl;</span><br><span class="hljs-comment">	&#125;*/</span><br>	<br>	<span class="hljs-keyword">if</span>(!<span class="hljs-built_in">evaluate</span>())&#123;<span class="hljs-comment">//if the begin is the end</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,<span class="hljs-number">0</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    &#125;<br>    <br>    <span class="hljs-keyword">if</span>(!<span class="hljs-built_in">check</span>())&#123;<span class="hljs-comment">//if the begin is the end</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;No\n&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    &#125;<br>    <br>    <span class="hljs-keyword">while</span>(++cnt)&#123;<br>    	<span class="hljs-keyword">if</span>(<span class="hljs-built_in">IDA_star</span>(<span class="hljs-number">0</span>,x,y,<span class="hljs-number">0</span>))&#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,cnt);<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>        &#125;<br>        <span class="hljs-keyword">if</span>(cnt&gt;<span class="hljs-number">50</span>)&#123;<br>        	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;No\n&quot;</span>);<br>			<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;	<br>		&#125;<br>	&#125;<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+
+<span class="hljs-type">int</span> x,y,cnt; 
+<span class="hljs-type">int</span> tmp[<span class="hljs-number">5</span>][<span class="hljs-number">5</span>];
+<span class="hljs-type">int</span> puz[<span class="hljs-number">16</span>]; 
+
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> goal[<span class="hljs-number">5</span>][<span class="hljs-number">5</span>]=&#123;
+	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>&#125;,
+	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>&#125;,
+	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>&#125;,
+	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">9</span>,<span class="hljs-number">10</span>,<span class="hljs-number">11</span>,<span class="hljs-number">12</span>&#125;,
+	&#123;<span class="hljs-number">0</span>,<span class="hljs-number">13</span>,<span class="hljs-number">14</span>,<span class="hljs-number">15</span>,<span class="hljs-number">0</span>&#125;
+&#125;;
+
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> dx[<span class="hljs-number">4</span>]=&#123;<span class="hljs-number">0</span>,<span class="hljs-number">1</span>,<span class="hljs-number">-1</span>,<span class="hljs-number">0</span>&#125;;
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> dy[<span class="hljs-number">4</span>]=&#123;<span class="hljs-number">1</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">-1</span>&#125;;
+
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> px[<span class="hljs-number">16</span>]=&#123;<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">3</span>,<span class="hljs-number">3</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">4</span>,<span class="hljs-number">4</span>&#125;;
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> py[<span class="hljs-number">16</span>]=&#123;<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>&#125;;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">mabs</span><span class="hljs-params">(<span class="hljs-type">int</span> a)</span></span>&#123;
+	<span class="hljs-keyword">return</span> a&gt;<span class="hljs-number">0</span>?a:-a;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-title">check</span><span class="hljs-params">()</span></span>&#123;<span class="hljs-comment">//check it is the ans or not</span>
+    <span class="hljs-type">int</span> cnt=<span class="hljs-number">0</span>,tot=<span class="hljs-number">0</span>;
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">4</span>;++i)&#123;
+    	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=<span class="hljs-number">4</span>;++j)&#123;
+    		puz[tot]=tmp[i][j];
+    		tot++;
+		&#125;
+	&#125;
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">16</span>;++i)&#123;
+        <span class="hljs-keyword">if</span> (puz[i]==<span class="hljs-number">0</span>)
+            cnt+=<span class="hljs-number">3</span>-i/<span class="hljs-number">4</span>;
+        <span class="hljs-keyword">else</span>&#123;
+            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;i;++j)&#123;
+            	<span class="hljs-keyword">if</span> (puz[j] &amp;&amp; puz[j]&gt;puz[i])&#123;
+            		cnt++;
+				&#125;
+			&#125;
+        &#125;
+    &#125;
+    <span class="hljs-keyword">return</span> !(cnt&amp;<span class="hljs-number">1</span>);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">evaluate</span><span class="hljs-params">()</span></span>&#123;<span class="hljs-comment">//judge it can get the ans or not</span>
+    <span class="hljs-type">int</span> res=<span class="hljs-number">0</span>;
+    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">4</span>;i++)&#123;
+    	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=<span class="hljs-number">4</span>;j++)&#123;
+    		<span class="hljs-keyword">if</span>(tmp[i][j]==<span class="hljs-number">0</span>)<span class="hljs-keyword">continue</span>;
+       	 	res+=<span class="hljs-built_in">mabs</span>(i-px[tmp[i][j]])+<span class="hljs-built_in">mabs</span>(j-py[tmp[i][j]]);
+    	&#125;
+    &#125;
+    <span class="hljs-keyword">return</span> res;
+&#125; 
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">getway</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(dx[i]==<span class="hljs-number">-1</span>)<span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;
+	<span class="hljs-keyword">if</span>(dx[i]==<span class="hljs-number">1</span>)<span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+	<span class="hljs-keyword">if</span>(dy[i]==<span class="hljs-number">-1</span>)<span class="hljs-keyword">return</span> <span class="hljs-number">4</span>;
+	<span class="hljs-keyword">if</span>(dy[i]==<span class="hljs-number">1</span>)<span class="hljs-keyword">return</span> <span class="hljs-number">3</span>;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-title">test</span><span class="hljs-params">(<span class="hljs-type">int</span> i,<span class="hljs-type">int</span> pre)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(dx[i]==<span class="hljs-number">-1</span>&amp;&amp;pre==<span class="hljs-number">1</span>)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+	<span class="hljs-keyword">if</span>(dx[i]==<span class="hljs-number">1</span>&amp;&amp;pre==<span class="hljs-number">2</span>)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+	<span class="hljs-keyword">if</span>(dy[i]==<span class="hljs-number">-1</span>&amp;&amp;pre==<span class="hljs-number">3</span>)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+	<span class="hljs-keyword">if</span>(dy[i]==<span class="hljs-number">1</span>&amp;&amp;pre==<span class="hljs-number">4</span>)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+	
+	<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">IDA_star</span><span class="hljs-params">(<span class="hljs-type">int</span> step,<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y,<span class="hljs-type">int</span> pre)</span></span>&#123;<span class="hljs-comment">//do it</span>
+	<span class="hljs-type">int</span> eva=<span class="hljs-built_in">evaluate</span>();
+	<span class="hljs-keyword">if</span>(!eva)<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+	
+	<span class="hljs-keyword">if</span>(step+eva&gt;cnt)<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+	
+	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">4</span>;i++)&#123; 
+        <span class="hljs-type">int</span> xx=x+dx[i];
+        <span class="hljs-type">int</span> yy=y+dy[i];
+        <span class="hljs-keyword">if</span>(xx&gt;<span class="hljs-number">4</span>||xx&lt;<span class="hljs-number">1</span>||yy&gt;<span class="hljs-number">4</span>||yy&lt;<span class="hljs-number">1</span>||<span class="hljs-built_in">test</span>(i,pre))<span class="hljs-keyword">continue</span>;
+        <span class="hljs-built_in">swap</span>(tmp[xx][yy],tmp[x][y]);
+        <span class="hljs-keyword">if</span>(<span class="hljs-built_in">IDA_star</span>(step<span class="hljs-number">+1</span>,xx,yy,<span class="hljs-built_in">getway</span>(i)))<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;		
+		<span class="hljs-built_in">swap</span>(tmp[xx][yy],tmp[x][y]);
+    &#125;
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+	<span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+	<span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+	<span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+	<span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;puzzle.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);
+	<span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;puzzle.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">4</span>;i++)&#123;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=<span class="hljs-number">4</span>;j++)&#123;
+			tmp[i][j]=<span class="hljs-built_in">read</span>();
+			<span class="hljs-keyword">if</span>(tmp[i][j]==<span class="hljs-number">0</span>)x=i,y=j;
+		&#125;
+	&#125;
+	<span class="hljs-comment">/*for(re int i=1;i&lt;=4;i++)&#123;</span>
+<span class="hljs-comment">		for(re int j=1;j&lt;=4;j++)&#123;</span>
+<span class="hljs-comment">			cout&lt;&lt;tmp[i][j]&lt;&lt;&quot; &quot;;</span>
+<span class="hljs-comment">		&#125;</span>
+<span class="hljs-comment">		cout&lt;&lt;endl;</span>
+<span class="hljs-comment">	&#125;*/</span>
+	
+	<span class="hljs-keyword">if</span>(!<span class="hljs-built_in">evaluate</span>())&#123;<span class="hljs-comment">//if the begin is the end</span>
+        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,<span class="hljs-number">0</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+    &#125;
+    
+    <span class="hljs-keyword">if</span>(!<span class="hljs-built_in">check</span>())&#123;<span class="hljs-comment">//if the begin is the end</span>
+        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;No\n&quot;</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+    &#125;
+    
+    <span class="hljs-keyword">while</span>(++cnt)&#123;
+    	<span class="hljs-keyword">if</span>(<span class="hljs-built_in">IDA_star</span>(<span class="hljs-number">0</span>,x,y,<span class="hljs-number">0</span>))&#123;
+            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,cnt);
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+        &#125;
+        <span class="hljs-keyword">if</span>(cnt&gt;<span class="hljs-number">50</span>)&#123;
+        	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;No\n&quot;</span>);
+			<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;	
+		&#125;
+	&#125;
+    
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+</code></pre>
 
         </div>
         <!-- .entry-content -->
@@ -731,7 +895,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

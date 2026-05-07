@@ -644,7 +644,79 @@
 <p>于是 $case\ 3$ 正序， $case \ 4$ 倒序。</p>
 <p>要说的就这么多了</p>
 <p>CODE:</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2005</span>;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">mymax</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;<br>	<span class="hljs-keyword">return</span> x&gt;y?x:y;<br>&#125;<br><br><span class="hljs-type">int</span> T,maxp,w,ans;<br><span class="hljs-type">int</span> ap,bp,as,bs;<br><span class="hljs-type">int</span> f[maxn][maxn];<br><span class="hljs-type">int</span> q[maxn],l=<span class="hljs-number">1</span>,r=<span class="hljs-number">0</span>;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>, f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>, stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>, stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	<span class="hljs-built_in">memset</span>(f,<span class="hljs-number">0xcf</span>,<span class="hljs-built_in">sizeof</span>(f));<br>	T=<span class="hljs-built_in">read</span>();maxp=<span class="hljs-built_in">read</span>();w=<span class="hljs-built_in">read</span>();<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=T;i++)&#123;<br>		ap=<span class="hljs-built_in">read</span>();bp=<span class="hljs-built_in">read</span>();as=<span class="hljs-built_in">read</span>();bs=<span class="hljs-built_in">read</span>();<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=as;j++)&#123;<span class="hljs-comment">//case 1</span><br>			f[i][j]=<span class="hljs-number">-1</span>*j*ap;<br>		&#125;<br>		<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=maxp;j++)&#123;<span class="hljs-comment">// case 2</span><br>			f[i][j]=<span class="hljs-built_in">mymax</span>(f[i][j],f[i<span class="hljs-number">-1</span>][j]);<br>		&#125;<br>		<br>		<span class="hljs-keyword">if</span>(i&lt;=w)<span class="hljs-keyword">continue</span>;<span class="hljs-comment">//如果i&lt;=w，那么i-w-1就是负的了</span><br>		<br>		l=<span class="hljs-number">1</span>;r=<span class="hljs-number">0</span>;<span class="hljs-comment">//case 3</span><br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=maxp;j++)&#123;<span class="hljs-comment">//low to high</span><br>			<span class="hljs-keyword">while</span>(l&lt;=r&amp;&amp;q[l]&lt;j-as)l++;<span class="hljs-comment">//排除过期元素</span><br>			<span class="hljs-keyword">while</span>(l&lt;=r&amp;&amp;f[i-w<span class="hljs-number">-1</span>][q[r]]+q[r]*ap&lt;=f[i-w<span class="hljs-number">-1</span>][j]+j*ap)r--;<span class="hljs-comment">//更新元素</span><br>			q[++r]=j;<span class="hljs-comment">//插入最新元素</span><br>			<span class="hljs-keyword">if</span>(l&lt;=r)f[i][j]=<span class="hljs-built_in">mymax</span>(f[i][j],f[i-w<span class="hljs-number">-1</span>][q[l]]+q[l]*ap-j*ap);<span class="hljs-comment">// 如果单调队列里有元素，即可转移</span><br>		&#125;<br>		<br>		l=<span class="hljs-number">1</span>;r=<span class="hljs-number">0</span>;<span class="hljs-comment">//case 4</span><br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=maxp;j&gt;=<span class="hljs-number">0</span>;j--)&#123;<span class="hljs-comment">//high to low</span><br>			<span class="hljs-keyword">while</span>(l&lt;=r&amp;&amp;q[l]&gt;j+bs)l++;<span class="hljs-comment">//排除过期元素</span><br>			<span class="hljs-keyword">while</span>(l&lt;=r&amp;&amp;f[i-w<span class="hljs-number">-1</span>][q[r]]+q[r]*bp&lt;=f[i-w<span class="hljs-number">-1</span>][j]+j*bp)r--;<span class="hljs-comment">//更新元素</span><br>			q[++r]=j;<span class="hljs-comment">//插入最新元素</span><br>			<span class="hljs-keyword">if</span>(l&lt;=r)f[i][j]=<span class="hljs-built_in">mymax</span>(f[i][j],f[i-w<span class="hljs-number">-1</span>][q[l]]+q[l]*bp-j*bp);<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=maxp;i++)&#123;<span class="hljs-comment">//手上可以留下一点</span><br>		ans=<span class="hljs-built_in">mymax</span>(ans,f[T][i]);<br>	&#125;<br>	<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ans);<br><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2005</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">mymax</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;
+	<span class="hljs-keyword">return</span> x&gt;y?x:y;
+&#125;
+
+<span class="hljs-type">int</span> T,maxp,w,ans;
+<span class="hljs-type">int</span> ap,bp,as,bs;
+<span class="hljs-type">int</span> f[maxn][maxn];
+<span class="hljs-type">int</span> q[maxn],l=<span class="hljs-number">1</span>,r=<span class="hljs-number">0</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>, f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>, stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>, stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	<span class="hljs-built_in">memset</span>(f,<span class="hljs-number">0xcf</span>,<span class="hljs-built_in">sizeof</span>(f));
+	T=<span class="hljs-built_in">read</span>();maxp=<span class="hljs-built_in">read</span>();w=<span class="hljs-built_in">read</span>();
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=T;i++)&#123;
+		ap=<span class="hljs-built_in">read</span>();bp=<span class="hljs-built_in">read</span>();as=<span class="hljs-built_in">read</span>();bs=<span class="hljs-built_in">read</span>();
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=as;j++)&#123;<span class="hljs-comment">//case 1</span>
+			f[i][j]=<span class="hljs-number">-1</span>*j*ap;
+		&#125;
+		
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=maxp;j++)&#123;<span class="hljs-comment">// case 2</span>
+			f[i][j]=<span class="hljs-built_in">mymax</span>(f[i][j],f[i<span class="hljs-number">-1</span>][j]);
+		&#125;
+		
+		<span class="hljs-keyword">if</span>(i&lt;=w)<span class="hljs-keyword">continue</span>;<span class="hljs-comment">//如果i&lt;=w，那么i-w-1就是负的了</span>
+		
+		l=<span class="hljs-number">1</span>;r=<span class="hljs-number">0</span>;<span class="hljs-comment">//case 3</span>
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=maxp;j++)&#123;<span class="hljs-comment">//low to high</span>
+			<span class="hljs-keyword">while</span>(l&lt;=r&amp;&amp;q[l]&lt;j-as)l++;<span class="hljs-comment">//排除过期元素</span>
+			<span class="hljs-keyword">while</span>(l&lt;=r&amp;&amp;f[i-w<span class="hljs-number">-1</span>][q[r]]+q[r]*ap&lt;=f[i-w<span class="hljs-number">-1</span>][j]+j*ap)r--;<span class="hljs-comment">//更新元素</span>
+			q[++r]=j;<span class="hljs-comment">//插入最新元素</span>
+			<span class="hljs-keyword">if</span>(l&lt;=r)f[i][j]=<span class="hljs-built_in">mymax</span>(f[i][j],f[i-w<span class="hljs-number">-1</span>][q[l]]+q[l]*ap-j*ap);<span class="hljs-comment">// 如果单调队列里有元素，即可转移</span>
+		&#125;
+		
+		l=<span class="hljs-number">1</span>;r=<span class="hljs-number">0</span>;<span class="hljs-comment">//case 4</span>
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=maxp;j&gt;=<span class="hljs-number">0</span>;j--)&#123;<span class="hljs-comment">//high to low</span>
+			<span class="hljs-keyword">while</span>(l&lt;=r&amp;&amp;q[l]&gt;j+bs)l++;<span class="hljs-comment">//排除过期元素</span>
+			<span class="hljs-keyword">while</span>(l&lt;=r&amp;&amp;f[i-w<span class="hljs-number">-1</span>][q[r]]+q[r]*bp&lt;=f[i-w<span class="hljs-number">-1</span>][j]+j*bp)r--;<span class="hljs-comment">//更新元素</span>
+			q[++r]=j;<span class="hljs-comment">//插入最新元素</span>
+			<span class="hljs-keyword">if</span>(l&lt;=r)f[i][j]=<span class="hljs-built_in">mymax</span>(f[i][j],f[i-w<span class="hljs-number">-1</span>][q[l]]+q[l]*bp-j*bp);
+		&#125;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=maxp;i++)&#123;<span class="hljs-comment">//手上可以留下一点</span>
+		ans=<span class="hljs-built_in">mymax</span>(ans,f[T][i]);
+	&#125;
+	
+	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ans);
+
+
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+</code></pre>
 
 <h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p><strong>1，对于决策转移时，有明显单调性的情况，对于状态移动时，转移决策重复度较大。都可用单调队列优化。（滑动窗口）</strong></p>
 <p><strong>2，对于单调性要主动发现，主动往那方面想</strong></p>
@@ -775,7 +847,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

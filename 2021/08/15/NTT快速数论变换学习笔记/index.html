@@ -675,7 +675,107 @@
 <p>常见的 NTT 模数有 </p>
 <p>$$P&#x3D;998244353&#x3D;479∗2^{21}+1,g&#x3D;3$$</p>
 <p>$$P&#x3D;1004535809&#x3D;7∗17∗2^{23}+1,g&#x3D;3$$</p>
-<h2 id="get-NTT"><a href="#get-NTT" class="headerlink" title="get_NTT!"></a>get_NTT!</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;<br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">1e7</span><span class="hljs-number">+5</span>;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> mod=<span class="hljs-number">998244353</span>;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> G=<span class="hljs-number">3</span>;<br><br><span class="hljs-function">ll <span class="hljs-title">qpow</span><span class="hljs-params">(ll a,ll b)</span></span>&#123;<br>    ll res=<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">for</span>(;b;b&gt;&gt;=<span class="hljs-number">1</span>,a=a*a%mod)&#123;<br>        <span class="hljs-keyword">if</span>(b&amp;<span class="hljs-number">1</span>)res=res*a%mod;<br>    &#125;<br>    <span class="hljs-keyword">return</span> res%mod;<br>&#125;<br><br><span class="hljs-type">const</span> ll invG=<span class="hljs-built_in">qpow</span>(G,mod<span class="hljs-number">-2</span>);<br><br>ll f[maxn],p[maxn];<br><br><span class="hljs-type">int</span> trans[maxn];<br><br><span class="hljs-type">int</span> n,m,invn;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">NTT</span><span class="hljs-params">(ll *f,<span class="hljs-type">bool</span> op)</span></span>&#123;<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;<br>        <span class="hljs-keyword">if</span>(i&lt;trans[i])<span class="hljs-built_in">swap</span>(f[i],f[trans[i]]);<br>    &#125;<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=<span class="hljs-number">2</span>;p&lt;=n;p&lt;&lt;=<span class="hljs-number">1</span>)&#123;<br>        <span class="hljs-type">int</span> len=p&gt;&gt;<span class="hljs-number">1</span>;<br>        <span class="hljs-type">int</span> tG=<span class="hljs-built_in">qpow</span>(op?G:invG,(mod<span class="hljs-number">-1</span>)/p);<br>        <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;n;k+=p)&#123;<br>            ll buf=<span class="hljs-number">1</span>;<br>            <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> l=k;l&lt;k+len;l++)&#123;<br>                ll tmp=buf*f[l+len]%mod;<br>                f[l+len]=f[l]-tmp;<br>                <span class="hljs-keyword">if</span>(f[l+len]&lt;<span class="hljs-number">0</span>)f[l+len]+=mod;<br>                f[l]=f[l]+tmp;<br>                <span class="hljs-keyword">if</span>(f[l]&gt;mod)f[l]-=mod;<br>                buf=buf*tG%mod;<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">namespace</span> IO&#123;<br>    <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function">    <span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T &amp;x)</span></span>&#123;<br>        x=<span class="hljs-number">0</span>;T f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>        <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>        <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>        x*=f;<br>    &#125;<br><br>    <span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span>... Args&gt;<br>    <span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T&amp; t, Args&amp;... args)</span> </span>&#123;<br>        <span class="hljs-built_in">read</span>(t); <span class="hljs-built_in">read</span>(args...);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function">    <span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(T x)</span></span>&#123;<br>        <span class="hljs-keyword">if</span>(x&lt;<span class="hljs-number">0</span>)<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27;-&#x27;</span>),x=-x;<br>        <span class="hljs-keyword">if</span>(x&gt;<span class="hljs-number">9</span>)<span class="hljs-built_in">write</span>(x/<span class="hljs-number">10</span>);<br>        <span class="hljs-built_in">putchar</span>(x%<span class="hljs-number">10</span>+<span class="hljs-string">&#x27;0&#x27;</span>);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T,<span class="hljs-keyword">typename</span>... Args&gt;</span><br><span class="hljs-function">    <span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(T t,Args... args)</span></span>&#123;<br>        <span class="hljs-built_in">write</span>(t);<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);<span class="hljs-built_in">write</span>(args...);<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> IO;<br><br><span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>, stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>, stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>    <span class="hljs-built_in">read</span>(n,m);n++,m++;<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)<span class="hljs-built_in">read</span>(f[i]);<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;m;i++)<span class="hljs-built_in">read</span>(p[i]);<br>    <span class="hljs-keyword">for</span>(m+=n,n=<span class="hljs-number">1</span>;n&lt;m;n&lt;&lt;=<span class="hljs-number">1</span>);<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;<br>        trans[i]=(trans[i&gt;&gt;<span class="hljs-number">1</span>]&gt;&gt;<span class="hljs-number">1</span>)|((i&amp;<span class="hljs-number">1</span>)?n&gt;&gt;<span class="hljs-number">1</span>:<span class="hljs-number">0</span>);<br>    &#125;<br>    <span class="hljs-built_in">NTT</span>(f,<span class="hljs-number">1</span>),<span class="hljs-built_in">NTT</span>(p,<span class="hljs-number">1</span>);<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)f[i]=f[i]*p[i]%mod;<br>    <span class="hljs-built_in">NTT</span>(f,<span class="hljs-number">0</span>);invn=<span class="hljs-built_in">qpow</span>(n,mod<span class="hljs-number">-2</span>);<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;m<span class="hljs-number">-1</span>;i++)<span class="hljs-built_in">write</span>((f[i]*invn)%mod),<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);<br>    <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;&quot;</span>);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="get-NTT"><a href="#get-NTT" class="headerlink" title="get_NTT!"></a>get_NTT!</h2><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;
+
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">1e7</span><span class="hljs-number">+5</span>;
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> mod=<span class="hljs-number">998244353</span>;
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> G=<span class="hljs-number">3</span>;
+
+<span class="hljs-function">ll <span class="hljs-title">qpow</span><span class="hljs-params">(ll a,ll b)</span></span>&#123;
+    ll res=<span class="hljs-number">1</span>;
+    <span class="hljs-keyword">for</span>(;b;b&gt;&gt;=<span class="hljs-number">1</span>,a=a*a%mod)&#123;
+        <span class="hljs-keyword">if</span>(b&amp;<span class="hljs-number">1</span>)res=res*a%mod;
+    &#125;
+    <span class="hljs-keyword">return</span> res%mod;
+&#125;
+
+<span class="hljs-type">const</span> ll invG=<span class="hljs-built_in">qpow</span>(G,mod<span class="hljs-number">-2</span>);
+
+ll f[maxn],p[maxn];
+
+<span class="hljs-type">int</span> trans[maxn];
+
+<span class="hljs-type">int</span> n,m,invn;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">NTT</span><span class="hljs-params">(ll *f,<span class="hljs-type">bool</span> op)</span></span>&#123;
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;
+        <span class="hljs-keyword">if</span>(i&lt;trans[i])<span class="hljs-built_in">swap</span>(f[i],f[trans[i]]);
+    &#125;
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=<span class="hljs-number">2</span>;p&lt;=n;p&lt;&lt;=<span class="hljs-number">1</span>)&#123;
+        <span class="hljs-type">int</span> len=p&gt;&gt;<span class="hljs-number">1</span>;
+        <span class="hljs-type">int</span> tG=<span class="hljs-built_in">qpow</span>(op?G:invG,(mod<span class="hljs-number">-1</span>)/p);
+        <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;n;k+=p)&#123;
+            ll buf=<span class="hljs-number">1</span>;
+            <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> l=k;l&lt;k+len;l++)&#123;
+                ll tmp=buf*f[l+len]%mod;
+                f[l+len]=f[l]-tmp;
+                <span class="hljs-keyword">if</span>(f[l+len]&lt;<span class="hljs-number">0</span>)f[l+len]+=mod;
+                f[l]=f[l]+tmp;
+                <span class="hljs-keyword">if</span>(f[l]&gt;mod)f[l]-=mod;
+                buf=buf*tG%mod;
+            &#125;
+        &#125;
+    &#125;
+&#125;
+
+<span class="hljs-keyword">namespace</span> IO&#123;
+    <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span>
+<span class="hljs-function">    <span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T &amp;x)</span></span>&#123;
+        x=<span class="hljs-number">0</span>;T f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+        <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+        <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+        x*=f;
+    &#125;
+
+    <span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span>... Args&gt;
+    <span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T&amp; t, Args&amp;... args)</span> </span>&#123;
+        <span class="hljs-built_in">read</span>(t); <span class="hljs-built_in">read</span>(args...);
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span>
+<span class="hljs-function">    <span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(T x)</span></span>&#123;
+        <span class="hljs-keyword">if</span>(x&lt;<span class="hljs-number">0</span>)<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27;-&#x27;</span>),x=-x;
+        <span class="hljs-keyword">if</span>(x&gt;<span class="hljs-number">9</span>)<span class="hljs-built_in">write</span>(x/<span class="hljs-number">10</span>);
+        <span class="hljs-built_in">putchar</span>(x%<span class="hljs-number">10</span>+<span class="hljs-string">&#x27;0&#x27;</span>);
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T,<span class="hljs-keyword">typename</span>... Args&gt;</span>
+<span class="hljs-function">    <span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(T t,Args... args)</span></span>&#123;
+        <span class="hljs-built_in">write</span>(t);<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);<span class="hljs-built_in">write</span>(args...);
+    &#125;
+&#125;
+
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> IO;
+
+<span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>, stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>, stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+    <span class="hljs-built_in">read</span>(n,m);n++,m++;
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)<span class="hljs-built_in">read</span>(f[i]);
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;m;i++)<span class="hljs-built_in">read</span>(p[i]);
+    <span class="hljs-keyword">for</span>(m+=n,n=<span class="hljs-number">1</span>;n&lt;m;n&lt;&lt;=<span class="hljs-number">1</span>);
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;
+        trans[i]=(trans[i&gt;&gt;<span class="hljs-number">1</span>]&gt;&gt;<span class="hljs-number">1</span>)|((i&amp;<span class="hljs-number">1</span>)?n&gt;&gt;<span class="hljs-number">1</span>:<span class="hljs-number">0</span>);
+    &#125;
+    <span class="hljs-built_in">NTT</span>(f,<span class="hljs-number">1</span>),<span class="hljs-built_in">NTT</span>(p,<span class="hljs-number">1</span>);
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)f[i]=f[i]*p[i]%mod;
+    <span class="hljs-built_in">NTT</span>(f,<span class="hljs-number">0</span>);invn=<span class="hljs-built_in">qpow</span>(n,mod<span class="hljs-number">-2</span>);
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;m<span class="hljs-number">-1</span>;i++)<span class="hljs-built_in">write</span>((f[i]*invn)%mod),<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);
+    <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;&quot;</span>);
+
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre>
 
 
 
@@ -808,7 +908,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

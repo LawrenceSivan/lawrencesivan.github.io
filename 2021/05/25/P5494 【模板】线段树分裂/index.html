@@ -600,7 +600,30 @@
 <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>线段树分裂，顾名思义就是将线段树分裂开。为了维护线段树合并所维护的可重集，我们需要将权值线段树中前 $k$ 小的数和其余数分在两颗权值线段树上进行维护。</p>
 <h2 id="具体操作"><a href="#具体操作" class="headerlink" title="具体操作"></a>具体操作</h2><p>其实很简单，线段树分裂是线段树合并的逆操作。对于待分裂区域与其他区域的公有节点，复制一份；对于独有节点，直接拿过来挂上去；最后记得 pushup。</p>
 <p>其实和主席树是有很高相似度的。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">split</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;<br>	<span class="hljs-type">int</span> o=++tot;<br>	<br>	<span class="hljs-keyword">if</span>(ql==l&amp;&amp;qr==r)&#123;<br>		st[o]=st[rt];<br>		st[rt].v=<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-number">0</span>;<br>		<span class="hljs-keyword">return</span> o;<br>	&#125;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<br>	<span class="hljs-keyword">if</span>(qr&lt;=mid)&#123;<br>		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr);<br>	&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(ql&gt;mid)&#123;<br>		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);<br>	&#125;<span class="hljs-keyword">else</span>&#123;<br>		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,mid);<br>		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,mid<span class="hljs-number">+1</span>,qr);<br>	&#125;<br>	<br>	<span class="hljs-built_in">push_up</span>(rt);<span class="hljs-built_in">push_up</span>(o);<br>	<span class="hljs-keyword">return</span> o;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">split</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;
+	<span class="hljs-type">int</span> o=++tot;
+	
+	<span class="hljs-keyword">if</span>(ql==l&amp;&amp;qr==r)&#123;
+		st[o]=st[rt];
+		st[rt].v=<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-number">0</span>;
+		<span class="hljs-keyword">return</span> o;
+	&#125;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	
+	<span class="hljs-keyword">if</span>(qr&lt;=mid)&#123;
+		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr);
+	&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(ql&gt;mid)&#123;
+		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);
+	&#125;<span class="hljs-keyword">else</span>&#123;
+		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,mid);
+		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,mid<span class="hljs-number">+1</span>,qr);
+	&#125;
+	
+	<span class="hljs-built_in">push_up</span>(rt);<span class="hljs-built_in">push_up</span>(o);
+	<span class="hljs-keyword">return</span> o;
+&#125;
+</code></pre>
 
 <p><del>然后这玩意就讲完了</del></p>
 <p>这么说其实权值线段树的操作啥的几乎就都搞定了，再结合别的东西就可以把权值线段树<del>放在手里把玩了</del>运用得得心应手了。</p>
@@ -620,22 +643,248 @@
 <p>之后就是本题：</p>
 <h2 id="本题："><a href="#本题：" class="headerlink" title="本题："></a>本题：</h2><p>对于每个操作我们分着看：</p>
 <h3 id="操作零"><a href="#操作零" class="headerlink" title="操作零"></a>操作零</h3><p>就是分裂了：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">split</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;<br>	<span class="hljs-type">int</span> o=++tot;<br>	<br>	<span class="hljs-keyword">if</span>(ql==l&amp;&amp;qr==r)&#123;<br>		st[o]=st[rt];<br>		st[rt].v=<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-number">0</span>;<br>		<span class="hljs-keyword">return</span> o;<br>	&#125;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<br>	<span class="hljs-keyword">if</span>(qr&lt;=mid)&#123;<br>		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr);<br>	&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(ql&gt;mid)&#123;<br>		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);<br>	&#125;<span class="hljs-keyword">else</span>&#123;<br>		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,mid);<br>		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,mid<span class="hljs-number">+1</span>,qr);<br>	&#125;<br>	<br>	<span class="hljs-built_in">push_up</span>(rt);<span class="hljs-built_in">push_up</span>(o);<br>	<span class="hljs-keyword">return</span> o;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">split</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;
+	<span class="hljs-type">int</span> o=++tot;
+	
+	<span class="hljs-keyword">if</span>(ql==l&amp;&amp;qr==r)&#123;
+		st[o]=st[rt];
+		st[rt].v=<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-number">0</span>;
+		<span class="hljs-keyword">return</span> o;
+	&#125;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	
+	<span class="hljs-keyword">if</span>(qr&lt;=mid)&#123;
+		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr);
+	&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(ql&gt;mid)&#123;
+		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);
+	&#125;<span class="hljs-keyword">else</span>&#123;
+		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,mid);
+		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,mid<span class="hljs-number">+1</span>,qr);
+	&#125;
+	
+	<span class="hljs-built_in">push_up</span>(rt);<span class="hljs-built_in">push_up</span>(o);
+	<span class="hljs-keyword">return</span> o;
+&#125;
+</code></pre>
 
 <h3 id="操作一"><a href="#操作一" class="headerlink" title="操作一"></a>操作一</h3><p>合并两棵树即可：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">merge</span><span class="hljs-params">(<span class="hljs-type">int</span> p,<span class="hljs-type">int</span> q)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(!p||!q)<span class="hljs-keyword">return</span> p|q;<br>	<br>	<span class="hljs-type">int</span> rt=++tot;<br>	st[rt].v=st[p].v+st[q].v;<br>	<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">merge</span>(<span class="hljs-built_in">ls</span>(p),<span class="hljs-built_in">ls</span>(q));<br>	<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-built_in">merge</span>(<span class="hljs-built_in">rs</span>(p),<span class="hljs-built_in">rs</span>(q));<br>	<br>	<span class="hljs-keyword">return</span> rt;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">merge</span><span class="hljs-params">(<span class="hljs-type">int</span> p,<span class="hljs-type">int</span> q)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(!p||!q)<span class="hljs-keyword">return</span> p|q;
+	
+	<span class="hljs-type">int</span> rt=++tot;
+	st[rt].v=st[p].v+st[q].v;
+	<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">merge</span>(<span class="hljs-built_in">ls</span>(p),<span class="hljs-built_in">ls</span>(q));
+	<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-built_in">merge</span>(<span class="hljs-built_in">rs</span>(p),<span class="hljs-built_in">rs</span>(q));
+	
+	<span class="hljs-keyword">return</span> rt;
+&#125;
+</code></pre>
 
 <h3 id="操作二"><a href="#操作二" class="headerlink" title="操作二"></a>操作二</h3><p>单点修改</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">modify</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> pos,<span class="hljs-type">int</span> val)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(l==r)&#123;<br>		st[rt].v+=val;<br>		<span class="hljs-keyword">return</span>;<br>	&#125;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">if</span>(pos&lt;=mid)&#123;<br>		<span class="hljs-keyword">if</span>(<span class="hljs-built_in">ls</span>(rt)==<span class="hljs-number">0</span>)<span class="hljs-built_in">ls</span>(rt)=++tot;<br>		<span class="hljs-built_in">modify</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,pos,val);<br>	&#125;<br>	<span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-keyword">if</span>(<span class="hljs-built_in">rs</span>(rt)==<span class="hljs-number">0</span>)<span class="hljs-built_in">rs</span>(rt)=++tot;<br>		<span class="hljs-built_in">modify</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,pos,val);<br>	&#125;<br>	<br>	<span class="hljs-built_in">push_up</span>(rt);<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">modify</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> pos,<span class="hljs-type">int</span> val)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(l==r)&#123;
+		st[rt].v+=val;
+		<span class="hljs-keyword">return</span>;
+	&#125;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">if</span>(pos&lt;=mid)&#123;
+		<span class="hljs-keyword">if</span>(<span class="hljs-built_in">ls</span>(rt)==<span class="hljs-number">0</span>)<span class="hljs-built_in">ls</span>(rt)=++tot;
+		<span class="hljs-built_in">modify</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,pos,val);
+	&#125;
+	<span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-keyword">if</span>(<span class="hljs-built_in">rs</span>(rt)==<span class="hljs-number">0</span>)<span class="hljs-built_in">rs</span>(rt)=++tot;
+		<span class="hljs-built_in">modify</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,pos,val);
+	&#125;
+	
+	<span class="hljs-built_in">push_up</span>(rt);
+&#125;</code></pre>
 
 <h3 id="操作三"><a href="#操作三" class="headerlink" title="操作三"></a>操作三</h3><p>区间查询</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">ll <span class="hljs-title">query</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(ql&gt;r||qr&lt;l)<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">if</span>(ql&lt;=l&amp;&amp;qr&gt;=r)&#123;<br>		<span class="hljs-keyword">return</span> st[rt].v;<br>	&#125;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-built_in">query</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr)+<span class="hljs-built_in">query</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function">ll <span class="hljs-title">query</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(ql&gt;r||qr&lt;l)<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+	<span class="hljs-keyword">if</span>(ql&lt;=l&amp;&amp;qr&gt;=r)&#123;
+		<span class="hljs-keyword">return</span> st[rt].v;
+	&#125;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">return</span> <span class="hljs-built_in">query</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr)+<span class="hljs-built_in">query</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);
+&#125;</code></pre>
 
 <h3 id="操作四"><a href="#操作四" class="headerlink" title="操作四"></a>操作四</h3><p>查找第 $k$ 小，直接线段树上二分就行了</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">kth</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> k)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(l==r)<span class="hljs-keyword">return</span> l;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">if</span>(st[<span class="hljs-built_in">ls</span>(rt)].v&gt;=k)<span class="hljs-keyword">return</span> <span class="hljs-built_in">kth</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,k);<br>	<span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-built_in">kth</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,k-st[<span class="hljs-built_in">ls</span>(rt)].v);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">kth</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> k)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(l==r)<span class="hljs-keyword">return</span> l;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">if</span>(st[<span class="hljs-built_in">ls</span>(rt)].v&gt;=k)<span class="hljs-keyword">return</span> <span class="hljs-built_in">kth</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,k);
+	<span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-built_in">kth</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,k-st[<span class="hljs-built_in">ls</span>(rt)].v);
+&#125;
+</code></pre>
 
 <p><del>这么来看这题没啥技术含量，充其量就是学了个分裂函数</del></p>
-<h2 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2e5</span><span class="hljs-number">+5</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> ls(x) st[x].l</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> rs(x) st[x].r</span><br><br><span class="hljs-type">int</span> n,m,tot,op,p,c=<span class="hljs-number">1</span>;<br><span class="hljs-type">int</span> root[maxn];<br><br>ll a[maxn];<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">SegmentTree</span>&#123;<br>	ll v;<br>	<span class="hljs-type">int</span> l,r;<br>&#125;st[maxn&lt;&lt;<span class="hljs-number">6</span>];<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">push_up</span><span class="hljs-params">(<span class="hljs-type">int</span> rt)</span></span>&#123;<br>	st[rt].v=st[<span class="hljs-built_in">ls</span>(rt)].v+st[<span class="hljs-built_in">rs</span>(rt)].v;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">build</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;<br>	<span class="hljs-type">int</span> rt=++tot;<br>	<span class="hljs-keyword">if</span>(l==r)&#123;<br>		st[rt].v=a[l];<br>		<span class="hljs-keyword">return</span> rt;<br>	&#125;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">build</span>(l,mid);<br>	<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-built_in">build</span>(mid<span class="hljs-number">+1</span>,r);<br>	<br>	<span class="hljs-built_in">push_up</span>(rt);<br>	<span class="hljs-keyword">return</span> rt;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">split</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;<br>	<span class="hljs-type">int</span> o=++tot;<br>	<br>	<span class="hljs-keyword">if</span>(ql==l&amp;&amp;qr==r)&#123;<br>		st[o]=st[rt];<br>		st[rt].v=<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-number">0</span>;<br>		<span class="hljs-keyword">return</span> o;<br>	&#125;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<br>	<span class="hljs-keyword">if</span>(qr&lt;=mid)&#123;<br>		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr);<br>	&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(ql&gt;mid)&#123;<br>		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);<br>	&#125;<span class="hljs-keyword">else</span>&#123;<br>		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,mid);<br>		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,mid<span class="hljs-number">+1</span>,qr);<br>	&#125;<br>	<br>	<span class="hljs-built_in">push_up</span>(rt);<span class="hljs-built_in">push_up</span>(o);<br>	<span class="hljs-keyword">return</span> o;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">merge</span><span class="hljs-params">(<span class="hljs-type">int</span> p,<span class="hljs-type">int</span> q)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(!p||!q)<span class="hljs-keyword">return</span> p|q;<br>	<br>	<span class="hljs-type">int</span> rt=++tot;<br>	st[rt].v=st[p].v+st[q].v;<br>	<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">merge</span>(<span class="hljs-built_in">ls</span>(p),<span class="hljs-built_in">ls</span>(q));<br>	<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-built_in">merge</span>(<span class="hljs-built_in">rs</span>(p),<span class="hljs-built_in">rs</span>(q));<br>	<br>	<span class="hljs-keyword">return</span> rt;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">modify</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> pos,<span class="hljs-type">int</span> val)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(l==r)&#123;<br>		st[rt].v+=val;<br>		<span class="hljs-keyword">return</span>;<br>	&#125;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">if</span>(pos&lt;=mid)&#123;<br>		<span class="hljs-keyword">if</span>(<span class="hljs-built_in">ls</span>(rt)==<span class="hljs-number">0</span>)<span class="hljs-built_in">ls</span>(rt)=++tot;<br>		<span class="hljs-built_in">modify</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,pos,val);<br>	&#125;<br>	<span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-keyword">if</span>(<span class="hljs-built_in">rs</span>(rt)==<span class="hljs-number">0</span>)<span class="hljs-built_in">rs</span>(rt)=++tot;<br>		<span class="hljs-built_in">modify</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,pos,val);<br>	&#125;<br>	<br>	<span class="hljs-built_in">push_up</span>(rt);<br>&#125;<br><br><span class="hljs-function">ll <span class="hljs-title">query</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(ql&gt;r||qr&lt;l)<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">if</span>(ql&lt;=l&amp;&amp;qr&gt;=r)&#123;<br>		<span class="hljs-keyword">return</span> st[rt].v;<br>	&#125;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-built_in">query</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr)+<span class="hljs-built_in">query</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">kth</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> k)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(l==r)<span class="hljs-keyword">return</span> l;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">if</span>(st[<span class="hljs-built_in">ls</span>(rt)].v&gt;=k)<span class="hljs-keyword">return</span> <span class="hljs-built_in">kth</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,k);<br>	<span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-built_in">kth</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,k-st[<span class="hljs-built_in">ls</span>(rt)].v);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> ll <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    ll x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		a[i]=<span class="hljs-built_in">read</span>();<br>	&#125;<br>	<br>	root[<span class="hljs-number">1</span>]=<span class="hljs-built_in">build</span>(<span class="hljs-number">1</span>,n);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		op=<span class="hljs-built_in">read</span>();p=<span class="hljs-built_in">read</span>();<br>		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">0</span>)&#123;<br>			<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>(),y=<span class="hljs-built_in">read</span>();<br>			root[++c]=<span class="hljs-built_in">split</span>(root[p],<span class="hljs-number">1</span>,n,x,y);<br>		&#125;<br>		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">1</span>)&#123;<br>			<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>();<br>			root[p]=<span class="hljs-built_in">merge</span>(root[p],root[x]);<br>		&#125;<br>		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">2</span>)&#123;<br>			<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>(),y=<span class="hljs-built_in">read</span>();<br>			<span class="hljs-built_in">modify</span>(root[p],<span class="hljs-number">1</span>,n,y,x);<br>		&#125;<br>		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">3</span>)&#123;<br>			<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>(),y=<span class="hljs-built_in">read</span>();<br>			<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,<span class="hljs-built_in">query</span>(root[p],<span class="hljs-number">1</span>,n,x,y));<br>		&#125;<br>		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">4</span>)&#123;<br>			ll k=<span class="hljs-built_in">read</span>();<br>			<span class="hljs-keyword">if</span>(<span class="hljs-built_in">query</span>(root[p],<span class="hljs-number">1</span>,n,<span class="hljs-number">1</span>,n)&lt;k)<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;-1\n&quot;</span>);<br>			<span class="hljs-keyword">else</span> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,<span class="hljs-built_in">kth</span>(root[p],<span class="hljs-number">1</span>,n,k));<br>		&#125;<br>	&#125;<br><br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<h2 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h2><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2e5</span><span class="hljs-number">+5</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> ls(x) st[x].l</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> rs(x) st[x].r</span>
+
+<span class="hljs-type">int</span> n,m,tot,op,p,c=<span class="hljs-number">1</span>;
+<span class="hljs-type">int</span> root[maxn];
+
+ll a[maxn];
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">SegmentTree</span>&#123;
+	ll v;
+	<span class="hljs-type">int</span> l,r;
+&#125;st[maxn&lt;&lt;<span class="hljs-number">6</span>];
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">push_up</span><span class="hljs-params">(<span class="hljs-type">int</span> rt)</span></span>&#123;
+	st[rt].v=st[<span class="hljs-built_in">ls</span>(rt)].v+st[<span class="hljs-built_in">rs</span>(rt)].v;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">build</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;
+	<span class="hljs-type">int</span> rt=++tot;
+	<span class="hljs-keyword">if</span>(l==r)&#123;
+		st[rt].v=a[l];
+		<span class="hljs-keyword">return</span> rt;
+	&#125;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">build</span>(l,mid);
+	<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-built_in">build</span>(mid<span class="hljs-number">+1</span>,r);
+	
+	<span class="hljs-built_in">push_up</span>(rt);
+	<span class="hljs-keyword">return</span> rt;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">split</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;
+	<span class="hljs-type">int</span> o=++tot;
+	
+	<span class="hljs-keyword">if</span>(ql==l&amp;&amp;qr==r)&#123;
+		st[o]=st[rt];
+		st[rt].v=<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-number">0</span>;
+		<span class="hljs-keyword">return</span> o;
+	&#125;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	
+	<span class="hljs-keyword">if</span>(qr&lt;=mid)&#123;
+		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr);
+	&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(ql&gt;mid)&#123;
+		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);
+	&#125;<span class="hljs-keyword">else</span>&#123;
+		<span class="hljs-built_in">ls</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,mid);
+		<span class="hljs-built_in">rs</span>(o)=<span class="hljs-built_in">split</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,mid<span class="hljs-number">+1</span>,qr);
+	&#125;
+	
+	<span class="hljs-built_in">push_up</span>(rt);<span class="hljs-built_in">push_up</span>(o);
+	<span class="hljs-keyword">return</span> o;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">merge</span><span class="hljs-params">(<span class="hljs-type">int</span> p,<span class="hljs-type">int</span> q)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(!p||!q)<span class="hljs-keyword">return</span> p|q;
+	
+	<span class="hljs-type">int</span> rt=++tot;
+	st[rt].v=st[p].v+st[q].v;
+	<span class="hljs-built_in">ls</span>(rt)=<span class="hljs-built_in">merge</span>(<span class="hljs-built_in">ls</span>(p),<span class="hljs-built_in">ls</span>(q));
+	<span class="hljs-built_in">rs</span>(rt)=<span class="hljs-built_in">merge</span>(<span class="hljs-built_in">rs</span>(p),<span class="hljs-built_in">rs</span>(q));
+	
+	<span class="hljs-keyword">return</span> rt;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">modify</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> pos,<span class="hljs-type">int</span> val)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(l==r)&#123;
+		st[rt].v+=val;
+		<span class="hljs-keyword">return</span>;
+	&#125;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">if</span>(pos&lt;=mid)&#123;
+		<span class="hljs-keyword">if</span>(<span class="hljs-built_in">ls</span>(rt)==<span class="hljs-number">0</span>)<span class="hljs-built_in">ls</span>(rt)=++tot;
+		<span class="hljs-built_in">modify</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,pos,val);
+	&#125;
+	<span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-keyword">if</span>(<span class="hljs-built_in">rs</span>(rt)==<span class="hljs-number">0</span>)<span class="hljs-built_in">rs</span>(rt)=++tot;
+		<span class="hljs-built_in">modify</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,pos,val);
+	&#125;
+	
+	<span class="hljs-built_in">push_up</span>(rt);
+&#125;
+
+<span class="hljs-function">ll <span class="hljs-title">query</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> ql,<span class="hljs-type">int</span> qr)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(ql&gt;r||qr&lt;l)<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+	<span class="hljs-keyword">if</span>(ql&lt;=l&amp;&amp;qr&gt;=r)&#123;
+		<span class="hljs-keyword">return</span> st[rt].v;
+	&#125;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">return</span> <span class="hljs-built_in">query</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,ql,qr)+<span class="hljs-built_in">query</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,ql,qr);
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">kth</span><span class="hljs-params">(<span class="hljs-type">int</span> rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> k)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(l==r)<span class="hljs-keyword">return</span> l;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">if</span>(st[<span class="hljs-built_in">ls</span>(rt)].v&gt;=k)<span class="hljs-keyword">return</span> <span class="hljs-built_in">kth</span>(<span class="hljs-built_in">ls</span>(rt),l,mid,k);
+	<span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-built_in">kth</span>(<span class="hljs-built_in">rs</span>(rt),mid<span class="hljs-number">+1</span>,r,k-st[<span class="hljs-built_in">ls</span>(rt)].v);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> ll <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    ll x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		a[i]=<span class="hljs-built_in">read</span>();
+	&#125;
+	
+	root[<span class="hljs-number">1</span>]=<span class="hljs-built_in">build</span>(<span class="hljs-number">1</span>,n);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		op=<span class="hljs-built_in">read</span>();p=<span class="hljs-built_in">read</span>();
+		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">0</span>)&#123;
+			<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>(),y=<span class="hljs-built_in">read</span>();
+			root[++c]=<span class="hljs-built_in">split</span>(root[p],<span class="hljs-number">1</span>,n,x,y);
+		&#125;
+		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">1</span>)&#123;
+			<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>();
+			root[p]=<span class="hljs-built_in">merge</span>(root[p],root[x]);
+		&#125;
+		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">2</span>)&#123;
+			<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>(),y=<span class="hljs-built_in">read</span>();
+			<span class="hljs-built_in">modify</span>(root[p],<span class="hljs-number">1</span>,n,y,x);
+		&#125;
+		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">3</span>)&#123;
+			<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>(),y=<span class="hljs-built_in">read</span>();
+			<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,<span class="hljs-built_in">query</span>(root[p],<span class="hljs-number">1</span>,n,x,y));
+		&#125;
+		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">4</span>)&#123;
+			ll k=<span class="hljs-built_in">read</span>();
+			<span class="hljs-keyword">if</span>(<span class="hljs-built_in">query</span>(root[p],<span class="hljs-number">1</span>,n,<span class="hljs-number">1</span>,n)&lt;k)<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;-1\n&quot;</span>);
+			<span class="hljs-keyword">else</span> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,<span class="hljs-built_in">kth</span>(root[p],<span class="hljs-number">1</span>,n,k));
+		&#125;
+	&#125;
+
+
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+</code></pre>
 
         </div>
         <!-- .entry-content -->
@@ -763,7 +1012,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

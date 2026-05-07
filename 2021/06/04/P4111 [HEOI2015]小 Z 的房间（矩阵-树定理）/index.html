@@ -649,19 +649,71 @@
 <p>在把矩阵化成三角时需要注意，在题目中模数可能为任意，这样在剩余系就不一定存在逆元，所以需要使用辗转相除法。</p>
 <p>或者如果这道题的模数是质数的话也可以使用乘法逆元。</p>
 <p>消元结束以后直接算出行列式的值就好了。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> ans=<span class="hljs-number">1</span>;<br><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=tmp;i++)&#123;<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=i<span class="hljs-number">+1</span>;j&lt;=tmp;j++)&#123;<br>        <span class="hljs-keyword">while</span>(a[j][i])&#123;<br>            <span class="hljs-type">int</span> t=a[i][i]/a[j][i];<br>            <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=i;k&lt;=tmp;k++)a[i][k]=(a[i][k]-a[j][k]*t%mod+mod)%mod;<br>            <span class="hljs-built_in">swap</span>(a[i],a[j]);<br>            ans*=<span class="hljs-number">-1</span>;<br>        &#125;<br>    &#125;<br>    ans=(ans*a[i][i]%mod+mod)%mod;<br>&#125;<br><span class="hljs-keyword">return</span> (ans%mod+mod)%mod;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-type">int</span> ans=<span class="hljs-number">1</span>;
+<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=tmp;i++)&#123;
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=i<span class="hljs-number">+1</span>;j&lt;=tmp;j++)&#123;
+        <span class="hljs-keyword">while</span>(a[j][i])&#123;
+            <span class="hljs-type">int</span> t=a[i][i]/a[j][i];
+            <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=i;k&lt;=tmp;k++)a[i][k]=(a[i][k]-a[j][k]*t%mod+mod)%mod;
+            <span class="hljs-built_in">swap</span>(a[i],a[j]);
+            ans*=<span class="hljs-number">-1</span>;
+        &#125;
+    &#125;
+    ans=(ans*a[i][i]%mod+mod)%mod;
+&#125;
+<span class="hljs-keyword">return</span> (ans%mod+mod)%mod;
+</code></pre>
 
 <p>这里同时给出对于模数是质数时，求解行列式的方法：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">det</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> ans=<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=tmp;i++)&#123;<br>	    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=i;j&lt;=tmp;j++)&#123;<br>	        <span class="hljs-keyword">if</span>(a[j][i])&#123;<br>	            <span class="hljs-built_in">swap</span>(a[i],a[j]);<br>	            <span class="hljs-keyword">if</span>(i!=j)ans=mod-ans;<br>	            <span class="hljs-keyword">break</span>;<br>	        &#125;<br>		&#125;<br>	            <br>	    <span class="hljs-type">int</span> t=<span class="hljs-built_in">qpow</span>(a[i][i],mod<span class="hljs-number">-2</span>);<br>	        <br>	    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=i<span class="hljs-number">+1</span>;j&lt;=tmp;j++)&#123;<br>	        <span class="hljs-keyword">if</span>(a[j][i])&#123;<br>	        	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=tmp;k&gt;=i;k--)&#123;<br>	        		a[j][k]=(a[j][k]-a[i][k]*t%mod*a[j][i]%mod+mod)%mod;<br>				&#125;<br>			&#125;<br>	    &#125;<br>	&#125;<br>	     <br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=tmp;i++)ans=ans*a[i][i]%mod;	<br>		<br>	<span class="hljs-keyword">return</span> ans;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">det</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> ans=<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=tmp;i++)&#123;
+	    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=i;j&lt;=tmp;j++)&#123;
+	        <span class="hljs-keyword">if</span>(a[j][i])&#123;
+	            <span class="hljs-built_in">swap</span>(a[i],a[j]);
+	            <span class="hljs-keyword">if</span>(i!=j)ans=mod-ans;
+	            <span class="hljs-keyword">break</span>;
+	        &#125;
+		&#125;
+	            
+	    <span class="hljs-type">int</span> t=<span class="hljs-built_in">qpow</span>(a[i][i],mod<span class="hljs-number">-2</span>);
+	        
+	    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=i<span class="hljs-number">+1</span>;j&lt;=tmp;j++)&#123;
+	        <span class="hljs-keyword">if</span>(a[j][i])&#123;
+	        	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=tmp;k&gt;=i;k--)&#123;
+	        		a[j][k]=(a[j][k]-a[i][k]*t%mod*a[j][i]%mod+mod)%mod;
+				&#125;
+			&#125;
+	    &#125;
+	&#125;
+	     
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=tmp;i++)ans=ans*a[i][i]%mod;	
+		
+	<span class="hljs-keyword">return</span> ans;
+&#125;
+</code></pre>
 
 <p>需要处理一下负数情况，否则会出问题：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">check</span><span class="hljs-params">()</span></span>&#123;<br> 	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>   		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=n;j++)&#123;<br>   			<span class="hljs-keyword">if</span>(a[i][j]&lt;<span class="hljs-number">0</span>) a[i][j]+=mod;<br>		&#125;<br>	&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">check</span><span class="hljs-params">()</span></span>&#123;
+ 	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+   		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=n;j++)&#123;
+   			<span class="hljs-keyword">if</span>(a[i][j]&lt;<span class="hljs-number">0</span>) a[i][j]+=mod;
+		&#125;
+	&#125;
+&#125;
+</code></pre>
 
 <p>对于本题，并不是所有的点都可以用来求行列式，只有不是墙的点才能放进矩阵。</p>
 <p>否则根据上面的性质：<strong>如果其中有个一元素为 $0$ 则整体为 $0$</strong> 。</p>
 <p>就会直接 <em>WA</em> 了。</p>
 <p>对于加边，只加向下或者向右的边，可以保证不重复。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=m;j++)&#123;<br>			cin&gt;&gt;a[i][j];<br>			<span class="hljs-keyword">if</span>(a[i][j]==<span class="hljs-string">&#x27;.&#x27;</span>)id[i][j]=++cnt;<span class="hljs-comment">//用cnt来重新编号</span><br>		&#125;<br>	&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=m;j++)&#123;
+			cin&gt;&gt;a[i][j];
+			<span class="hljs-keyword">if</span>(a[i][j]==<span class="hljs-string">&#x27;.&#x27;</span>)id[i][j]=++cnt;<span class="hljs-comment">//用cnt来重新编号</span>
+		&#125;
+	&#125;
+</code></pre>
 
 <h2 id="本题相关："><a href="#本题相关：" class="headerlink" title="本题相关："></a>本题相关：</h2><p>$1$：这个题需要注意，一定要开 <em>long</em> <em>long</em>.</p>
 <p>我们可以观察一下这个题的样例一：</p>
@@ -672,7 +724,192 @@
 <p>$3$：上三角，上三角，上三角！（针对某些高斯-约旦党。</p>
 <p>$4$：取 $mod$ 的时候注意处理负数。</p>
 <h2 id="复杂度分析："><a href="#复杂度分析：" class="headerlink" title="复杂度分析："></a>复杂度分析：</h2><p>由于我们使用了辗转相除法来进行高斯消元，所以原来 $O(n^3)$ 的高斯消元被加了一个 $log$ ，时间复杂度 $O(n^3m^3log(nm))$</p>
-<h2 id="CODE："><a href="#CODE：" class="headerlink" title="CODE："></a>CODE：</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> N=<span class="hljs-number">150</span>;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> mod=<span class="hljs-number">1e9</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> int long long<span class="hljs-comment">//记得long long</span></span><br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">matrix</span> &#123;<span class="hljs-comment">//这里是矩阵的板子</span><br>    <span class="hljs-type">int</span> n,m;<br>    <span class="hljs-type">int</span> tmp;<br>    <span class="hljs-type">int</span> a[N][N];<br><br>    <span class="hljs-built_in">matrix</span>()&#123;&#125;<br>    <span class="hljs-built_in">matrix</span>(<span class="hljs-type">const</span> <span class="hljs-type">int</span> &amp;_n,<span class="hljs-type">const</span> <span class="hljs-type">int</span> &amp;_m):<span class="hljs-built_in">n</span>(_n<span class="hljs-number">+1</span>),<span class="hljs-built_in">m</span>(_m<span class="hljs-number">+1</span>)&#123;<br>        <span class="hljs-built_in">memset</span>(a,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(a));<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">clear</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-built_in">memset</span>(a,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(a));<br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;<br>            a[i][i]=<span class="hljs-number">1</span>;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">id</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;<br>            a[i][i]=<span class="hljs-number">1</span>;<br>        &#125; <br>    &#125; <br><br>    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> + (<span class="hljs-type">const</span> matrix &amp;b)<span class="hljs-type">const</span>&#123;<br>        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,b.m)</span></span>;<br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;<br>            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=m;j++)&#123;<br>                res.a[i][j]=(a[i][j]+b.a[i][j])%mod;<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">return</span> res;<br>    &#125; <br><br>    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> - (<span class="hljs-type">const</span> matrix &amp;b)<span class="hljs-type">const</span>&#123;<br>        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,b.m)</span></span>;<br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;<br>            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=m;j++)&#123;<br>                res.a[i][j]=(a[i][j]-b.a[i][j])%mod;<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">return</span> res;<br>    &#125; <br><br>    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> * (<span class="hljs-type">int</span> c)<span class="hljs-type">const</span>&#123;<br>        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,m)</span></span>;<br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;<br>            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=m;j++)&#123;<br>                res.a[i][j]=(c*a[i][j])%mod;<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">return</span> res;<br>    &#125;<br><br>    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> * (<span class="hljs-type">const</span> matrix &amp;b)<span class="hljs-type">const</span>&#123;<br>        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,b.m)</span></span>;<br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;<br>            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=b.m;j++)&#123;<br>                <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;=m;k++)&#123;<br>                    res.a[i][j]=(res.a[i][j]+a[i][k]*b.a[k][j])%mod;        <br>                &#125;<br>            &#125;<br>        &#125; <br>        <span class="hljs-keyword">return</span> res;<br>    &#125;<br><br>    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> ^ (<span class="hljs-type">int</span> p)<span class="hljs-type">const</span>&#123;<br>        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,m)</span>,x </span>= *<span class="hljs-keyword">this</span>; <br>        res.<span class="hljs-built_in">clear</span>();<br>        <span class="hljs-keyword">for</span>(;p;p&gt;&gt;=<span class="hljs-number">1</span>,x=x*x)&#123;<br>            <span class="hljs-keyword">if</span>(p&amp;<span class="hljs-number">1</span>)res=res*x;<br>        &#125;<br>        <span class="hljs-keyword">return</span> res;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">inline</span> matrix <span class="hljs-title">trans</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(m,n)</span></span>;<br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;<br>            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=m;j++)&#123;<br>                res.a[i][j]=a[j][i];<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">return</span> res;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">det</span><span class="hljs-params">()</span></span>&#123;<span class="hljs-comment">//高斯消元与求行列式</span><br>        <span class="hljs-type">int</span> ans=<span class="hljs-number">1</span>;<br>        <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=tmp;i++)&#123;<br>            <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=i<span class="hljs-number">+1</span>;j&lt;=tmp;j++)&#123;<br>                <span class="hljs-keyword">while</span>(a[j][i])&#123;<span class="hljs-comment">//辗转相除</span><br>                    <span class="hljs-type">int</span> t=a[i][i]/a[j][i];<br>                    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=i;k&lt;=tmp;k++)&#123;<br>                        a[i][k]=(a[i][k]-a[j][k]*t%mod+mod)%mod;<br>                        <br>                    &#125;<br>					<span class="hljs-built_in">swap</span>(a[i],a[j]);<br>                    ans*=<span class="hljs-number">-1</span>;<span class="hljs-comment">//交换以后需要变号</span><br>                &#125;<br>            &#125;<br>            ans=(ans*a[i][i]%mod+mod)%mod;<span class="hljs-comment">//勤处理负数</span><br>        &#125;<br>        <span class="hljs-keyword">return</span> (ans%mod+mod)%mod;<br>    &#125;<br>&#125;W,D,A;<br><span class="hljs-comment">//W 基尔霍夫矩阵（拉普拉斯矩阵）</span><br><span class="hljs-comment">//D 度数矩阵（对角线矩阵）</span><br><span class="hljs-comment">//A 邻接矩阵</span><br><br><span class="hljs-type">int</span> n,m;<br><br><span class="hljs-type">char</span> a[<span class="hljs-number">15</span>][<span class="hljs-number">15</span>];<br><br><span class="hljs-type">int</span> id[<span class="hljs-number">15</span>][<span class="hljs-number">15</span>],cnt;<span class="hljs-comment">//id 用于重新编号</span><br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> v)</span></span>&#123;<br>	A.a[u][v]=<span class="hljs-number">1</span>;<br>	A.a[v][u]=<span class="hljs-number">1</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=m;j++)&#123;<br>			cin&gt;&gt;a[i][j];<br>			<span class="hljs-keyword">if</span>(a[i][j]==<span class="hljs-string">&#x27;.&#x27;</span>)id[i][j]=++cnt;<br>		&#125;<br>	&#125;<br>	<br>	W=<span class="hljs-built_in">matrix</span>(cnt,cnt);<span class="hljs-comment">//初始化矩阵</span><br>	D=<span class="hljs-built_in">matrix</span>(cnt,cnt);<br>	A=<span class="hljs-built_in">matrix</span>(cnt,cnt);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<span class="hljs-comment">//构造邻接矩阵</span><br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=m;j++)&#123;<br>			<span class="hljs-keyword">if</span>(id[i][j]&amp;&amp;id[i][j<span class="hljs-number">-1</span>])<span class="hljs-built_in">add</span>(id[i][j],id[i][j<span class="hljs-number">-1</span>]); <br>			<span class="hljs-keyword">if</span>(id[i][j]&amp;&amp;id[i<span class="hljs-number">-1</span>][j])<span class="hljs-built_in">add</span>(id[i][j],id[i<span class="hljs-number">-1</span>][j]);	<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cnt;i++)&#123;<span class="hljs-comment">//构造度数矩阵</span><br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=cnt;j++)&#123;<br>			<span class="hljs-keyword">if</span>(A.a[i][j]) D.a[i][i]++;<br>		&#125;<br>	&#125;<br>	<br>	W=D-A;<span class="hljs-comment">//两者作差得到基尔霍夫矩阵（拉普拉斯矩阵）</span><br>	<br>	W.tmp=--cnt;<span class="hljs-comment">//除掉最后一行与最后一列</span><br>	<br>	<span class="hljs-comment">/*for(re int i=1;i&lt;=cnt;i++)&#123;</span><br><span class="hljs-comment">		for(re int j=1;j&lt;=cnt;j++)&#123;</span><br><span class="hljs-comment">			cout&lt;&lt;W.a[i][j]&lt;&lt;&quot; &quot;;</span><br><span class="hljs-comment">		&#125;</span><br><span class="hljs-comment">		cout&lt;&lt;endl;</span><br><span class="hljs-comment">	&#125;*/</span><br>	<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,W.<span class="hljs-built_in">det</span>());<span class="hljs-comment">//求行列式</span><br>	<br>	<br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<h2 id="CODE："><a href="#CODE：" class="headerlink" title="CODE："></a>CODE：</h2><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> N=<span class="hljs-number">150</span>;
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> mod=<span class="hljs-number">1e9</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> int long long<span class="hljs-comment">//记得long long</span></span>
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">matrix</span> &#123;<span class="hljs-comment">//这里是矩阵的板子</span>
+    <span class="hljs-type">int</span> n,m;
+    <span class="hljs-type">int</span> tmp;
+    <span class="hljs-type">int</span> a[N][N];
+
+    <span class="hljs-built_in">matrix</span>()&#123;&#125;
+    <span class="hljs-built_in">matrix</span>(<span class="hljs-type">const</span> <span class="hljs-type">int</span> &amp;_n,<span class="hljs-type">const</span> <span class="hljs-type">int</span> &amp;_m):<span class="hljs-built_in">n</span>(_n<span class="hljs-number">+1</span>),<span class="hljs-built_in">m</span>(_m<span class="hljs-number">+1</span>)&#123;
+        <span class="hljs-built_in">memset</span>(a,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(a));
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">clear</span><span class="hljs-params">()</span></span>&#123;
+        <span class="hljs-built_in">memset</span>(a,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(a));
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;
+            a[i][i]=<span class="hljs-number">1</span>;
+        &#125;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">id</span><span class="hljs-params">()</span></span>&#123;
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;
+            a[i][i]=<span class="hljs-number">1</span>;
+        &#125; 
+    &#125; 
+
+    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> + (<span class="hljs-type">const</span> matrix &amp;b)<span class="hljs-type">const</span>&#123;
+        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,b.m)</span></span>;
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;
+            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=m;j++)&#123;
+                res.a[i][j]=(a[i][j]+b.a[i][j])%mod;
+            &#125;
+        &#125;
+        <span class="hljs-keyword">return</span> res;
+    &#125; 
+
+    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> - (<span class="hljs-type">const</span> matrix &amp;b)<span class="hljs-type">const</span>&#123;
+        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,b.m)</span></span>;
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;
+            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=m;j++)&#123;
+                res.a[i][j]=(a[i][j]-b.a[i][j])%mod;
+            &#125;
+        &#125;
+        <span class="hljs-keyword">return</span> res;
+    &#125; 
+
+    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> * (<span class="hljs-type">int</span> c)<span class="hljs-type">const</span>&#123;
+        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,m)</span></span>;
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;
+            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=m;j++)&#123;
+                res.a[i][j]=(c*a[i][j])%mod;
+            &#125;
+        &#125;
+        <span class="hljs-keyword">return</span> res;
+    &#125;
+
+    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> * (<span class="hljs-type">const</span> matrix &amp;b)<span class="hljs-type">const</span>&#123;
+        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,b.m)</span></span>;
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;
+            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=b.m;j++)&#123;
+                <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;=m;k++)&#123;
+                    res.a[i][j]=(res.a[i][j]+a[i][k]*b.a[k][j])%mod;        
+                &#125;
+            &#125;
+        &#125; 
+        <span class="hljs-keyword">return</span> res;
+    &#125;
+
+    <span class="hljs-keyword">inline</span> matrix <span class="hljs-keyword">operator</span> ^ (<span class="hljs-type">int</span> p)<span class="hljs-type">const</span>&#123;
+        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(n,m)</span>,x </span>= *<span class="hljs-keyword">this</span>; 
+        res.<span class="hljs-built_in">clear</span>();
+        <span class="hljs-keyword">for</span>(;p;p&gt;&gt;=<span class="hljs-number">1</span>,x=x*x)&#123;
+            <span class="hljs-keyword">if</span>(p&amp;<span class="hljs-number">1</span>)res=res*x;
+        &#125;
+        <span class="hljs-keyword">return</span> res;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">inline</span> matrix <span class="hljs-title">trans</span><span class="hljs-params">()</span></span>&#123;
+        <span class="hljs-function">matrix <span class="hljs-title">res</span><span class="hljs-params">(m,n)</span></span>;
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=n;i++)&#123;
+            <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=m;j++)&#123;
+                res.a[i][j]=a[j][i];
+            &#125;
+        &#125;
+        <span class="hljs-keyword">return</span> res;
+    &#125;
+    
+    <span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">det</span><span class="hljs-params">()</span></span>&#123;<span class="hljs-comment">//高斯消元与求行列式</span>
+        <span class="hljs-type">int</span> ans=<span class="hljs-number">1</span>;
+        <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=tmp;i++)&#123;
+            <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=i<span class="hljs-number">+1</span>;j&lt;=tmp;j++)&#123;
+                <span class="hljs-keyword">while</span>(a[j][i])&#123;<span class="hljs-comment">//辗转相除</span>
+                    <span class="hljs-type">int</span> t=a[i][i]/a[j][i];
+                    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=i;k&lt;=tmp;k++)&#123;
+                        a[i][k]=(a[i][k]-a[j][k]*t%mod+mod)%mod;
+                        
+                    &#125;
+					<span class="hljs-built_in">swap</span>(a[i],a[j]);
+                    ans*=<span class="hljs-number">-1</span>;<span class="hljs-comment">//交换以后需要变号</span>
+                &#125;
+            &#125;
+            ans=(ans*a[i][i]%mod+mod)%mod;<span class="hljs-comment">//勤处理负数</span>
+        &#125;
+        <span class="hljs-keyword">return</span> (ans%mod+mod)%mod;
+    &#125;
+&#125;W,D,A;
+<span class="hljs-comment">//W 基尔霍夫矩阵（拉普拉斯矩阵）</span>
+<span class="hljs-comment">//D 度数矩阵（对角线矩阵）</span>
+<span class="hljs-comment">//A 邻接矩阵</span>
+
+<span class="hljs-type">int</span> n,m;
+
+<span class="hljs-type">char</span> a[<span class="hljs-number">15</span>][<span class="hljs-number">15</span>];
+
+<span class="hljs-type">int</span> id[<span class="hljs-number">15</span>][<span class="hljs-number">15</span>],cnt;<span class="hljs-comment">//id 用于重新编号</span>
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> v)</span></span>&#123;
+	A.a[u][v]=<span class="hljs-number">1</span>;
+	A.a[v][u]=<span class="hljs-number">1</span>;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=m;j++)&#123;
+			cin&gt;&gt;a[i][j];
+			<span class="hljs-keyword">if</span>(a[i][j]==<span class="hljs-string">&#x27;.&#x27;</span>)id[i][j]=++cnt;
+		&#125;
+	&#125;
+	
+	W=<span class="hljs-built_in">matrix</span>(cnt,cnt);<span class="hljs-comment">//初始化矩阵</span>
+	D=<span class="hljs-built_in">matrix</span>(cnt,cnt);
+	A=<span class="hljs-built_in">matrix</span>(cnt,cnt);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<span class="hljs-comment">//构造邻接矩阵</span>
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=m;j++)&#123;
+			<span class="hljs-keyword">if</span>(id[i][j]&amp;&amp;id[i][j<span class="hljs-number">-1</span>])<span class="hljs-built_in">add</span>(id[i][j],id[i][j<span class="hljs-number">-1</span>]); 
+			<span class="hljs-keyword">if</span>(id[i][j]&amp;&amp;id[i<span class="hljs-number">-1</span>][j])<span class="hljs-built_in">add</span>(id[i][j],id[i<span class="hljs-number">-1</span>][j]);	
+		&#125;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cnt;i++)&#123;<span class="hljs-comment">//构造度数矩阵</span>
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>;j&lt;=cnt;j++)&#123;
+			<span class="hljs-keyword">if</span>(A.a[i][j]) D.a[i][i]++;
+		&#125;
+	&#125;
+	
+	W=D-A;<span class="hljs-comment">//两者作差得到基尔霍夫矩阵（拉普拉斯矩阵）</span>
+	
+	W.tmp=--cnt;<span class="hljs-comment">//除掉最后一行与最后一列</span>
+	
+	<span class="hljs-comment">/*for(re int i=1;i&lt;=cnt;i++)&#123;</span>
+<span class="hljs-comment">		for(re int j=1;j&lt;=cnt;j++)&#123;</span>
+<span class="hljs-comment">			cout&lt;&lt;W.a[i][j]&lt;&lt;&quot; &quot;;</span>
+<span class="hljs-comment">		&#125;</span>
+<span class="hljs-comment">		cout&lt;&lt;endl;</span>
+<span class="hljs-comment">	&#125;*/</span>
+	
+	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,W.<span class="hljs-built_in">det</span>());<span class="hljs-comment">//求行列式</span>
+	
+	
+
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+</code></pre>
 
 <h2 id="关于拉普拉斯矩阵的有向图情况："><a href="#关于拉普拉斯矩阵的有向图情况：" class="headerlink" title="关于拉普拉斯矩阵的有向图情况："></a>关于拉普拉斯矩阵的有向图情况：</h2><p>像我们上面所说的，只考虑入度或者出度就可以了。</p>
 <p>但是考虑这两种是不一样的。</p>
@@ -698,7 +935,18 @@
 </ul>
 <p><strong>内向是出度，外向是入度</strong>（一定要记牢，不要混淆）</p>
 <p>如果指定了根节点为$root$ 那么要在计算行列式的时候要去掉的就不是任意一行和一列了，<strong>而是第 $root$ 行和第 $root$ 列</strong>。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> t,<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> v,<span class="hljs-type">int</span> w)</span></span>&#123;<br>    <span class="hljs-keyword">if</span>(t==<span class="hljs-number">0</span>)&#123;<span class="hljs-comment">//内向树，出度矩阵</span><br>    	(D.a[u][u]+=w)%=mod;<br>		(A.a[u][v]+=w)%=mod;<br>	&#125;<br>	<br>	<span class="hljs-keyword">else</span>&#123;<span class="hljs-comment">//外向树，入度矩阵</span><br>		(D.a[v][v]+=w)%=mod;<br>		(A.a[u][v]+=w)%=mod;<br>	&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> t,<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> v,<span class="hljs-type">int</span> w)</span></span>&#123;
+    <span class="hljs-keyword">if</span>(t==<span class="hljs-number">0</span>)&#123;<span class="hljs-comment">//内向树，出度矩阵</span>
+    	(D.a[u][u]+=w)%=mod;
+		(A.a[u][v]+=w)%=mod;
+	&#125;
+	
+	<span class="hljs-keyword">else</span>&#123;<span class="hljs-comment">//外向树，入度矩阵</span>
+		(D.a[v][v]+=w)%=mod;
+		(A.a[u][v]+=w)%=mod;
+	&#125;
+&#125;
+</code></pre>
 
 <p>因此如果要统计一张图所有的内向树形图，只要枚举所有的根 $root$ 并对所有的行列式求和即可。</p>
 <p>如果要统计一张图所有的外向树形图，只要枚举所有的根 $root$ 并对所有的行列式求和即可。</p>
@@ -834,7 +1082,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

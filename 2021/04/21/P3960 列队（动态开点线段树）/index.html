@@ -594,7 +594,17 @@
 <p>在线段树的应用过程中，我们可以发现，在每次修改与查询操作的时候，我们只需要针对从根节点开始最多的 $log(n)$ 个节点进行操作就可以了，那么可以发现其他的很多节点其实并没有用上，那么我们可不可以在用到某一个区间的时候动态地把他开出来而不是一次性全部开出来呢？</p>
 <p>答案是肯定的，我们完全可以在一开始开出一个根节点代表$[1-n]$，在需要用到某个区间的时候再把这个区间所对的节点开出来供我们使用。</p>
 <p>这样的话，可以发现我们舍弃了线段树的二倍编码原则，而是采用用变量记录形式来记录编号，并且在递归访问的时候，把每个节点代表的区间作为参数传递。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;<br>	<span class="hljs-type">int</span> ls,rs;<br>	<span class="hljs-type">int</span> data;<br>&#125;st[maxn&lt;&lt;<span class="hljs-number">1</span>];<br><br><span class="hljs-type">int</span> cnt;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">build</span><span class="hljs-params">()</span></span>&#123;<br>	cnt++;<br>	st[cnt].ls=st[cnt].rs=st[cnt].data=<span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">return</span> cnt;<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;
+	<span class="hljs-type">int</span> ls,rs;
+	<span class="hljs-type">int</span> data;
+&#125;st[maxn&lt;&lt;<span class="hljs-number">1</span>];
+
+<span class="hljs-type">int</span> cnt;
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">build</span><span class="hljs-params">()</span></span>&#123;
+	cnt++;
+	st[cnt].ls=st[cnt].rs=st[cnt].data=<span class="hljs-number">0</span>;
+	<span class="hljs-keyword">return</span> cnt;
+&#125;</code></pre>
 
 <p>动态开点线段树比较好的例题是 <a href="https://www.luogu.com.cn/problem/P3960">P3960 [NOIP2017 提高组] 列队</a></p>
 <p>经过观察我们可以发现，每次离队所影响的最多只是当前位置还有这一排的最后一个位置以及最后一列最后一行的位置；</p>
@@ -607,7 +617,128 @@
 <p>第三步：一个区间约有$n$个数，如果每个数都往前挪一位，$q$次询问，每次询问带有$n$次挪移，那么我们考虑不挪动，而是给即将空出来的位置打上标记，表示这个数已经被用过，因为区间最后会再加一个数进来，所以区间长度不变。两种方式最后留下的区间等价</p>
 <p><img src="https://i.loli.net/2021/06/02/jQRChYNidyUcaPp.png" alt="081t1gd4.png"></p>
 <p>CODE：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">3e5</span><span class="hljs-number">+5</span>;<br><br><span class="hljs-type">int</span> n,m,q,now;<br><span class="hljs-type">int</span> cnt,Max;<br><br>ll ans;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;<br>	<span class="hljs-type">int</span> ls,rs,size;<span class="hljs-comment">//size:当前区间内有多少个数没有被标记</span><br>	ll val;<br>	<br>	<span class="hljs-built_in">node</span>()&#123;&#125;<br>	<span class="hljs-built_in">node</span>(<span class="hljs-type">const</span> <span class="hljs-type">int</span> _ls,<span class="hljs-type">const</span> <span class="hljs-type">int</span> _rs,<span class="hljs-type">const</span> <span class="hljs-type">int</span> _size,<span class="hljs-type">const</span> ll _val):<br>		<span class="hljs-built_in">ls</span>(_ls),<span class="hljs-built_in">rs</span>(_rs),<span class="hljs-built_in">size</span>(_size),<span class="hljs-built_in">val</span>(_val)&#123;&#125;<br>&#125;st[maxn&lt;&lt;<span class="hljs-number">5</span>];<span class="hljs-comment">//严格来讲应该开 Q * log2(N)，也就是20倍 ，为了方便与保险，我们直接开32倍</span><br><br><span class="hljs-type">int</span> ins[maxn],root[maxn];<br><span class="hljs-comment">//ins[i]记录第i棵树插入了多少个新数</span><br><span class="hljs-comment">//root[i]记录第i棵树的根节点</span><br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">len</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(now==n<span class="hljs-number">+1</span>)&#123;<br>		<span class="hljs-keyword">if</span>(r&lt;=n)<span class="hljs-keyword">return</span> r-l<span class="hljs-number">+1</span>;<br>		<span class="hljs-keyword">if</span>(l&lt;=n)<span class="hljs-keyword">return</span> n-l<span class="hljs-number">+1</span>;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	&#125;<br>	<span class="hljs-keyword">if</span>(r&lt;m)<span class="hljs-keyword">return</span> r-l<span class="hljs-number">+1</span>;<br>	<span class="hljs-keyword">if</span>(l&lt;m)<span class="hljs-keyword">return</span> (m<span class="hljs-number">-1</span>)-l<span class="hljs-number">+1</span>;<br>	<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-function">ll <span class="hljs-title">query</span><span class="hljs-params">(<span class="hljs-type">int</span> &amp;rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> pos)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(!rt)&#123;<span class="hljs-comment">//动态开点</span><br>		rt=++cnt;<br>		st[rt].size=<span class="hljs-built_in">len</span>(l,r);<br>		<br>		<span class="hljs-keyword">if</span>(l==r)&#123;<br>			<span class="hljs-keyword">if</span>(now==n<span class="hljs-number">+1</span>)st[rt].val=<span class="hljs-number">1ll</span>*l*m;<br>			<span class="hljs-keyword">else</span> st[rt].val=<span class="hljs-number">1ll</span>*(now<span class="hljs-number">-1</span>)*m+l;<br>		&#125;<br>	&#125;<br>	st[rt].size--;这个区间有一个数被取出<br>	<span class="hljs-keyword">if</span>(l==r)<span class="hljs-keyword">return</span> st[rt].val;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">if</span>(!st[rt].ls &amp;&amp;<span class="hljs-built_in">len</span>(l,mid)&gt;=pos||st[st[rt].ls].size&gt;=pos)&#123;<br>		<span class="hljs-built_in">query</span>(st[rt].ls,l,mid,pos);<br>	&#125;<br>	<span class="hljs-keyword">else</span>&#123;<br>		<span class="hljs-type">int</span> tmp;<br>		<span class="hljs-keyword">if</span>(!st[rt].ls)tmp=<span class="hljs-built_in">len</span>(l,mid);<br>		<span class="hljs-keyword">else</span> tmp=st[st[rt].ls].size;<br>		<span class="hljs-keyword">return</span> <span class="hljs-built_in">query</span>(st[rt].rs,mid<span class="hljs-number">+1</span>,r,pos-tmp);<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">modify</span><span class="hljs-params">(<span class="hljs-type">int</span> &amp;rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> pos,ll num)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(!rt)&#123;<br>		rt=++cnt;<br>		st[rt].size=<span class="hljs-built_in">len</span>(l,r);<br>		<span class="hljs-keyword">if</span>(l==r)&#123;<br>			st[rt].val=num;<br>		&#125;	<br>	&#125;<br>	<br>	++st[rt].size;<span class="hljs-comment">//这个区间末尾有一个人进去</span><br>	<span class="hljs-keyword">if</span>(l==r)<span class="hljs-keyword">return</span>;<br>	<br>	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">if</span>(pos&lt;=mid)<span class="hljs-built_in">modify</span>(st[rt].ls,l,mid,pos,num);<br>	<span class="hljs-keyword">else</span> <span class="hljs-built_in">modify</span>(st[rt].rs,mid<span class="hljs-number">+1</span>,r,pos,num);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> x = <span class="hljs-number">0</span>, f = <span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch = <span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x * f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>, stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>, stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();q=<span class="hljs-built_in">read</span>();<br>	Max=<span class="hljs-built_in">max</span>(n,m)+q;<span class="hljs-comment">//一共有q次离队，于是最多有q个人再次进队，于是最大也就是队列长度加上他们本身（因为我们取出以后在位置进行标记，相当于占上了位置</span><br>	<br>	<span class="hljs-keyword">while</span>(q--)&#123;<br>		<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>(),y=<span class="hljs-built_in">read</span>();<br>		<span class="hljs-keyword">if</span>(y==m)&#123;<span class="hljs-comment">//如果是最后一列</span><br>			now=n<span class="hljs-number">+1</span>;<span class="hljs-comment">//那么一定要放到那个单独的区间里面去，也就是上面说到的蓝色区域</span><br>			ans=<span class="hljs-built_in">query</span>(root[now],<span class="hljs-number">1</span>,Max,x); <br>		&#125;<br>		<span class="hljs-keyword">else</span>&#123;<br>			now=x;<span class="hljs-comment">//否则，那么一定在红色区域</span><br>			ans=<span class="hljs-built_in">query</span>(root[now],<span class="hljs-number">1</span>,Max,y);<br>		&#125; <br>		<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,ans);<span class="hljs-comment">//输出答案</span><br>		<br>		now=n<span class="hljs-number">+1</span>;<span class="hljs-comment">//让被选出的人进入蓝色区域的最后一个位置</span><br>		<span class="hljs-built_in">modify</span>(root[now],<span class="hljs-number">1</span>,Max,n+(++ins[now]),ans);<br>		<br>		<span class="hljs-keyword">if</span>(y!=m)&#123;<br>			ans=<span class="hljs-built_in">query</span>(root[now],<span class="hljs-number">1</span>,Max,x);<br>			now=x;<br>			<span class="hljs-built_in">modify</span>(root[now],<span class="hljs-number">1</span>,Max,m<span class="hljs-number">-1</span>+(++ins[now]),ans);<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">3e5</span><span class="hljs-number">+5</span>;
+
+<span class="hljs-type">int</span> n,m,q,now;
+<span class="hljs-type">int</span> cnt,Max;
+
+ll ans;
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;
+	<span class="hljs-type">int</span> ls,rs,size;<span class="hljs-comment">//size:当前区间内有多少个数没有被标记</span>
+	ll val;
+	
+	<span class="hljs-built_in">node</span>()&#123;&#125;
+	<span class="hljs-built_in">node</span>(<span class="hljs-type">const</span> <span class="hljs-type">int</span> _ls,<span class="hljs-type">const</span> <span class="hljs-type">int</span> _rs,<span class="hljs-type">const</span> <span class="hljs-type">int</span> _size,<span class="hljs-type">const</span> ll _val):
+		<span class="hljs-built_in">ls</span>(_ls),<span class="hljs-built_in">rs</span>(_rs),<span class="hljs-built_in">size</span>(_size),<span class="hljs-built_in">val</span>(_val)&#123;&#125;
+&#125;st[maxn&lt;&lt;<span class="hljs-number">5</span>];<span class="hljs-comment">//严格来讲应该开 Q * log2(N)，也就是20倍 ，为了方便与保险，我们直接开32倍</span>
+
+<span class="hljs-type">int</span> ins[maxn],root[maxn];
+<span class="hljs-comment">//ins[i]记录第i棵树插入了多少个新数</span>
+<span class="hljs-comment">//root[i]记录第i棵树的根节点</span>
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">len</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(now==n<span class="hljs-number">+1</span>)&#123;
+		<span class="hljs-keyword">if</span>(r&lt;=n)<span class="hljs-keyword">return</span> r-l<span class="hljs-number">+1</span>;
+		<span class="hljs-keyword">if</span>(l&lt;=n)<span class="hljs-keyword">return</span> n-l<span class="hljs-number">+1</span>;
+		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+	&#125;
+	<span class="hljs-keyword">if</span>(r&lt;m)<span class="hljs-keyword">return</span> r-l<span class="hljs-number">+1</span>;
+	<span class="hljs-keyword">if</span>(l&lt;m)<span class="hljs-keyword">return</span> (m<span class="hljs-number">-1</span>)-l<span class="hljs-number">+1</span>;
+	
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+
+<span class="hljs-function">ll <span class="hljs-title">query</span><span class="hljs-params">(<span class="hljs-type">int</span> &amp;rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> pos)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(!rt)&#123;<span class="hljs-comment">//动态开点</span>
+		rt=++cnt;
+		st[rt].size=<span class="hljs-built_in">len</span>(l,r);
+		
+		<span class="hljs-keyword">if</span>(l==r)&#123;
+			<span class="hljs-keyword">if</span>(now==n<span class="hljs-number">+1</span>)st[rt].val=<span class="hljs-number">1ll</span>*l*m;
+			<span class="hljs-keyword">else</span> st[rt].val=<span class="hljs-number">1ll</span>*(now<span class="hljs-number">-1</span>)*m+l;
+		&#125;
+	&#125;
+	st[rt].size--;这个区间有一个数被取出
+	<span class="hljs-keyword">if</span>(l==r)<span class="hljs-keyword">return</span> st[rt].val;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">if</span>(!st[rt].ls &amp;&amp;<span class="hljs-built_in">len</span>(l,mid)&gt;=pos||st[st[rt].ls].size&gt;=pos)&#123;
+		<span class="hljs-built_in">query</span>(st[rt].ls,l,mid,pos);
+	&#125;
+	<span class="hljs-keyword">else</span>&#123;
+		<span class="hljs-type">int</span> tmp;
+		<span class="hljs-keyword">if</span>(!st[rt].ls)tmp=<span class="hljs-built_in">len</span>(l,mid);
+		<span class="hljs-keyword">else</span> tmp=st[st[rt].ls].size;
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">query</span>(st[rt].rs,mid<span class="hljs-number">+1</span>,r,pos-tmp);
+	&#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">modify</span><span class="hljs-params">(<span class="hljs-type">int</span> &amp;rt,<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> pos,ll num)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(!rt)&#123;
+		rt=++cnt;
+		st[rt].size=<span class="hljs-built_in">len</span>(l,r);
+		<span class="hljs-keyword">if</span>(l==r)&#123;
+			st[rt].val=num;
+		&#125;	
+	&#125;
+	
+	++st[rt].size;<span class="hljs-comment">//这个区间末尾有一个人进去</span>
+	<span class="hljs-keyword">if</span>(l==r)<span class="hljs-keyword">return</span>;
+	
+	<span class="hljs-type">int</span> mid=(l+r)&gt;&gt;<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">if</span>(pos&lt;=mid)<span class="hljs-built_in">modify</span>(st[rt].ls,l,mid,pos,num);
+	<span class="hljs-keyword">else</span> <span class="hljs-built_in">modify</span>(st[rt].rs,mid<span class="hljs-number">+1</span>,r,pos,num);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span> </span>&#123;
+    <span class="hljs-type">int</span> x = <span class="hljs-number">0</span>, f = <span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch = <span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x * f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>, stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>, stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();q=<span class="hljs-built_in">read</span>();
+	Max=<span class="hljs-built_in">max</span>(n,m)+q;<span class="hljs-comment">//一共有q次离队，于是最多有q个人再次进队，于是最大也就是队列长度加上他们本身（因为我们取出以后在位置进行标记，相当于占上了位置</span>
+	
+	<span class="hljs-keyword">while</span>(q--)&#123;
+		<span class="hljs-type">int</span> x=<span class="hljs-built_in">read</span>(),y=<span class="hljs-built_in">read</span>();
+		<span class="hljs-keyword">if</span>(y==m)&#123;<span class="hljs-comment">//如果是最后一列</span>
+			now=n<span class="hljs-number">+1</span>;<span class="hljs-comment">//那么一定要放到那个单独的区间里面去，也就是上面说到的蓝色区域</span>
+			ans=<span class="hljs-built_in">query</span>(root[now],<span class="hljs-number">1</span>,Max,x); 
+		&#125;
+		<span class="hljs-keyword">else</span>&#123;
+			now=x;<span class="hljs-comment">//否则，那么一定在红色区域</span>
+			ans=<span class="hljs-built_in">query</span>(root[now],<span class="hljs-number">1</span>,Max,y);
+		&#125; 
+		
+		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,ans);<span class="hljs-comment">//输出答案</span>
+		
+		now=n<span class="hljs-number">+1</span>;<span class="hljs-comment">//让被选出的人进入蓝色区域的最后一个位置</span>
+		<span class="hljs-built_in">modify</span>(root[now],<span class="hljs-number">1</span>,Max,n+(++ins[now]),ans);
+		
+		<span class="hljs-keyword">if</span>(y!=m)&#123;
+			ans=<span class="hljs-built_in">query</span>(root[now],<span class="hljs-number">1</span>,Max,x);
+			now=x;
+			<span class="hljs-built_in">modify</span>(root[now],<span class="hljs-number">1</span>,Max,m<span class="hljs-number">-1</span>+(++ins[now]),ans);
+		&#125;
+	&#125;
+	
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre>
 
         </div>
         <!-- .entry-content -->
@@ -735,7 +866,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

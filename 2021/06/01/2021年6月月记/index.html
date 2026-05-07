@@ -1152,7 +1152,9 @@
 <p>浪费生命。</p>
 <h2 id="6-月-22-日"><a href="#6-月-22-日" class="headerlink" title="$6$ 月 $22$ 日"></a>$6$ 月 $22$ 日</h2><p>又干了傻逼事。</p>
 <p>给大家欣赏一个迷惑行为：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;<br>    <span class="hljs-keyword">return</span> id^a.id?sum&lt;a.sum:id&lt;a.id;<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;
+    <span class="hljs-keyword">return</span> id^a.id?sum&lt;a.sum:id&lt;a.id;
+&#125;</code></pre>
 
 <p>因为这个傻逼错误调了很久甚至就要捶打自己了。</p>
 <p>气愤。</p>
@@ -1435,7 +1437,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

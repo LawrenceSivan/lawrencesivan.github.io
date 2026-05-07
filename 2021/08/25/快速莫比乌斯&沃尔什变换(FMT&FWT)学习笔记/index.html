@@ -657,7 +657,15 @@
 <p>之后合并：</p>
 <p>$$A&#x3D;merge(IFWT(FWT(A)_0),IFWT(FWT[A]_1-FWT[A]_0))$$</p>
 <p><del>似乎感性理解已经完全够用了</del></p>
-<h3 id="CODE"><a href="#CODE" class="headerlink" title="CODE:"></a>CODE:</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_or</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;<br>    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;<br>        <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;<br>            <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;<br>                (a[i+j+k]+=a[j+k]*op+mod)%=mod;<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h3 id="CODE"><a href="#CODE" class="headerlink" title="CODE:"></a>CODE:</h3><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_or</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;
+    <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;
+        <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;
+            <span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;
+                (a[i+j+k]+=a[j+k]*op+mod)%=mod;
+            &#125;
+        &#125;
+    &#125;
+&#125;</code></pre>
 
 <h2 id="与卷积（FWT-and）"><a href="#与卷积（FWT-and）" class="headerlink" title="与卷积（FWT_and）"></a>与卷积（FWT_and）</h2><p>要求：</p>
 <p>$$C[i]&#x3D;\sum\limits_{j &amp; k&#x3D;i}{A[j]B[k]}$$</p>
@@ -690,7 +698,15 @@
 <p>$$A&#x3D;merge(A_0-A_1,A_1)$$</p>
 <p>实际上是高维后缀差分.</p>
 <h4 id="理性理解-证明-1"><a href="#理性理解-证明-1" class="headerlink" title="理性理解&amp;证明"></a>理性理解&amp;证明</h4><p>是真的不太清楚这玩意有啥用，咕了。</p>
-<h3 id="CODE-1"><a href="#CODE-1" class="headerlink" title="CODE:"></a>CODE:</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_and</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;<br>			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;<br>				(a[j+k]+=a[i+j+k]*op+mod)%=mod;<br>			&#125;<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h3 id="CODE-1"><a href="#CODE-1" class="headerlink" title="CODE:"></a>CODE:</h3><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_and</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;
+			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;
+				(a[j+k]+=a[i+j+k]*op+mod)%=mod;
+			&#125;
+		&#125;
+	&#125;
+&#125;</code></pre>
 
 <h2 id="异或卷积（FWT-xor）"><a href="#异或卷积（FWT-xor）" class="headerlink" title="异或卷积（FWT_xor）"></a>异或卷积（FWT_xor）</h2><p>要求：</p>
 <p>$$C[i]&#x3D;\sum\limits_{j \oplus k&#x3D;i}{A[j]B[k]}$$</p>
@@ -768,10 +784,134 @@
 <p>$$IFWT(FWT(A))&#x3D;merge\left(\dfrac{IFWT(FWT(A_0))+IFWT(FWT(A_1))}{2},\dfrac{IFWT(FWT(A_0)-IFWT(FWT(A_1)}{2}\right)$$</p>
 <p>即：</p>
 <p>$$A&#x3D;\text{merge}\left(\dfrac{A_0+A_1}{2},\dfrac{A_0-A_1}{2}\right)$$</p>
-<h3 id="CODE-2"><a href="#CODE-2" class="headerlink" title="CODE:"></a>CODE:</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_xor</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;<br>			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;<br>				<span class="hljs-type">int</span> X=a[j+k],Y=a[i+j+k];<br>				a[j+k]=(X+Y)%mod;<br>				a[i+j+k]=(X+mod-Y)%mod;<br>				(a[j+k]*=op)%=mod,(a[i+j+k]*=op)%=mod;<br>			&#125;<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h3 id="CODE-2"><a href="#CODE-2" class="headerlink" title="CODE:"></a>CODE:</h3><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_xor</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;
+			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;
+				<span class="hljs-type">int</span> X=a[j+k],Y=a[i+j+k];
+				a[j+k]=(X+Y)%mod;
+				a[i+j+k]=(X+mod-Y)%mod;
+				(a[j+k]*=op)%=mod,(a[i+j+k]*=op)%=mod;
+			&#125;
+		&#125;
+	&#125;
+&#125;</code></pre>
 
 <p>似乎代码还挺<del>好背</del>简单的？</p>
-<h2 id="全部代码："><a href="#全部代码：" class="headerlink" title="全部代码："></a>全部代码：</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;<br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> int ll</span><br><br><span class="hljs-keyword">namespace</span> IO&#123;<br>	<span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function">	<span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T &amp;x)</span></span>&#123;<br>		x=<span class="hljs-number">0</span>;T f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>		<span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>		<span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>		x*=f;<br>	&#125;<br><br>	<span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span>... Args&gt;<br>	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T&amp; t, Args&amp;... args)</span></span>&#123;<br>		<span class="hljs-built_in">read</span>(t); <span class="hljs-built_in">read</span>(args...);<br>	&#125;<br><br>	<span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function">	<span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(T x)</span></span>&#123;<br>		<span class="hljs-keyword">if</span>(x&lt;<span class="hljs-number">0</span>)<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27;-&#x27;</span>),x=-x;<br>		<span class="hljs-keyword">if</span>(x&gt;<span class="hljs-number">9</span>)<span class="hljs-built_in">write</span>(x/<span class="hljs-number">10</span>);<br>		<span class="hljs-built_in">putchar</span>(x%<span class="hljs-number">10</span>+<span class="hljs-string">&#x27;0&#x27;</span>);<br>	&#125;<br><br>	<span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T,<span class="hljs-keyword">typename</span>... Args&gt;</span><br><span class="hljs-function">	<span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(T t,Args... args)</span></span>&#123;<br>		<span class="hljs-built_in">write</span>(t);<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);<span class="hljs-built_in">write</span>(args...);<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> IO;<br><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">1</span>&lt;&lt;<span class="hljs-number">17</span>|<span class="hljs-number">1</span>;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> mod=<span class="hljs-number">998244353</span>;<br><br><span class="hljs-type">int</span> n,inv2=(mod<span class="hljs-number">+1</span>)&gt;&gt;<span class="hljs-number">1</span>;<br><br><span class="hljs-type">int</span> A[maxn],B[maxn],a[maxn],b[maxn];<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">copy</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-built_in">memcpy</span>(a,A,<span class="hljs-built_in">sizeof</span>(A));<br>	<span class="hljs-built_in">memcpy</span>(b,B,<span class="hljs-built_in">sizeof</span>(B));<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">mul</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;<br>		a[i]=(a[i]*b[i])%mod;<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">print</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;<br>		<span class="hljs-built_in">write</span>(a[i]),<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);<br>	&#125;<br>	<span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;&quot;</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_or</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;<br>			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;<br>				(a[i+j+k]+=a[j+k]*op+mod)%=mod;<br>			&#125;<br>		&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_and</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;<br>			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;<br>				(a[j+k]+=a[i+j+k]*op+mod)%=mod;<br>			&#125;<br>		&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_xor</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;<br>			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;<br>				<span class="hljs-type">int</span> X=a[j+k],Y=a[i+j+k];<br>				a[j+k]=(X+Y)%mod;<br>				a[i+j+k]=(X+mod-Y)%mod;<br>				(a[j+k]*=op)%=mod,(a[i+j+k]*=op)%=mod;<br>			&#125;<br>		&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>	<span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>, stdin);<br>	<span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>, stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	<span class="hljs-built_in">read</span>(n);n=<span class="hljs-number">1</span>&lt;&lt;n;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)<span class="hljs-built_in">read</span>(A[i]);<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)<span class="hljs-built_in">read</span>(B[i]);<br>	<span class="hljs-built_in">copy</span>();<span class="hljs-built_in">FWT_or</span>(a,<span class="hljs-number">1</span>),<span class="hljs-built_in">FWT_or</span>(b,<span class="hljs-number">1</span>),<span class="hljs-built_in">mul</span>(),<span class="hljs-built_in">FWT_or</span>(a,<span class="hljs-number">-1</span>),<span class="hljs-built_in">print</span>();<br>	<span class="hljs-built_in">copy</span>();<span class="hljs-built_in">FWT_and</span>(a,<span class="hljs-number">1</span>),<span class="hljs-built_in">FWT_and</span>(b,<span class="hljs-number">1</span>),<span class="hljs-built_in">mul</span>(),<span class="hljs-built_in">FWT_and</span>(a,<span class="hljs-number">-1</span>),<span class="hljs-built_in">print</span>();<br>	<span class="hljs-built_in">copy</span>();<span class="hljs-built_in">FWT_xor</span>(a,<span class="hljs-number">1</span>),<span class="hljs-built_in">FWT_xor</span>(b,<span class="hljs-number">1</span>),<span class="hljs-built_in">mul</span>(),<span class="hljs-built_in">FWT_xor</span>(a,inv2),<span class="hljs-built_in">print</span>();<br><br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="全部代码："><a href="#全部代码：" class="headerlink" title="全部代码："></a>全部代码：</h2><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;
+
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> int ll</span>
+
+<span class="hljs-keyword">namespace</span> IO&#123;
+	<span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span>
+<span class="hljs-function">	<span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T &amp;x)</span></span>&#123;
+		x=<span class="hljs-number">0</span>;T f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+		<span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+		<span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+		x*=f;
+	&#125;
+
+	<span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span>... Args&gt;
+	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T&amp; t, Args&amp;... args)</span></span>&#123;
+		<span class="hljs-built_in">read</span>(t); <span class="hljs-built_in">read</span>(args...);
+	&#125;
+
+	<span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span>
+<span class="hljs-function">	<span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(T x)</span></span>&#123;
+		<span class="hljs-keyword">if</span>(x&lt;<span class="hljs-number">0</span>)<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27;-&#x27;</span>),x=-x;
+		<span class="hljs-keyword">if</span>(x&gt;<span class="hljs-number">9</span>)<span class="hljs-built_in">write</span>(x/<span class="hljs-number">10</span>);
+		<span class="hljs-built_in">putchar</span>(x%<span class="hljs-number">10</span>+<span class="hljs-string">&#x27;0&#x27;</span>);
+	&#125;
+
+	<span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T,<span class="hljs-keyword">typename</span>... Args&gt;</span>
+<span class="hljs-function">	<span class="hljs-type">void</span> <span class="hljs-title">write</span><span class="hljs-params">(T t,Args... args)</span></span>&#123;
+		<span class="hljs-built_in">write</span>(t);<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);<span class="hljs-built_in">write</span>(args...);
+	&#125;
+&#125;
+
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> IO;
+
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">1</span>&lt;&lt;<span class="hljs-number">17</span>|<span class="hljs-number">1</span>;
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> mod=<span class="hljs-number">998244353</span>;
+
+<span class="hljs-type">int</span> n,inv2=(mod<span class="hljs-number">+1</span>)&gt;&gt;<span class="hljs-number">1</span>;
+
+<span class="hljs-type">int</span> A[maxn],B[maxn],a[maxn],b[maxn];
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">copy</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-built_in">memcpy</span>(a,A,<span class="hljs-built_in">sizeof</span>(A));
+	<span class="hljs-built_in">memcpy</span>(b,B,<span class="hljs-built_in">sizeof</span>(B));
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">mul</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;
+		a[i]=(a[i]*b[i])%mod;
+	&#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">print</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;
+		<span class="hljs-built_in">write</span>(a[i]),<span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);
+	&#125;
+	<span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;&quot;</span>);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_or</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;
+			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;
+				(a[i+j+k]+=a[j+k]*op+mod)%=mod;
+			&#125;
+		&#125;
+	&#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_and</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;
+			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;
+				(a[j+k]+=a[i+j+k]*op+mod)%=mod;
+			&#125;
+		&#125;
+	&#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">FWT_xor</span><span class="hljs-params">(<span class="hljs-type">int</span> *a,<span class="hljs-type">int</span> op)</span></span>&#123;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;n;i&lt;&lt;=<span class="hljs-number">1</span>)&#123;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> p=i&lt;&lt;<span class="hljs-number">1</span>,j=<span class="hljs-number">0</span>;j&lt;n;j+=p)&#123;
+			<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;i;k++)&#123;
+				<span class="hljs-type">int</span> X=a[j+k],Y=a[i+j+k];
+				a[j+k]=(X+Y)%mod;
+				a[i+j+k]=(X+mod-Y)%mod;
+				(a[j+k]*=op)%=mod,(a[i+j+k]*=op)%=mod;
+			&#125;
+		&#125;
+	&#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+	<span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>, stdin);
+	<span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>, stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	<span class="hljs-built_in">read</span>(n);n=<span class="hljs-number">1</span>&lt;&lt;n;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)<span class="hljs-built_in">read</span>(A[i]);
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)<span class="hljs-built_in">read</span>(B[i]);
+	<span class="hljs-built_in">copy</span>();<span class="hljs-built_in">FWT_or</span>(a,<span class="hljs-number">1</span>),<span class="hljs-built_in">FWT_or</span>(b,<span class="hljs-number">1</span>),<span class="hljs-built_in">mul</span>(),<span class="hljs-built_in">FWT_or</span>(a,<span class="hljs-number">-1</span>),<span class="hljs-built_in">print</span>();
+	<span class="hljs-built_in">copy</span>();<span class="hljs-built_in">FWT_and</span>(a,<span class="hljs-number">1</span>),<span class="hljs-built_in">FWT_and</span>(b,<span class="hljs-number">1</span>),<span class="hljs-built_in">mul</span>(),<span class="hljs-built_in">FWT_and</span>(a,<span class="hljs-number">-1</span>),<span class="hljs-built_in">print</span>();
+	<span class="hljs-built_in">copy</span>();<span class="hljs-built_in">FWT_xor</span>(a,<span class="hljs-number">1</span>),<span class="hljs-built_in">FWT_xor</span>(b,<span class="hljs-number">1</span>),<span class="hljs-built_in">mul</span>(),<span class="hljs-built_in">FWT_xor</span>(a,inv2),<span class="hljs-built_in">print</span>();
+
+
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre>
 
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://moyujiang.blog.luogu.org/solution-p4717">题解 快速莫比乌斯&#x2F;沃尔什变换 (FMT&#x2F;FWT) - 摸鱼酱的博客 - 洛谷博客 (luogu.org)</a></p>
 <p><a href="https://www.luogu.com.cn/blog/xht37/solution-p4717">题解 P4717 【模板】快速沃尔什变换 - xht37 的洛谷博客 - 洛谷博客 (luogu.com.cn)</a></p>
@@ -906,7 +1046,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

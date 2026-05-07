@@ -619,7 +619,43 @@
 <p>如何保证 $s_i$ 最短呢？</p>
 <p>只需要在构造 $Huffman$ 树的时候，对于权值相同的节，我们优先合并当前深度小（也就是合并次数小的）即可。</p>
 <p>CODE：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&quot;bits/stdc++.h&quot;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> ll long long</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;<span class="hljs-comment">//结构体，这个是节点，里面有两个域，分别是权值和当前深度（也就代表着合并次数）</span><br>	ll w,h;<br>	<span class="hljs-built_in">node</span>(ll w,ll h):<span class="hljs-built_in">w</span>(w),<span class="hljs-built_in">h</span>(h)&#123;&#125;<span class="hljs-comment">//构造函数赋初值</span><br>	<span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;<span class="hljs-comment">//我们重载小于号，使之成为一个优先按照权值大小排序，深度（即合并次数）为第二关键字的小根堆</span><br>		<span class="hljs-keyword">return</span> w==a.w?h&gt;a.h:w&gt;a.w;<br>	&#125;<br>&#125;;<br>ll ans;<span class="hljs-comment">//答案</span><br>priority_queue &lt;node&gt; q;<span class="hljs-comment">//小根堆</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>	ios::<span class="hljs-built_in">sync_with_stdio</span>(<span class="hljs-literal">false</span>);<br>	ll n,k,ans=<span class="hljs-number">0</span>;<br>	cin&gt;&gt;n&gt;&gt;k;<span class="hljs-comment">//可以想一下，k进制代表每个数字都是不超过k-1的，那么我们可以联想到，这不就是k叉Huffman的k吗？</span><br>	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		ll w;<br>		cin&gt;&gt;w;<span class="hljs-comment">//我们把出现次数看成权值</span><br>		q.<span class="hljs-built_in">push</span>((node)&#123;w,<span class="hljs-number">1</span>&#125;);<br>	&#125;<br>	<span class="hljs-keyword">while</span>((q.<span class="hljs-built_in">size</span>()<span class="hljs-number">-1</span>)%(k<span class="hljs-number">-1</span>)!=<span class="hljs-number">0</span>)q.<span class="hljs-built_in">push</span>((node)&#123;<span class="hljs-number">0</span>,<span class="hljs-number">1</span>&#125;);<span class="hljs-comment">//判断是不是要补上空节点</span><br>	<span class="hljs-keyword">while</span>(q.<span class="hljs-built_in">size</span>()&gt;=k)&#123;<span class="hljs-comment">//合并操作</span><br>		ll h=<span class="hljs-number">-1</span>,w=<span class="hljs-number">0</span>;<br>		<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=k;i<span class="hljs-comment">//取出最小的k个</span><br>			node t=q.<span class="hljs-built_in">top</span>();<br>			q.<span class="hljs-built_in">pop</span>();<br>			h=<span class="hljs-built_in">max</span>(h,t.h);<br>			w+=t.w;<br>		&#125;<br>		ans+=w;<br>		q.<span class="hljs-built_in">push</span>((node)&#123;w,h<span class="hljs-number">+1</span>&#125;);<br>	&#125;<br>	cout&lt;&lt;ans&lt;&lt;endl&lt;&lt;q.<span class="hljs-built_in">top</span>().h<span class="hljs-number">-1</span>&lt;&lt;endl;<br>	<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&quot;bits/stdc++.h&quot;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> ll long long</span>
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;<span class="hljs-comment">//结构体，这个是节点，里面有两个域，分别是权值和当前深度（也就代表着合并次数）</span>
+	ll w,h;
+	<span class="hljs-built_in">node</span>(ll w,ll h):<span class="hljs-built_in">w</span>(w),<span class="hljs-built_in">h</span>(h)&#123;&#125;<span class="hljs-comment">//构造函数赋初值</span>
+	<span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;<span class="hljs-comment">//我们重载小于号，使之成为一个优先按照权值大小排序，深度（即合并次数）为第二关键字的小根堆</span>
+		<span class="hljs-keyword">return</span> w==a.w?h&gt;a.h:w&gt;a.w;
+	&#125;
+&#125;;
+ll ans;<span class="hljs-comment">//答案</span>
+priority_queue &lt;node&gt; q;<span class="hljs-comment">//小根堆</span>
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+	ios::<span class="hljs-built_in">sync_with_stdio</span>(<span class="hljs-literal">false</span>);
+	ll n,k,ans=<span class="hljs-number">0</span>;
+	cin&gt;&gt;n&gt;&gt;k;<span class="hljs-comment">//可以想一下，k进制代表每个数字都是不超过k-1的，那么我们可以联想到，这不就是k叉Huffman的k吗？</span>
+	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		ll w;
+		cin&gt;&gt;w;<span class="hljs-comment">//我们把出现次数看成权值</span>
+		q.<span class="hljs-built_in">push</span>((node)&#123;w,<span class="hljs-number">1</span>&#125;);
+	&#125;
+	<span class="hljs-keyword">while</span>((q.<span class="hljs-built_in">size</span>()<span class="hljs-number">-1</span>)%(k<span class="hljs-number">-1</span>)!=<span class="hljs-number">0</span>)q.<span class="hljs-built_in">push</span>((node)&#123;<span class="hljs-number">0</span>,<span class="hljs-number">1</span>&#125;);<span class="hljs-comment">//判断是不是要补上空节点</span>
+	<span class="hljs-keyword">while</span>(q.<span class="hljs-built_in">size</span>()&gt;=k)&#123;<span class="hljs-comment">//合并操作</span>
+		ll h=<span class="hljs-number">-1</span>,w=<span class="hljs-number">0</span>;
+		<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=k;i<span class="hljs-comment">//取出最小的k个</span>
+			node t=q.<span class="hljs-built_in">top</span>();
+			q.<span class="hljs-built_in">pop</span>();
+			h=<span class="hljs-built_in">max</span>(h,t.h);
+			w+=t.w;
+		&#125;
+		ans+=w;
+		q.<span class="hljs-built_in">push</span>((node)&#123;w,h<span class="hljs-number">+1</span>&#125;);
+	&#125;
+	cout&lt;&lt;ans&lt;&lt;endl&lt;&lt;q.<span class="hljs-built_in">top</span>().h<span class="hljs-number">-1</span>&lt;&lt;endl;
+	
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre>
 
 
         </div>
@@ -748,7 +784,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

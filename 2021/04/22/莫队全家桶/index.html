@@ -602,33 +602,123 @@
 <p>3，首先对每个区间进行分块操作,再将左端点在一起的区间询问放在一起进行处理,对于每个块处理一遍,那么就可以得到所有询问的答案.（分块的结合就是在这里</p>
 <p>最严格的顺序是每个区间求一次曼哈顿距离最小生成树</p>
 <h4 id="四，莫队的代码实现"><a href="#四，莫队的代码实现" class="headerlink" title="四，莫队的代码实现"></a>四，莫队的代码实现</h4><p>自然我们要记录原数组，还要开一个 $cnt$ （用于统计答案个数，还有一个答案数组</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp">ll ans[maxn],sum;<br><span class="hljs-type">int</span> a[maxn],cnt[maxn],lal=<span class="hljs-number">1</span>,lar=<span class="hljs-number">0</span>;<span class="hljs-comment">//lal lar分别是上一次的左右端点</span><br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp">ll ans[maxn],sum;
+<span class="hljs-type">int</span> a[maxn],cnt[maxn],lal=<span class="hljs-number">1</span>,lar=<span class="hljs-number">0</span>;<span class="hljs-comment">//lal lar分别是上一次的左右端点</span>
+</code></pre>
 
 <p>按照顺序如何处理呢？</p>
 <p>把 $[1,n]$ 分成$ \sqrt n$ 块</p>
 <p>还有一种奇妙而玄学的分法：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp">block=n/<span class="hljs-built_in">sqrt</span>(m*<span class="hljs-number">2</span>/<span class="hljs-number">3</span>);<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp">block=n/<span class="hljs-built_in">sqrt</span>(m*<span class="hljs-number">2</span>/<span class="hljs-number">3</span>);</code></pre>
 <p>这样会更快一些；</p>
 <p>我们先把这些区间按照左端点 $l$ 所在的块从左往右排序</p>
 <p>再把l所在块相同的区间按 $r$ 从小到大排序</p>
 <p>结构体数组存储查询的区间以及下标</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id;<span class="hljs-comment">//l是左端点，r是右端点，id是下标</span><br>    <br>    	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> (belong[l]==belong[a.l])?r&lt;a.r:belong[l]&lt;belong[a.l];<br>	&#125;<br>&#125;mocap[maxn];<span class="hljs-comment">//mo captain，即莫队</span><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;
+	<span class="hljs-type">int</span> l,r,id;<span class="hljs-comment">//l是左端点，r是右端点，id是下标</span>
+    
+    	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> (belong[l]==belong[a.l])?r&lt;a.r:belong[l]&lt;belong[a.l];
+	&#125;
+&#125;mocap[maxn];<span class="hljs-comment">//mo captain，即莫队</span></code></pre>
 <p>这里再提一种玄学的玩意，名曰：<strong>奇偶优化</strong></p>
 <p>按奇偶块排序。这也是比较通用的。如果区间左端点所在块不同，那么就直接按左端点从小到大排；如果相同，奇块按右端点从小到大排，偶块按右端点从大到小排。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;<br>    <span class="hljs-keyword">return</span> belong[l]^belong[a.l]?belong[l]&lt;belong[a.l]:((belong[l]&amp;<span class="hljs-number">1</span>)?r&lt;a.r:r&gt;a.r);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;
+    <span class="hljs-keyword">return</span> belong[l]^belong[a.l]?belong[l]&lt;belong[a.l]:((belong[l]&amp;<span class="hljs-number">1</span>)?r&lt;a.r:r&gt;a.r);
+&#125;
+</code></pre>
 
 <p>排好了序自然就要开始进行询问和维护操作了</p>
 <p><strong>这里也正是莫队的精髓</strong></p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-type">int</span> l=mocap[i].l,r=mocap[i].r;<br>		<span class="hljs-keyword">while</span>(lal&gt;l)lal--,<span class="hljs-built_in">add</span>(a[lal]);<br>		<span class="hljs-keyword">while</span>(lar&lt;r)lar++,<span class="hljs-built_in">add</span>(a[lar]);<br>		<span class="hljs-keyword">while</span>(lal&lt;l)<span class="hljs-built_in">del</span>(a[lal]),lal++;<br>		<span class="hljs-keyword">while</span>(lar&gt;r)<span class="hljs-built_in">del</span>(a[lar]),lar--;<br>		ans[mocap[i].id]=sum;<br>	&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-type">int</span> l=mocap[i].l,r=mocap[i].r;
+		<span class="hljs-keyword">while</span>(lal&gt;l)lal--,<span class="hljs-built_in">add</span>(a[lal]);
+		<span class="hljs-keyword">while</span>(lar&lt;r)lar++,<span class="hljs-built_in">add</span>(a[lar]);
+		<span class="hljs-keyword">while</span>(lal&lt;l)<span class="hljs-built_in">del</span>(a[lal]),lal++;
+		<span class="hljs-keyword">while</span>(lar&gt;r)<span class="hljs-built_in">del</span>(a[lar]),lar--;
+		ans[mocap[i].id]=sum;
+	&#125;</code></pre>
 <p>想象一个区间的移动；</p>
 <p>$add$ 和 $del$ 函数</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum+=<span class="hljs-number">2</span>*cnt[x]<span class="hljs-number">+1</span>;<br>	cnt[x]++;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum-=<span class="hljs-number">2</span>*cnt[x]<span class="hljs-number">-1</span>;<br>	cnt[x]--;<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum+=<span class="hljs-number">2</span>*cnt[x]<span class="hljs-number">+1</span>;
+	cnt[x]++;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum-=<span class="hljs-number">2</span>*cnt[x]<span class="hljs-number">-1</span>;
+	cnt[x]--;
+&#125;</code></pre>
 
 
 <h4 id="五，莫队的复杂度证明"><a href="#五，莫队的复杂度证明" class="headerlink" title="五，莫队的复杂度证明"></a>五，莫队的复杂度证明</h4><p>对于区间进行分块那么可以得到 $\sqrt{n}$ 个块,那么对于就存在于 $\sqrt{n}$  个区间,而每次对于每个区间块中的 $l,r$ 的最坏情况是对于每个块都遍历到序列的最右端,共 $n$ 个点.每次移动指针复杂度为 $O(1)$ ,所以整个算法的复杂度 $O (n\sqrt{n})$</p>
 <p><strong>纠正：这东西是 $\text O((n+m)\sqrt n)$ 的，如果分成 $\frac{n}{\sqrt m}$ 是 $\text O(n\sqrt m)$ 的（感谢 <a href="https://www.luogu.com.cn/user/46099">YCS_GG</a>）</strong></p>
 <p>（真是太美妙了</p>
-<h3 id="例题："><a href="#例题：" class="headerlink" title="例题："></a>例题：</h3><h4 id="洛谷-P2709-小B的询问"><a href="#洛谷-P2709-小B的询问" class="headerlink" title="洛谷 P2709 小B的询问"></a><a href="https://www.luogu.com.cn/problem/P2709">洛谷 P2709 小B的询问</a></h4><h5 id="CODE："><a href="#CODE：" class="headerlink" title="CODE："></a>CODE：</h5><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">5e5</span><span class="hljs-number">+5</span>;<br><br><span class="hljs-type">int</span> n,m,k,block;<br>ll ans[maxn],sum;<br><span class="hljs-type">int</span> a[maxn],cnt[maxn],lal=<span class="hljs-number">1</span>,lar=<span class="hljs-number">0</span>;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id;<br>	<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> ((l<span class="hljs-number">-1</span>)/block==(a.l<span class="hljs-number">-1</span>)/block)?r&lt;a.r:l/block&lt;a.l/block;<br>	&#125;<br>&#125;mocap[maxn];<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum+=<span class="hljs-number">2</span>*cnt[x]<span class="hljs-number">+1</span>;<br>	cnt[x]++;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum-=<span class="hljs-number">2</span>*cnt[x]<span class="hljs-number">-1</span>;<br>	cnt[x]--;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();k=<span class="hljs-built_in">read</span>();<br>	block=<span class="hljs-built_in">sqrt</span>(n);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		a[i]=<span class="hljs-built_in">read</span>();<br>	&#125; <br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		mocap[i].l=<span class="hljs-built_in">read</span>();<br>		mocap[i].r=<span class="hljs-built_in">read</span>();<br>		mocap[i].id=i; <br>	&#125;<br>	<br>	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-type">int</span> l=mocap[i].l,r=mocap[i].r;<br>		<span class="hljs-keyword">while</span>(lal&gt;l)lal--,<span class="hljs-built_in">add</span>(a[lal]);<br>		<span class="hljs-keyword">while</span>(lar&lt;r)lar++,<span class="hljs-built_in">add</span>(a[lar]);<br>		<span class="hljs-keyword">while</span>(lal&lt;l)<span class="hljs-built_in">del</span>(a[lal]),lal++;<br>		<span class="hljs-keyword">while</span>(lar&gt;r)<span class="hljs-built_in">del</span>(a[lar]),lar--;<br>		ans[mocap[i].id]=sum;<br>	&#125;<br><br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,ans[i]);<br>	&#125;<br>	<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h3 id="例题："><a href="#例题：" class="headerlink" title="例题："></a>例题：</h3><h4 id="洛谷-P2709-小B的询问"><a href="#洛谷-P2709-小B的询问" class="headerlink" title="洛谷 P2709 小B的询问"></a><a href="https://www.luogu.com.cn/problem/P2709">洛谷 P2709 小B的询问</a></h4><h5 id="CODE："><a href="#CODE：" class="headerlink" title="CODE："></a>CODE：</h5><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">5e5</span><span class="hljs-number">+5</span>;
+
+<span class="hljs-type">int</span> n,m,k,block;
+ll ans[maxn],sum;
+<span class="hljs-type">int</span> a[maxn],cnt[maxn],lal=<span class="hljs-number">1</span>,lar=<span class="hljs-number">0</span>;
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;
+	<span class="hljs-type">int</span> l,r,id;
+	
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> ((l<span class="hljs-number">-1</span>)/block==(a.l<span class="hljs-number">-1</span>)/block)?r&lt;a.r:l/block&lt;a.l/block;
+	&#125;
+&#125;mocap[maxn];
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum+=<span class="hljs-number">2</span>*cnt[x]<span class="hljs-number">+1</span>;
+	cnt[x]++;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum-=<span class="hljs-number">2</span>*cnt[x]<span class="hljs-number">-1</span>;
+	cnt[x]--;
+&#125;
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();k=<span class="hljs-built_in">read</span>();
+	block=<span class="hljs-built_in">sqrt</span>(n);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		a[i]=<span class="hljs-built_in">read</span>();
+	&#125; 
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		mocap[i].l=<span class="hljs-built_in">read</span>();
+		mocap[i].r=<span class="hljs-built_in">read</span>();
+		mocap[i].id=i; 
+	&#125;
+	
+	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-type">int</span> l=mocap[i].l,r=mocap[i].r;
+		<span class="hljs-keyword">while</span>(lal&gt;l)lal--,<span class="hljs-built_in">add</span>(a[lal]);
+		<span class="hljs-keyword">while</span>(lar&lt;r)lar++,<span class="hljs-built_in">add</span>(a[lar]);
+		<span class="hljs-keyword">while</span>(lal&lt;l)<span class="hljs-built_in">del</span>(a[lal]),lal++;
+		<span class="hljs-keyword">while</span>(lar&gt;r)<span class="hljs-built_in">del</span>(a[lar]),lar--;
+		ans[mocap[i].id]=sum;
+	&#125;
+
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,ans[i]);
+	&#125;
+	
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre>
 
 <h4 id="洛谷-P1494-国家集训队-小Z的袜子"><a href="#洛谷-P1494-国家集训队-小Z的袜子" class="headerlink" title="洛谷 P1494 [国家集训队]小Z的袜子"></a><a href="https://www.luogu.com.cn/problem/P1494">洛谷 P1494 [国家集训队]小Z的袜子</a></h4><p>首先我们明确莫队一般来讲是只能搞一个区间内某一些东西的出现次数的，如果让我们去求出概率该怎么办呢？</p>
 <p>我们用 $cnt$ 数组来记录区间 $[l,r]$ 内某种颜色的袜子出现的次数.</p>
@@ -646,7 +736,93 @@
 <p>$\dfrac{\sum\limits_{i&#x3D;1}^n cnt[i]^2-(r-l+1)}{(r-l+1) \times (r-l)}$</p>
 <p>最后只需要用 $gcd$ 化简就可以了.</p>
 <p>于是我们用 $cnt$ 数组维护平方和.</p>
-<h5 id="CODE"><a href="#CODE" class="headerlink" title="CODE:"></a>CODE:</h5><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><br><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">5e5</span><span class="hljs-number">+5</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><br><span class="hljs-type">int</span> n,m,k,a[maxn],ans[maxn],lal=<span class="hljs-number">1</span>,lar=<span class="hljs-number">0</span>,sum,block,cnt[maxn];<br><br>ll l1[maxn],r1[maxn];<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id;<br>	<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> ((l<span class="hljs-number">-1</span>)/block==(a.l<span class="hljs-number">-1</span>)/block)?r&lt;a.r:l/block&lt;a.l/block;<br>	&#125;<br>&#125;mocap[maxn];<br><br><span class="hljs-function">ll <span class="hljs-title">gcd</span><span class="hljs-params">(<span class="hljs-type">int</span> a,<span class="hljs-type">int</span> b)</span></span>&#123;<br>	<span class="hljs-keyword">return</span> b==<span class="hljs-number">0</span>?a:<span class="hljs-built_in">gcd</span>(b,a%b);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum-=cnt[x]*(cnt[x]<span class="hljs-number">-1</span>)/<span class="hljs-number">2</span>;<br>	cnt[x]++;<br>	sum+=cnt[x]*(cnt[x]<span class="hljs-number">-1</span>)/<span class="hljs-number">2</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum-=cnt[x]*(cnt[x]<span class="hljs-number">-1</span>)/<span class="hljs-number">2</span>;<br>	cnt[x]--;<br>	sum+=cnt[x]*(cnt[x]<span class="hljs-number">-1</span>)/<span class="hljs-number">2</span>;<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();<br>	<br>	block=n/<span class="hljs-built_in">sqrt</span>(m*<span class="hljs-number">2</span>/<span class="hljs-number">3</span>);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		a[i]=<span class="hljs-built_in">read</span>();<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		mocap[i].l=<span class="hljs-built_in">read</span>();mocap[i].r=<span class="hljs-built_in">read</span>();mocap[i].id=i;<br>		l1[i]=mocap[i].l,r1[i]=mocap[i].r;<br>	&#125;<br><br>	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);<br><br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-type">int</span> l=mocap[i].l,r=mocap[i].r;<br>		<span class="hljs-keyword">while</span>(lal&gt;l)lal--,<span class="hljs-built_in">add</span>(a[lal]);<br>		<span class="hljs-keyword">while</span>(lar&lt;r)lar++,<span class="hljs-built_in">add</span>(a[lar]);<br>		<span class="hljs-keyword">while</span>(lal&lt;l)<span class="hljs-built_in">del</span>(a[lal]),lal++;<br>		<span class="hljs-keyword">while</span>(lar&gt;r)<span class="hljs-built_in">del</span>(a[lar]),lar--;<br>		ans[mocap[i].id]=sum;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-type">int</span> tmp;<br>		tmp=<span class="hljs-built_in">gcd</span>((ll)ans[i],(ll)(r1[i]-l1[i]<span class="hljs-number">+1</span>)*(r1[i]-l1[i])/<span class="hljs-number">2</span>);<br>		<span class="hljs-keyword">if</span>(l1[i]==r1[i])<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;0/1\n&quot;</span>);<br>		<span class="hljs-keyword">else</span> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d/%lld\n&quot;</span>,ans[i]/tmp,(ll)((r1[i]-l1[i]<span class="hljs-number">+1</span>)*(r1[i]-l1[i])/<span class="hljs-number">2</span>)/tmp);<br>	&#125;<br>	<br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<h5 id="CODE"><a href="#CODE" class="headerlink" title="CODE:"></a>CODE:</h5><pre><code class="hljs cpp">
+<span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">5e5</span><span class="hljs-number">+5</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+
+<span class="hljs-type">int</span> n,m,k,a[maxn],ans[maxn],lal=<span class="hljs-number">1</span>,lar=<span class="hljs-number">0</span>,sum,block,cnt[maxn];
+
+ll l1[maxn],r1[maxn];
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">node</span>&#123;
+	<span class="hljs-type">int</span> l,r,id;
+	
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> node &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> ((l<span class="hljs-number">-1</span>)/block==(a.l<span class="hljs-number">-1</span>)/block)?r&lt;a.r:l/block&lt;a.l/block;
+	&#125;
+&#125;mocap[maxn];
+
+<span class="hljs-function">ll <span class="hljs-title">gcd</span><span class="hljs-params">(<span class="hljs-type">int</span> a,<span class="hljs-type">int</span> b)</span></span>&#123;
+	<span class="hljs-keyword">return</span> b==<span class="hljs-number">0</span>?a:<span class="hljs-built_in">gcd</span>(b,a%b);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum-=cnt[x]*(cnt[x]<span class="hljs-number">-1</span>)/<span class="hljs-number">2</span>;
+	cnt[x]++;
+	sum+=cnt[x]*(cnt[x]<span class="hljs-number">-1</span>)/<span class="hljs-number">2</span>;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum-=cnt[x]*(cnt[x]<span class="hljs-number">-1</span>)/<span class="hljs-number">2</span>;
+	cnt[x]--;
+	sum+=cnt[x]*(cnt[x]<span class="hljs-number">-1</span>)/<span class="hljs-number">2</span>;
+&#125;
+
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();
+	
+	block=n/<span class="hljs-built_in">sqrt</span>(m*<span class="hljs-number">2</span>/<span class="hljs-number">3</span>);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		a[i]=<span class="hljs-built_in">read</span>();
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		mocap[i].l=<span class="hljs-built_in">read</span>();mocap[i].r=<span class="hljs-built_in">read</span>();mocap[i].id=i;
+		l1[i]=mocap[i].l,r1[i]=mocap[i].r;
+	&#125;
+
+	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);
+
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-type">int</span> l=mocap[i].l,r=mocap[i].r;
+		<span class="hljs-keyword">while</span>(lal&gt;l)lal--,<span class="hljs-built_in">add</span>(a[lal]);
+		<span class="hljs-keyword">while</span>(lar&lt;r)lar++,<span class="hljs-built_in">add</span>(a[lar]);
+		<span class="hljs-keyword">while</span>(lal&lt;l)<span class="hljs-built_in">del</span>(a[lal]),lal++;
+		<span class="hljs-keyword">while</span>(lar&gt;r)<span class="hljs-built_in">del</span>(a[lar]),lar--;
+		ans[mocap[i].id]=sum;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-type">int</span> tmp;
+		tmp=<span class="hljs-built_in">gcd</span>((ll)ans[i],(ll)(r1[i]-l1[i]<span class="hljs-number">+1</span>)*(r1[i]-l1[i])/<span class="hljs-number">2</span>);
+		<span class="hljs-keyword">if</span>(l1[i]==r1[i])<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;0/1\n&quot;</span>);
+		<span class="hljs-keyword">else</span> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d/%lld\n&quot;</span>,ans[i]/tmp,(ll)((r1[i]-l1[i]<span class="hljs-number">+1</span>)*(r1[i]-l1[i])/<span class="hljs-number">2</span>)/tmp);
+	&#125;
+	
+
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+</code></pre>
 
 <h2 id="带修莫队"><a href="#带修莫队" class="headerlink" title="带修莫队"></a>带修莫队</h2><p><a href="https://www.luogu.com.cn/problem/P1903">P1903 [国家集训队]数颜色 &#x2F; 维护队列</a></p>
 <p><del>其实这道题在智能推荐里躺了很久了，但是我一直没有打开他，然后还一直大喊lj洛谷为什么没有带修莫队的板子题</del></p>
@@ -662,7 +838,14 @@
 <p>简单来说，就是比较这次与上一次修改的操作次数不一样，我们就暴力的搞成一样的就行了。</p>
 <p>也有一种说法是，在原有的 $l$ , $r$ 的基础上，增加一个时间轴 $t$ ,如果 $t$ 在  $l$ , $r$  之间就更新。</p>
 <p>关于结构体的改进：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;<span class="hljs-comment">//其实结构体应该开两个，就是说查询和修改都开，但是为了简便，我直接开了一个，一表两用</span><br>	<span class="hljs-type">int</span> l,r,id,pre;<span class="hljs-comment">//l和r分别是查询中的左右端点和更改中的位置以及权值</span><br>	<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;<span class="hljs-comment">//改进后的排序</span><br>		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?(belong[r]==belong[a.r]?pre&lt;a.pre:belong[r]&lt;belong[a.r]):belong[l]&lt;belong[a.l];<br>	&#125;<br>&#125;mocap[maxn],modi[maxn];<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;<span class="hljs-comment">//其实结构体应该开两个，就是说查询和修改都开，但是为了简便，我直接开了一个，一表两用</span>
+	<span class="hljs-type">int</span> l,r,id,pre;<span class="hljs-comment">//l和r分别是查询中的左右端点和更改中的位置以及权值</span>
+	
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;<span class="hljs-comment">//改进后的排序</span>
+		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?(belong[r]==belong[a.r]?pre&lt;a.pre:belong[r]&lt;belong[a.r]):belong[l]&lt;belong[a.l];
+	&#125;
+&#125;mocap[maxn],modi[maxn];
+</code></pre>
 
 <p>排序的方法：</p>
 <ul>
@@ -675,19 +858,138 @@
 <p>之后还有一个小细节：在每次修改操作之后，下一次的操作一定是与这步是相反的</p>
 <p>也就是改后-&gt;还原-&gt;修改-&gt;还原</p>
 <p>所以我们直接交换就行了：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> t)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(mocap[x].l&lt;=modi[t].l&amp;&amp;mocap[x].r&gt;=modi[t].l)&#123;<br>		<span class="hljs-built_in">del</span>(a[modi[t].l]);<br>		<span class="hljs-built_in">add</span>(modi[t].r);<br>	&#125;<br>	<span class="hljs-built_in">swap</span>(a[modi[t].l],modi[t].r);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> t)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(mocap[x].l&lt;=modi[t].l&amp;&amp;mocap[x].r&gt;=modi[t].l)&#123;
+		<span class="hljs-built_in">del</span>(a[modi[t].l]);
+		<span class="hljs-built_in">add</span>(modi[t].r);
+	&#125;
+	<span class="hljs-built_in">swap</span>(a[modi[t].l],modi[t].r);
+&#125;
+</code></pre>
 
 <p>于是最后的操作就是这样的：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;<br>	<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)l--,<span class="hljs-built_in">add</span>(a[l]);<br>	<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">del</span>(a[l]),l++;<br>	<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">del</span>(a[r]),r--;<br>	<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)r++,<span class="hljs-built_in">add</span>(a[r]);<br>	<span class="hljs-keyword">while</span>(t&lt;mocap[i].pre)t++,<span class="hljs-built_in">update</span>(i,t);<span class="hljs-comment">//改少了</span><br>	<span class="hljs-keyword">while</span>(t&gt;mocap[i].pre)<span class="hljs-built_in">update</span>(i,t),t--;<span class="hljs-comment">//改多了</span><br>	ans[mocap[i].id]=sum; <br>&#125;<br><br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;
+	<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)l--,<span class="hljs-built_in">add</span>(a[l]);
+	<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">del</span>(a[l]),l++;
+	<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">del</span>(a[r]),r--;
+	<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)r++,<span class="hljs-built_in">add</span>(a[r]);
+	<span class="hljs-keyword">while</span>(t&lt;mocap[i].pre)t++,<span class="hljs-built_in">update</span>(i,t);<span class="hljs-comment">//改少了</span>
+	<span class="hljs-keyword">while</span>(t&gt;mocap[i].pre)<span class="hljs-built_in">update</span>(i,t),t--;<span class="hljs-comment">//改多了</span>
+	ans[mocap[i].id]=sum; 
+&#125;
+
+</code></pre>
 
 <p>最后优化块长：</p>
 <ul>
 <li>时间上的优化：将块的大小从 $sqrt(n)$ 改为 $n $的二分之三次方:</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp">block=<span class="hljs-built_in">pow</span>(n,(<span class="hljs-type">double</span>)<span class="hljs-number">2</span>/(<span class="hljs-type">double</span>)<span class="hljs-number">3</span>);<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp">block=<span class="hljs-built_in">pow</span>(n,(<span class="hljs-type">double</span>)<span class="hljs-number">2</span>/(<span class="hljs-type">double</span>)<span class="hljs-number">3</span>);
+</code></pre>
 
 <p>然后复杂度大概就是 $O( n^ \frac {5}{3})$.</p>
-<h3 id="CODE-1"><a href="#CODE-1" class="headerlink" title="CODE:"></a>CODE:</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">3e5</span><span class="hljs-number">+5</span>;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxm=<span class="hljs-number">2e6</span><span class="hljs-number">+5</span>;<br><br><span class="hljs-type">int</span> n,m,block;<br><br><span class="hljs-type">int</span> l=<span class="hljs-number">1</span>,r,t;<br><br><span class="hljs-type">int</span> sum,c[maxm],a[maxn],ans[maxn],belong[maxn];<br><br><span class="hljs-type">char</span> op[<span class="hljs-number">5</span>];<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id,pre;<br>	<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?(belong[r]==belong[a.r]?pre&lt;a.pre:belong[r]&lt;belong[a.r]):belong[l]&lt;belong[a.l];<br>	&#125;<br>&#125;mocap[maxn],modi[maxn];<br><br><span class="hljs-type">int</span> cntq,cntc;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum+= (++c[x]==<span class="hljs-number">1</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum-= (--c[x]==<span class="hljs-number">0</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> t)</span></span>&#123;<br>	<span class="hljs-keyword">if</span>(mocap[x].l&lt;=modi[t].l&amp;&amp;mocap[x].r&gt;=modi[t].l)&#123;<br>		<span class="hljs-built_in">del</span>(a[modi[t].l]);<br>		<span class="hljs-built_in">add</span>(modi[t].r);<br>	&#125;<br>	<span class="hljs-built_in">swap</span>(a[modi[t].l],modi[t].r);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>, f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>, stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>, stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();<br>	block=<span class="hljs-built_in">pow</span>(n,(<span class="hljs-type">double</span>)<span class="hljs-number">2</span>/(<span class="hljs-type">double</span>)<span class="hljs-number">3</span>);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		a[i]=<span class="hljs-built_in">read</span>();<br>		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		cin&gt;&gt;op;<br>		<span class="hljs-keyword">if</span>(op[<span class="hljs-number">0</span>]==<span class="hljs-string">&#x27;Q&#x27;</span>)&#123;<br>			mocap[++cntq].l=<span class="hljs-built_in">read</span>();<br>			mocap[cntq].r=<span class="hljs-built_in">read</span>();<br>			mocap[cntq].pre=cntc;<br>			mocap[cntq].id=cntq;<br>		&#125;<br>		<br>		<span class="hljs-keyword">if</span>(op[<span class="hljs-number">0</span>]==<span class="hljs-string">&#x27;R&#x27;</span>)&#123;<br>			modi[++cntc].l=<span class="hljs-built_in">read</span>();<span class="hljs-comment">//注意这里的l指的是修改位置pos</span><br>			modi[cntc].r=<span class="hljs-built_in">read</span>();<span class="hljs-comment">//注意这里的r是修改权值val</span><br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+cntq);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;<br>		<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)l--,<span class="hljs-built_in">add</span>(a[l]);<br>		<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">del</span>(a[l]),l++;<br>		<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">del</span>(a[r]),r--;<br>		<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)r++,<span class="hljs-built_in">add</span>(a[r]);<br>		<span class="hljs-keyword">while</span>(t&lt;mocap[i].pre)t++,<span class="hljs-built_in">update</span>(i,t);<br>		<span class="hljs-keyword">while</span>(t&gt;mocap[i].pre)<span class="hljs-built_in">update</span>(i,t),t--;<br>		ans[mocap[i].id]=sum; <br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ans[i]);<br>	&#125;<br><br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><br></code></pre></td></tr></table></figure>
+<h3 id="CODE-1"><a href="#CODE-1" class="headerlink" title="CODE:"></a>CODE:</h3><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">3e5</span><span class="hljs-number">+5</span>;
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxm=<span class="hljs-number">2e6</span><span class="hljs-number">+5</span>;
+
+<span class="hljs-type">int</span> n,m,block;
+
+<span class="hljs-type">int</span> l=<span class="hljs-number">1</span>,r,t;
+
+<span class="hljs-type">int</span> sum,c[maxm],a[maxn],ans[maxn],belong[maxn];
+
+<span class="hljs-type">char</span> op[<span class="hljs-number">5</span>];
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;
+	<span class="hljs-type">int</span> l,r,id,pre;
+	
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?(belong[r]==belong[a.r]?pre&lt;a.pre:belong[r]&lt;belong[a.r]):belong[l]&lt;belong[a.l];
+	&#125;
+&#125;mocap[maxn],modi[maxn];
+
+<span class="hljs-type">int</span> cntq,cntc;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum+= (++c[x]==<span class="hljs-number">1</span>);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum-= (--c[x]==<span class="hljs-number">0</span>);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> t)</span></span>&#123;
+	<span class="hljs-keyword">if</span>(mocap[x].l&lt;=modi[t].l&amp;&amp;mocap[x].r&gt;=modi[t].l)&#123;
+		<span class="hljs-built_in">del</span>(a[modi[t].l]);
+		<span class="hljs-built_in">add</span>(modi[t].r);
+	&#125;
+	<span class="hljs-built_in">swap</span>(a[modi[t].l],modi[t].r);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>, f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>, stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>, stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();
+	block=<span class="hljs-built_in">pow</span>(n,(<span class="hljs-type">double</span>)<span class="hljs-number">2</span>/(<span class="hljs-type">double</span>)<span class="hljs-number">3</span>);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		a[i]=<span class="hljs-built_in">read</span>();
+		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		cin&gt;&gt;op;
+		<span class="hljs-keyword">if</span>(op[<span class="hljs-number">0</span>]==<span class="hljs-string">&#x27;Q&#x27;</span>)&#123;
+			mocap[++cntq].l=<span class="hljs-built_in">read</span>();
+			mocap[cntq].r=<span class="hljs-built_in">read</span>();
+			mocap[cntq].pre=cntc;
+			mocap[cntq].id=cntq;
+		&#125;
+		
+		<span class="hljs-keyword">if</span>(op[<span class="hljs-number">0</span>]==<span class="hljs-string">&#x27;R&#x27;</span>)&#123;
+			modi[++cntc].l=<span class="hljs-built_in">read</span>();<span class="hljs-comment">//注意这里的l指的是修改位置pos</span>
+			modi[cntc].r=<span class="hljs-built_in">read</span>();<span class="hljs-comment">//注意这里的r是修改权值val</span>
+		&#125;
+	&#125;
+	
+	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+cntq);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;
+		<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)l--,<span class="hljs-built_in">add</span>(a[l]);
+		<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">del</span>(a[l]),l++;
+		<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">del</span>(a[r]),r--;
+		<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)r++,<span class="hljs-built_in">add</span>(a[r]);
+		<span class="hljs-keyword">while</span>(t&lt;mocap[i].pre)t++,<span class="hljs-built_in">update</span>(i,t);
+		<span class="hljs-keyword">while</span>(t&gt;mocap[i].pre)<span class="hljs-built_in">update</span>(i,t),t--;
+		ans[mocap[i].id]=sum; 
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;
+		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ans[i]);
+	&#125;
+
+
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+
+</code></pre>
 
 
 
@@ -738,27 +1040,233 @@
 <p>我们没有统计 $LCA$ ！</p>
 <p>后果不太严重，加上就好了 <del>&#x2F;cy</del></p>
 <p>至于如何判断第一次与第二次的问题，这个很简单，我们多记录一个 $use[x]$，表示 $x$ 这个点有没有被加入，每次处理的时候如果 $use[x]&#x3D;0$ 则需要添加节点；如果 $use[x]&#x3D;1$ 则需要删除节点，每次处理之后都对 $use[x]$ 异或 $1$ 就可以了.</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	used[x]?<span class="hljs-built_in">del</span>(x):<span class="hljs-built_in">add</span>(x);<br>	used[x]^=<span class="hljs-number">1</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	used[x]?<span class="hljs-built_in">del</span>(x):<span class="hljs-built_in">add</span>(x);
+	used[x]^=<span class="hljs-number">1</span>;
+&#125;
+</code></pre>
 
 <h4 id="下面是一些细节"><a href="#下面是一些细节" class="headerlink" title="下面是一些细节"></a>下面是一些细节</h4><ul>
 <li>欧拉序直接用树剖就行了，在 $dfs1$ 中顺便就搞出来了。</li>
 </ul>
 <p>$LCA$ 顺便也就搞出来了，<del>多香</del></p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs1</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> f)</span></span>&#123;<br>	fa[u]=f;<br>	size[u]=<span class="hljs-number">1</span>;<br>	deep[u]=deep[f]<span class="hljs-number">+1</span>;<br>	st[u]=++tot;<br>	pot[tot]=u;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;<br>		<span class="hljs-type">int</span> v=to[i];<br>		<span class="hljs-keyword">if</span>(v==f)<span class="hljs-keyword">continue</span>;<br>		<span class="hljs-built_in">dfs1</span>(v,u);<br>		size[u]+=size[v];<br>		<span class="hljs-keyword">if</span>(size[v]&gt;size[son[u]])son[u]=v;<br>	&#125;<br>	<br>	ed[u]=++tot;pot[tot]=u;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs2</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> topf)</span></span>&#123;<br>	top[u]=topf;<br>	<span class="hljs-keyword">if</span>(!son[u])<span class="hljs-keyword">return</span>;<br>	<span class="hljs-built_in">dfs2</span>(son[u],topf);<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;<br>		<span class="hljs-type">int</span> v=to[i];<br>		<span class="hljs-keyword">if</span>(top[v])<span class="hljs-keyword">continue</span>;<br>		<span class="hljs-built_in">dfs2</span>(v,v);<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">LCA</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;<br>	<span class="hljs-keyword">while</span>(top[x]!=top[y])&#123;<br>		<span class="hljs-keyword">if</span>(deep[top[x]]&lt;deep[top[y]])<span class="hljs-built_in">swap</span>(x,y);<br>		x=fa[top[x]];<br>	&#125;<br>	<span class="hljs-keyword">return</span> deep[x]&lt;deep[y]?x:y;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs1</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> f)</span></span>&#123;
+	fa[u]=f;
+	size[u]=<span class="hljs-number">1</span>;
+	deep[u]=deep[f]<span class="hljs-number">+1</span>;
+	st[u]=++tot;
+	pot[tot]=u;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;
+		<span class="hljs-type">int</span> v=to[i];
+		<span class="hljs-keyword">if</span>(v==f)<span class="hljs-keyword">continue</span>;
+		<span class="hljs-built_in">dfs1</span>(v,u);
+		size[u]+=size[v];
+		<span class="hljs-keyword">if</span>(size[v]&gt;size[son[u]])son[u]=v;
+	&#125;
+	
+	ed[u]=++tot;pot[tot]=u;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs2</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> topf)</span></span>&#123;
+	top[u]=topf;
+	<span class="hljs-keyword">if</span>(!son[u])<span class="hljs-keyword">return</span>;
+	<span class="hljs-built_in">dfs2</span>(son[u],topf);
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;
+		<span class="hljs-type">int</span> v=to[i];
+		<span class="hljs-keyword">if</span>(top[v])<span class="hljs-keyword">continue</span>;
+		<span class="hljs-built_in">dfs2</span>(v,v);
+	&#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">LCA</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;
+	<span class="hljs-keyword">while</span>(top[x]!=top[y])&#123;
+		<span class="hljs-keyword">if</span>(deep[top[x]]&lt;deep[top[y]])<span class="hljs-built_in">swap</span>(x,y);
+		x=fa[top[x]];
+	&#125;
+	<span class="hljs-keyword">return</span> deep[x]&lt;deep[y]?x:y;
+&#125;
+</code></pre>
 
 <ul>
 <li>一定要记得，欧拉序的长度是节点长度的 $2$ 倍，所以分块的时候要分 $n&lt;&lt;1$</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=(n&lt;&lt;<span class="hljs-number">1</span>);i++)&#123;<br>		belong[i]=i/block<span class="hljs-number">+1</span>;<br>	&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=(n&lt;&lt;<span class="hljs-number">1</span>);i++)&#123;
+		belong[i]=i/block<span class="hljs-number">+1</span>;
+	&#125;
+</code></pre>
 
 <ul>
 <li>这个题要离散化。</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-built_in">sort</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+n);<br>	<span class="hljs-type">int</span> len=<span class="hljs-built_in">unique</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+n)-data<span class="hljs-number">-1</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++) a[i]=<span class="hljs-built_in">lower_bound</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+len,a[i])-data;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-built_in">sort</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+n);
+	<span class="hljs-type">int</span> len=<span class="hljs-built_in">unique</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+n)-data<span class="hljs-number">-1</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++) a[i]=<span class="hljs-built_in">lower_bound</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+len,a[i])-data;
+&#125;
+</code></pre>
 
 
 <p><del>其实我觉得还是挺恶心的</del></p>
-<h3 id="CODE：-1"><a href="#CODE：-1" class="headerlink" title="CODE："></a>CODE：</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">1e5</span><span class="hljs-number">+5</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><br><span class="hljs-type">int</span> n,m,block;<br><span class="hljs-type">int</span> a[maxn],data[maxn];<br><span class="hljs-type">int</span> st[maxn],ed[maxn],tot;<br><span class="hljs-type">int</span> belong[maxn];<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id,lca,ans;<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&lt;a.r:belong[l]&lt;belong[a.l];<br>	&#125;<br>&#125;mocap[maxn];<br><br><span class="hljs-type">int</span> nxt[maxn&lt;&lt;<span class="hljs-number">1</span>],to[maxn&lt;&lt;<span class="hljs-number">1</span>],head[maxn],cnt;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> v)</span></span>&#123;<br>	nxt[++cnt]=head[u];<br>	to[cnt]=v;<br>	head[u]=cnt;<br>&#125;<br><br><span class="hljs-type">int</span> deep[maxn],fa[maxn],top[maxn],son[maxn],size[maxn],pot[maxn];<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs1</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> f)</span></span>&#123;<br>	fa[u]=f;<br>	size[u]=<span class="hljs-number">1</span>;<br>	deep[u]=deep[f]<span class="hljs-number">+1</span>;<br>	st[u]=++tot;<br>	pot[tot]=u;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;<br>		<span class="hljs-type">int</span> v=to[i];<br>		<span class="hljs-keyword">if</span>(v==f)<span class="hljs-keyword">continue</span>;<br>		<span class="hljs-built_in">dfs1</span>(v,u);<br>		size[u]+=size[v];<br>		<span class="hljs-keyword">if</span>(size[v]&gt;size[son[u]])son[u]=v;<br>	&#125;<br>	<br>	ed[u]=++tot;pot[tot]=u;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs2</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> topf)</span></span>&#123;<br>	top[u]=topf;<br>	<span class="hljs-keyword">if</span>(!son[u])<span class="hljs-keyword">return</span>;<br>	<span class="hljs-built_in">dfs2</span>(son[u],topf);<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;<br>		<span class="hljs-type">int</span> v=to[i];<br>		<span class="hljs-keyword">if</span>(top[v])<span class="hljs-keyword">continue</span>;<br>		<span class="hljs-built_in">dfs2</span>(v,v);<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-built_in">sort</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+n);<br>	<span class="hljs-type">int</span> len=<span class="hljs-built_in">unique</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+n)-data<span class="hljs-number">-1</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++) a[i]=<span class="hljs-built_in">lower_bound</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+len,a[i])-data;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">LCA</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;<br>	<span class="hljs-keyword">while</span>(top[x]!=top[y])&#123;<br>		<span class="hljs-keyword">if</span>(deep[top[x]]&lt;deep[top[y]])<span class="hljs-built_in">swap</span>(x,y);<br>		x=fa[top[x]];<br>	&#125;<br>	<span class="hljs-keyword">return</span> deep[x]&lt;deep[y]?x:y;<br>&#125;<br><br><span class="hljs-type">int</span> used[maxn],c[maxn],sum,ans[maxn];<br><span class="hljs-type">int</span> l=<span class="hljs-number">1</span>,r=<span class="hljs-number">0</span>;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum+=(++c[a[x]]==<span class="hljs-number">1</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	sum-=(--c[a[x]]==<span class="hljs-number">0</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>	used[x]?<span class="hljs-built_in">del</span>(x):<span class="hljs-built_in">add</span>(x);<br>	used[x]^=<span class="hljs-number">1</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();<br>	<br>	block=n/<span class="hljs-built_in">sqrt</span>(m*<span class="hljs-number">2</span>/<span class="hljs-number">3</span>);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		a[i]=data[i]=<span class="hljs-built_in">read</span>();<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=(n&lt;&lt;<span class="hljs-number">1</span>);i++)&#123;<br>		belong[i]=i/block<span class="hljs-number">+1</span>;<br>	&#125;<br>	<br>	<span class="hljs-built_in">Discretization</span>();<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,x,y;i&lt;n;i++)&#123;<br>		x=<span class="hljs-built_in">read</span>();y=<span class="hljs-built_in">read</span>();<br>		<span class="hljs-built_in">add</span>(x,y);<br>		<span class="hljs-built_in">add</span>(y,x);<br>	&#125;<br>	<br>	deep[<span class="hljs-number">1</span>]=<span class="hljs-number">1</span>;<br>	<span class="hljs-built_in">dfs1</span>(<span class="hljs-number">1</span>,<span class="hljs-number">0</span>);<br>	<span class="hljs-built_in">dfs2</span>(<span class="hljs-number">1</span>,<span class="hljs-number">1</span>);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,x,y;i&lt;=m;i++)&#123;<br>		x=<span class="hljs-built_in">read</span>();y=<span class="hljs-built_in">read</span>();<br>		<span class="hljs-keyword">if</span>(st[x]&gt;st[y])<span class="hljs-built_in">swap</span>(x,y);<br>		<span class="hljs-type">int</span> lca=<span class="hljs-built_in">LCA</span>(x,y);<br>		mocap[i].id=i;<br>		<span class="hljs-keyword">if</span>(lca==x) mocap[i].l=st[x],mocap[i].r=st[y];<br>		<span class="hljs-keyword">else</span> mocap[i].l=ed[x],mocap[i].r=st[y],mocap[i].lca=lca;<br>	&#125;<br>	<br>	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[l]),l++;<br>		<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)l--,<span class="hljs-built_in">calc</span>(pot[l]);<br>		<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)r++,<span class="hljs-built_in">calc</span>(pot[r]);<br>		<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[r]),r--;<br>		<span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);<br>		mocap[i].ans=sum;<br>		<span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		ans[mocap[i].id]=mocap[i].ans;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ans[i]);<br>	&#125;<br><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<h3 id="CODE：-1"><a href="#CODE：-1" class="headerlink" title="CODE："></a>CODE：</h3><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">1e5</span><span class="hljs-number">+5</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+
+<span class="hljs-type">int</span> n,m,block;
+<span class="hljs-type">int</span> a[maxn],data[maxn];
+<span class="hljs-type">int</span> st[maxn],ed[maxn],tot;
+<span class="hljs-type">int</span> belong[maxn];
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;
+	<span class="hljs-type">int</span> l,r,id,lca,ans;
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&lt;a.r:belong[l]&lt;belong[a.l];
+	&#125;
+&#125;mocap[maxn];
+
+<span class="hljs-type">int</span> nxt[maxn&lt;&lt;<span class="hljs-number">1</span>],to[maxn&lt;&lt;<span class="hljs-number">1</span>],head[maxn],cnt;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> v)</span></span>&#123;
+	nxt[++cnt]=head[u];
+	to[cnt]=v;
+	head[u]=cnt;
+&#125;
+
+<span class="hljs-type">int</span> deep[maxn],fa[maxn],top[maxn],son[maxn],size[maxn],pot[maxn];
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs1</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> f)</span></span>&#123;
+	fa[u]=f;
+	size[u]=<span class="hljs-number">1</span>;
+	deep[u]=deep[f]<span class="hljs-number">+1</span>;
+	st[u]=++tot;
+	pot[tot]=u;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;
+		<span class="hljs-type">int</span> v=to[i];
+		<span class="hljs-keyword">if</span>(v==f)<span class="hljs-keyword">continue</span>;
+		<span class="hljs-built_in">dfs1</span>(v,u);
+		size[u]+=size[v];
+		<span class="hljs-keyword">if</span>(size[v]&gt;size[son[u]])son[u]=v;
+	&#125;
+	
+	ed[u]=++tot;pot[tot]=u;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs2</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> topf)</span></span>&#123;
+	top[u]=topf;
+	<span class="hljs-keyword">if</span>(!son[u])<span class="hljs-keyword">return</span>;
+	<span class="hljs-built_in">dfs2</span>(son[u],topf);
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;
+		<span class="hljs-type">int</span> v=to[i];
+		<span class="hljs-keyword">if</span>(top[v])<span class="hljs-keyword">continue</span>;
+		<span class="hljs-built_in">dfs2</span>(v,v);
+	&#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-built_in">sort</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+n);
+	<span class="hljs-type">int</span> len=<span class="hljs-built_in">unique</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+n)-data<span class="hljs-number">-1</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++) a[i]=<span class="hljs-built_in">lower_bound</span>(data<span class="hljs-number">+1</span>,data<span class="hljs-number">+1</span>+len,a[i])-data;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">LCA</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;
+	<span class="hljs-keyword">while</span>(top[x]!=top[y])&#123;
+		<span class="hljs-keyword">if</span>(deep[top[x]]&lt;deep[top[y]])<span class="hljs-built_in">swap</span>(x,y);
+		x=fa[top[x]];
+	&#125;
+	<span class="hljs-keyword">return</span> deep[x]&lt;deep[y]?x:y;
+&#125;
+
+<span class="hljs-type">int</span> used[maxn],c[maxn],sum,ans[maxn];
+<span class="hljs-type">int</span> l=<span class="hljs-number">1</span>,r=<span class="hljs-number">0</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum+=(++c[a[x]]==<span class="hljs-number">1</span>);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	sum-=(--c[a[x]]==<span class="hljs-number">0</span>);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+	used[x]?<span class="hljs-built_in">del</span>(x):<span class="hljs-built_in">add</span>(x);
+	used[x]^=<span class="hljs-number">1</span>;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();
+	
+	block=n/<span class="hljs-built_in">sqrt</span>(m*<span class="hljs-number">2</span>/<span class="hljs-number">3</span>);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		a[i]=data[i]=<span class="hljs-built_in">read</span>();
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=(n&lt;&lt;<span class="hljs-number">1</span>);i++)&#123;
+		belong[i]=i/block<span class="hljs-number">+1</span>;
+	&#125;
+	
+	<span class="hljs-built_in">Discretization</span>();
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,x,y;i&lt;n;i++)&#123;
+		x=<span class="hljs-built_in">read</span>();y=<span class="hljs-built_in">read</span>();
+		<span class="hljs-built_in">add</span>(x,y);
+		<span class="hljs-built_in">add</span>(y,x);
+	&#125;
+	
+	deep[<span class="hljs-number">1</span>]=<span class="hljs-number">1</span>;
+	<span class="hljs-built_in">dfs1</span>(<span class="hljs-number">1</span>,<span class="hljs-number">0</span>);
+	<span class="hljs-built_in">dfs2</span>(<span class="hljs-number">1</span>,<span class="hljs-number">1</span>);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,x,y;i&lt;=m;i++)&#123;
+		x=<span class="hljs-built_in">read</span>();y=<span class="hljs-built_in">read</span>();
+		<span class="hljs-keyword">if</span>(st[x]&gt;st[y])<span class="hljs-built_in">swap</span>(x,y);
+		<span class="hljs-type">int</span> lca=<span class="hljs-built_in">LCA</span>(x,y);
+		mocap[i].id=i;
+		<span class="hljs-keyword">if</span>(lca==x) mocap[i].l=st[x],mocap[i].r=st[y];
+		<span class="hljs-keyword">else</span> mocap[i].l=ed[x],mocap[i].r=st[y],mocap[i].lca=lca;
+	&#125;
+	
+	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[l]),l++;
+		<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)l--,<span class="hljs-built_in">calc</span>(pot[l]);
+		<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)r++,<span class="hljs-built_in">calc</span>(pot[r]);
+		<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[r]),r--;
+		<span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);
+		mocap[i].ans=sum;
+		<span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		ans[mocap[i].id]=mocap[i].ans;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ans[i]);
+	&#125;
+
+
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+</code></pre>
 
 <h3 id="练习题：P4074-WC2013-糖果公园"><a href="#练习题：P4074-WC2013-糖果公园" class="headerlink" title="练习题：P4074 [WC2013] 糖果公园"></a>练习题：<a href="https://www.luogu.com.cn/problem/P4074">P4074 [WC2013] 糖果公园</a></h3><p>好啦，你现在学到了带修莫队和树上莫队的精髓啦，快来做这道超级无敌<del>傻逼</del>二合一题目吧！</p>
 <p><del>想当年我第一次见他的时候他还是个黑的，几天不见这么拉了</del></p>
@@ -781,30 +1289,131 @@
 <p>还是一样的思路，首先解决莫队上树的问题。</p>
 <p>参考上面的树上莫队，首先需要使用欧拉序将树上路径提取出来使之成为线性结构，之后再进行莫队操作</p>
 <p>依然使用树剖，顺带过程中求出 <code>LCA</code></p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">namespace</span> Tree_chain_partition&#123;<br>	<span class="hljs-type">int</span> fa[maxn],size[maxn],son[maxn],dep[maxn],top[maxn];<br><br>	<span class="hljs-type">int</span> st[maxn],ed[maxn],pot[maxn],dfn;<br>    <span class="hljs-comment">//前括号序st，后括号序ed，存储欧拉序的pot，以及时间戳</span><br>	<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs1</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> f)</span></span>&#123;<span class="hljs-comment">//树剖同时记录欧拉序</span><br>		st[u]=++dfn;pot[dfn]=u;<br>		size[u]=<span class="hljs-number">1</span>;<br>		fa[u]=f;<br>		dep[u]=dep[f]<span class="hljs-number">+1</span>;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;<br>			<span class="hljs-type">int</span> v=to[i];<br>			<span class="hljs-keyword">if</span>(v==f)<span class="hljs-keyword">continue</span>;<br>			<span class="hljs-built_in">dfs1</span>(v,u);<br>			size[u]+=size[v];<br>			<span class="hljs-keyword">if</span>(size[v]&gt;size[son[u]])son[u]=v;<br>		&#125;<br>		ed[u]=++dfn;pot[dfn]=u;<br>	&#125;<br>	<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs2</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> topf)</span></span>&#123;<br>		top[u]=topf;<br>		<span class="hljs-keyword">if</span>(!son[u])<span class="hljs-keyword">return</span>;<br>		<span class="hljs-built_in">dfs2</span>(son[u],topf);<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;<br>			<span class="hljs-type">int</span> v=to[i];<br>			<span class="hljs-keyword">if</span>(v==fa[u]||v==son[u])<span class="hljs-keyword">continue</span>;<br>			<span class="hljs-built_in">dfs2</span>(v,v);<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">lca</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;<br>		<span class="hljs-keyword">while</span>(top[x]!=top[y])&#123;<br>			<span class="hljs-keyword">if</span>(dep[top[x]]&lt;dep[top[y]])<span class="hljs-built_in">swap</span>(x,y);<br>			x=fa[top[x]];<br>		&#125;<br>		<span class="hljs-keyword">return</span> dep[x]&lt;dep[y]?x:y;<br>	&#125;<br>	<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">namespace</span> Tree_chain_partition&#123;
+	<span class="hljs-type">int</span> fa[maxn],size[maxn],son[maxn],dep[maxn],top[maxn];
+
+	<span class="hljs-type">int</span> st[maxn],ed[maxn],pot[maxn],dfn;
+    <span class="hljs-comment">//前括号序st，后括号序ed，存储欧拉序的pot，以及时间戳</span>
+	
+	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs1</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> f)</span></span>&#123;<span class="hljs-comment">//树剖同时记录欧拉序</span>
+		st[u]=++dfn;pot[dfn]=u;
+		size[u]=<span class="hljs-number">1</span>;
+		fa[u]=f;
+		dep[u]=dep[f]<span class="hljs-number">+1</span>;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;
+			<span class="hljs-type">int</span> v=to[i];
+			<span class="hljs-keyword">if</span>(v==f)<span class="hljs-keyword">continue</span>;
+			<span class="hljs-built_in">dfs1</span>(v,u);
+			size[u]+=size[v];
+			<span class="hljs-keyword">if</span>(size[v]&gt;size[son[u]])son[u]=v;
+		&#125;
+		ed[u]=++dfn;pot[dfn]=u;
+	&#125;
+	
+	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs2</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> topf)</span></span>&#123;
+		top[u]=topf;
+		<span class="hljs-keyword">if</span>(!son[u])<span class="hljs-keyword">return</span>;
+		<span class="hljs-built_in">dfs2</span>(son[u],topf);
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;
+			<span class="hljs-type">int</span> v=to[i];
+			<span class="hljs-keyword">if</span>(v==fa[u]||v==son[u])<span class="hljs-keyword">continue</span>;
+			<span class="hljs-built_in">dfs2</span>(v,v);
+		&#125;
+	&#125;
+	
+	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">lca</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;
+		<span class="hljs-keyword">while</span>(top[x]!=top[y])&#123;
+			<span class="hljs-keyword">if</span>(dep[top[x]]&lt;dep[top[y]])<span class="hljs-built_in">swap</span>(x,y);
+			x=fa[top[x]];
+		&#125;
+		<span class="hljs-keyword">return</span> dep[x]&lt;dep[y]?x:y;
+	&#125;
+	
+&#125;</code></pre>
 
 <p>之后考虑带修的问题。</p>
 <p>回忆上面讲过的带修莫队，需要在莫队基础上增加一个维度。</p>
 <p>排序依旧是先按照左端点，其次是右端点，最后是时间维度。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> belong[maxn];<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Mocap</span>&#123;<br>    <span class="hljs-type">int</span> l,r,id,lca,ans,pre;<br><br>    <span class="hljs-type">int</span> pos,val;<br><br>    <span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (Mocap &amp;a)<span class="hljs-type">const</span>&#123;<br>        <span class="hljs-keyword">return</span> belong[l]==belong[a.l]?<br>            belong[r]==belong[a.r]?<br>            pre&lt;a.pre:<br>        belong[r]&lt;belong[a.r]:<br>        belong[l]&lt;belong[a.l];<br>    &#125;<br>&#125;mocap[maxn],modi[maxn];<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-type">int</span> belong[maxn];
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">Mocap</span>&#123;
+    <span class="hljs-type">int</span> l,r,id,lca,ans,pre;
+
+    <span class="hljs-type">int</span> pos,val;
+
+    <span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (Mocap &amp;a)<span class="hljs-type">const</span>&#123;
+        <span class="hljs-keyword">return</span> belong[l]==belong[a.l]?
+            belong[r]==belong[a.r]?
+            pre&lt;a.pre:
+        belong[r]&lt;belong[a.r]:
+        belong[l]&lt;belong[a.l];
+    &#125;
+&#125;mocap[maxn],modi[maxn];</code></pre>
 
 <p>修改操作和查询操作的记录完全可以使用同一个结构体，比较方便，缺点是一个结构体里面变量太多，可能不大好调试</p>
 <p>读入操作的时候和普通的树上莫队与带修莫队差别并不算大，直接把他们融合一下。</p>
 <p>别忘了记录时间维度</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,op;i&lt;=q;i++)&#123;<br>    <span class="hljs-built_in">read</span>(op);<br>    <span class="hljs-keyword">if</span>(op==<span class="hljs-number">0</span>)&#123;<br>        <span class="hljs-built_in">read</span>(modi[++cntm].pos);<br>        <span class="hljs-built_in">read</span>(modi[cntm].val);<br>    &#125;<br>    <span class="hljs-keyword">if</span>(op==<span class="hljs-number">1</span>)&#123;<br>        <span class="hljs-type">int</span> x,y;<br>        <span class="hljs-built_in">read</span>(x),<span class="hljs-built_in">read</span>(y);<br>        <span class="hljs-keyword">if</span>(st[x]&gt;st[y])<span class="hljs-built_in">swap</span>(x,y);<br>        <span class="hljs-type">int</span> LCA=<span class="hljs-built_in">lca</span>(x,y);<br>        mocap[++cntq].id=cntq,mocap[cntq].pre=cntm;<span class="hljs-comment">//记录时间维度</span><br>        <span class="hljs-keyword">if</span>(LCA==x)mocap[cntq].l=st[x],mocap[cntq].r=st[y];<br>        <span class="hljs-keyword">else</span> mocap[cntq].l=ed[x],mocap[cntq].r=st[y],mocap[cntq].lca=LCA;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,op;i&lt;=q;i++)&#123;
+    <span class="hljs-built_in">read</span>(op);
+    <span class="hljs-keyword">if</span>(op==<span class="hljs-number">0</span>)&#123;
+        <span class="hljs-built_in">read</span>(modi[++cntm].pos);
+        <span class="hljs-built_in">read</span>(modi[cntm].val);
+    &#125;
+    <span class="hljs-keyword">if</span>(op==<span class="hljs-number">1</span>)&#123;
+        <span class="hljs-type">int</span> x,y;
+        <span class="hljs-built_in">read</span>(x),<span class="hljs-built_in">read</span>(y);
+        <span class="hljs-keyword">if</span>(st[x]&gt;st[y])<span class="hljs-built_in">swap</span>(x,y);
+        <span class="hljs-type">int</span> LCA=<span class="hljs-built_in">lca</span>(x,y);
+        mocap[++cntq].id=cntq,mocap[cntq].pre=cntm;<span class="hljs-comment">//记录时间维度</span>
+        <span class="hljs-keyword">if</span>(LCA==x)mocap[cntq].l=st[x],mocap[cntq].r=st[y];
+        <span class="hljs-keyword">else</span> mocap[cntq].l=ed[x],mocap[cntq].r=st[y],mocap[cntq].lca=LCA;
+    &#125;
+&#125;</code></pre>
 
 <p>对于过程中的移动操作，依然需要借用欧拉序节点重复的原理，使用访问判断，而不能使用一般莫队的直接 <code>add</code> 与 <code>del</code> 操作。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp">ll c[maxn],sum;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>    sum+= V[C[x]]*W[++c[C[x]]];<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>    sum-= V[C[x]]*W[c[C[x]]--];<br>&#125;<br><br><span class="hljs-type">bool</span> vis[maxn];<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>    vis[x]?<span class="hljs-built_in">del</span>(x):<span class="hljs-built_in">add</span>(x);<br>    vis[x]^=<span class="hljs-number">1</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp">ll c[maxn],sum;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+    sum+= V[C[x]]*W[++c[C[x]]];
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+    sum-= V[C[x]]*W[c[C[x]]--];
+&#125;
+
+<span class="hljs-type">bool</span> vis[maxn];
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+    vis[x]?<span class="hljs-built_in">del</span>(x):<span class="hljs-built_in">add</span>(x);
+    vis[x]^=<span class="hljs-number">1</span>;
+&#125;</code></pre>
 
 
 
 <p>移动完了区间别忘了还要把修改也暴力调整一下。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>    <span class="hljs-keyword">if</span>(vis[modi[x].pos])&#123;<br>        <span class="hljs-built_in">calc</span>(modi[x].pos);<br>        <span class="hljs-built_in">swap</span>(C[modi[x].pos],modi[x].val);<br>        <span class="hljs-built_in">calc</span>(modi[x].pos);<br>    &#125;<br>    <span class="hljs-keyword">else</span> <span class="hljs-built_in">swap</span>(C[modi[x].pos],modi[x].val);<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+    <span class="hljs-keyword">if</span>(vis[modi[x].pos])&#123;
+        <span class="hljs-built_in">calc</span>(modi[x].pos);
+        <span class="hljs-built_in">swap</span>(C[modi[x].pos],modi[x].val);
+        <span class="hljs-built_in">calc</span>(modi[x].pos);
+    &#125;
+    <span class="hljs-keyword">else</span> <span class="hljs-built_in">swap</span>(C[modi[x].pos],modi[x].val);
+&#125;</code></pre>
 
 
 
 <p><code>lca</code> 的贡献不要忘记。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;<br>    <span class="hljs-keyword">while</span>(l&gt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[--l]);<span class="hljs-comment">//常规莫队</span><br>    <span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[l++]);<br>    <span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[r--]);<br>    <span class="hljs-keyword">while</span>(r&lt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[++r]);<br>    <span class="hljs-keyword">while</span>(tim&lt;mocap[i].pre)<span class="hljs-built_in">update</span>(++tim);<span class="hljs-comment">//修改</span><br>    <span class="hljs-keyword">while</span>(tim&gt;mocap[i].pre)<span class="hljs-built_in">update</span>(tim--);<br>    <span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);<span class="hljs-comment">//统计lca贡献</span><br>    ans[mocap[i].id]=sum;<br>    <span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;
+    <span class="hljs-keyword">while</span>(l&gt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[--l]);<span class="hljs-comment">//常规莫队</span>
+    <span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[l++]);
+    <span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[r--]);
+    <span class="hljs-keyword">while</span>(r&lt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[++r]);
+    <span class="hljs-keyword">while</span>(tim&lt;mocap[i].pre)<span class="hljs-built_in">update</span>(++tim);<span class="hljs-comment">//修改</span>
+    <span class="hljs-keyword">while</span>(tim&gt;mocap[i].pre)<span class="hljs-built_in">update</span>(tim--);
+    <span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);<span class="hljs-comment">//统计lca贡献</span>
+    ans[mocap[i].id]=sum;
+    <span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);
+&#125;</code></pre>
 
 <p>大概到这里就算是结束了，虽然过程非常繁琐，码量也不算小，但是如果封装几个 <code>namespace</code> 其实还是会好调很多的。</p>
 <p><del>强烈谴责搞这么多读入，还有这么长的题面</del></p>
@@ -815,7 +1424,205 @@
 </ul>
 <p>就这么多。</p>
 <p>留个代码吧</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2e5</span><span class="hljs-number">+5</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> int ll</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> debug cerr&lt;&lt;<span class="hljs-string">&quot;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!&quot;</span>&lt;&lt;endl;</span><br><br><span class="hljs-type">int</span> n,m,q,block;<br><br><span class="hljs-type">int</span> head[maxn],to[maxn&lt;&lt;<span class="hljs-number">1</span>],nxt[maxn&lt;&lt;<span class="hljs-number">1</span>],cnt;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> v)</span></span>&#123;<br>	nxt[++cnt]=head[u];<br>	to[cnt]=v;<br>	head[u]=cnt;<br>&#125;<br><br><span class="hljs-type">int</span> V[maxn],W[maxn],C[maxn];<br><br><span class="hljs-keyword">namespace</span> MOCAP&#123;<br>	<span class="hljs-type">int</span> belong[maxn];<br><br>	<span class="hljs-keyword">struct</span> <span class="hljs-title class_">Mocap</span>&#123;<br>		<span class="hljs-type">int</span> l,r,id,lca,ans,pre;<br>		<br>		<span class="hljs-type">int</span> pos,val;<br>		<br>		<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (Mocap &amp;a)<span class="hljs-type">const</span>&#123;<br>			<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?<br>				   belong[r]==belong[a.r]?<br>				   pre&lt;a.pre:<br>				   belong[r]&lt;belong[a.r]:<br>				   belong[l]&lt;belong[a.l];<br>		&#125;<br>	&#125;mocap[maxn],modi[maxn];<br>	<br>	<span class="hljs-type">int</span> cntm,cntq,l=<span class="hljs-number">1</span>,r,tim=<span class="hljs-number">0</span>;<br>	<br>	ll c[maxn],sum;<br><br>	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>		sum+= V[C[x]]*W[++c[C[x]]];<br>	&#125;<br>	<br>	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>		sum-= V[C[x]]*W[c[C[x]]--];<br>	&#125;<br>	<br>	<span class="hljs-type">bool</span> vis[maxn];<br>	<br>	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>		vis[x]?<span class="hljs-built_in">del</span>(x):<span class="hljs-built_in">add</span>(x);<br>		vis[x]^=<span class="hljs-number">1</span>;<br>	&#125;<br>	<br>	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;<br>		<span class="hljs-keyword">if</span>(vis[modi[x].pos])&#123;<br>			<span class="hljs-built_in">calc</span>(modi[x].pos);<br>			<span class="hljs-built_in">swap</span>(C[modi[x].pos],modi[x].val);<br>			<span class="hljs-built_in">calc</span>(modi[x].pos);<br>		&#125;<br>		<span class="hljs-keyword">else</span> <span class="hljs-built_in">swap</span>(C[modi[x].pos],modi[x].val);<br>	&#125;<br>	<br>	ll ans[maxn];<br>&#125;<br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> MOCAP;<br><br><span class="hljs-keyword">namespace</span> Tree_chain_partition&#123;<br>	<span class="hljs-type">int</span> fa[maxn],size[maxn],son[maxn],dep[maxn],top[maxn];<br><br>	<span class="hljs-type">int</span> st[maxn],ed[maxn],pot[maxn],dfn;<br>	<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs1</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> f)</span></span>&#123;<br>		st[u]=++dfn;pot[dfn]=u;<br>		size[u]=<span class="hljs-number">1</span>;<br>		fa[u]=f;<br>		dep[u]=dep[f]<span class="hljs-number">+1</span>;<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;<br>			<span class="hljs-type">int</span> v=to[i];<br>			<span class="hljs-keyword">if</span>(v==f)<span class="hljs-keyword">continue</span>;<br>			<span class="hljs-built_in">dfs1</span>(v,u);<br>			size[u]+=size[v];<br>			<span class="hljs-keyword">if</span>(size[v]&gt;size[son[u]])son[u]=v;<br>		&#125;<br>		ed[u]=++dfn;pot[dfn]=u;<br>	&#125;<br>	<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs2</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> topf)</span></span>&#123;<br>		top[u]=topf;<br>		<span class="hljs-keyword">if</span>(!son[u])<span class="hljs-keyword">return</span>;<br>		<span class="hljs-built_in">dfs2</span>(son[u],topf);<br>		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;<br>			<span class="hljs-type">int</span> v=to[i];<br>			<span class="hljs-keyword">if</span>(v==fa[u]||v==son[u])<span class="hljs-keyword">continue</span>;<br>			<span class="hljs-built_in">dfs2</span>(v,v);<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">lca</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;<br>		<span class="hljs-keyword">while</span>(top[x]!=top[y])&#123;<br>			<span class="hljs-keyword">if</span>(dep[top[x]]&lt;dep[top[y]])<span class="hljs-built_in">swap</span>(x,y);<br>			x=fa[top[x]];<br>		&#125;<br>		<span class="hljs-keyword">return</span> dep[x]&lt;dep[y]?x:y;<br>	&#125;<br>	<br>&#125;<br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> Tree_chain_partition;<br><br><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T &amp;x)</span></span>&#123;<br>    x=<span class="hljs-number">0</span>;T f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    x*=f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-built_in">read</span>(n),<span class="hljs-built_in">read</span>(m),<span class="hljs-built_in">read</span>(q);<br>	<br>	block=<span class="hljs-built_in">pow</span>(n,(<span class="hljs-type">double</span>)<span class="hljs-number">2</span>/(<span class="hljs-type">double</span>)<span class="hljs-number">3</span>);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n&lt;&lt;<span class="hljs-number">1</span>;i++)&#123;<br>		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-built_in">read</span>(V[i]);<br>	&#125;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		<span class="hljs-built_in">read</span>(W[i]);<br>	&#125;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,u,v;i&lt;n;i++)&#123;<br>		<span class="hljs-built_in">read</span>(u),<span class="hljs-built_in">read</span>(v);<br>		<span class="hljs-built_in">add</span>(u,v);<span class="hljs-built_in">add</span>(v,u);<br>	&#125;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		<span class="hljs-built_in">read</span>(C[i]);<br>	&#125;<br>	<br>	<span class="hljs-built_in">dfs1</span>(<span class="hljs-number">1</span>,<span class="hljs-number">0</span>);<br>	<span class="hljs-built_in">dfs2</span>(<span class="hljs-number">1</span>,<span class="hljs-number">1</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>, stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>, stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	<span class="hljs-built_in">init</span>();<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,op;i&lt;=q;i++)&#123;<br>		<span class="hljs-built_in">read</span>(op);<br>		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">0</span>)&#123;<br>			<span class="hljs-built_in">read</span>(modi[++cntm].pos);<br>			<span class="hljs-built_in">read</span>(modi[cntm].val);<br>		&#125;<br>		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">1</span>)&#123;<br>			<span class="hljs-type">int</span> x,y;<br>			<span class="hljs-built_in">read</span>(x),<span class="hljs-built_in">read</span>(y);<br>			<span class="hljs-keyword">if</span>(st[x]&gt;st[y])<span class="hljs-built_in">swap</span>(x,y);<br>			<span class="hljs-type">int</span> LCA=<span class="hljs-built_in">lca</span>(x,y);<br>			mocap[++cntq].id=cntq,mocap[cntq].pre=cntm;<br>			<span class="hljs-keyword">if</span>(LCA==x)mocap[cntq].l=st[x],mocap[cntq].r=st[y];<br>			<span class="hljs-keyword">else</span> mocap[cntq].l=ed[x],mocap[cntq].r=st[y],mocap[cntq].lca=LCA;<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+cntq);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;<br>		<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[--l]);<br>		<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[l++]);<br>		<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[r--]);<br>		<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[++r]);<br>		<span class="hljs-keyword">while</span>(tim&lt;mocap[i].pre)<span class="hljs-built_in">update</span>(++tim);<br>		<span class="hljs-keyword">while</span>(tim&gt;mocap[i].pre)<span class="hljs-built_in">update</span>(tim--);<br>		<span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);<br>		ans[mocap[i].id]=sum;<br>		<span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,ans[i]);<br>	&#125;<br><br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ull;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2e5</span><span class="hljs-number">+5</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> int ll</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> debug cerr&lt;&lt;<span class="hljs-string">&quot;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!&quot;</span>&lt;&lt;endl;</span>
+
+<span class="hljs-type">int</span> n,m,q,block;
+
+<span class="hljs-type">int</span> head[maxn],to[maxn&lt;&lt;<span class="hljs-number">1</span>],nxt[maxn&lt;&lt;<span class="hljs-number">1</span>],cnt;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> v)</span></span>&#123;
+	nxt[++cnt]=head[u];
+	to[cnt]=v;
+	head[u]=cnt;
+&#125;
+
+<span class="hljs-type">int</span> V[maxn],W[maxn],C[maxn];
+
+<span class="hljs-keyword">namespace</span> MOCAP&#123;
+	<span class="hljs-type">int</span> belong[maxn];
+
+	<span class="hljs-keyword">struct</span> <span class="hljs-title class_">Mocap</span>&#123;
+		<span class="hljs-type">int</span> l,r,id,lca,ans,pre;
+		
+		<span class="hljs-type">int</span> pos,val;
+		
+		<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (Mocap &amp;a)<span class="hljs-type">const</span>&#123;
+			<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?
+				   belong[r]==belong[a.r]?
+				   pre&lt;a.pre:
+				   belong[r]&lt;belong[a.r]:
+				   belong[l]&lt;belong[a.l];
+		&#125;
+	&#125;mocap[maxn],modi[maxn];
+	
+	<span class="hljs-type">int</span> cntm,cntq,l=<span class="hljs-number">1</span>,r,tim=<span class="hljs-number">0</span>;
+	
+	ll c[maxn],sum;
+
+	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+		sum+= V[C[x]]*W[++c[C[x]]];
+	&#125;
+	
+	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">del</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+		sum-= V[C[x]]*W[c[C[x]]--];
+	&#125;
+	
+	<span class="hljs-type">bool</span> vis[maxn];
+	
+	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+		vis[x]?<span class="hljs-built_in">del</span>(x):<span class="hljs-built_in">add</span>(x);
+		vis[x]^=<span class="hljs-number">1</span>;
+	&#125;
+	
+	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span>&#123;
+		<span class="hljs-keyword">if</span>(vis[modi[x].pos])&#123;
+			<span class="hljs-built_in">calc</span>(modi[x].pos);
+			<span class="hljs-built_in">swap</span>(C[modi[x].pos],modi[x].val);
+			<span class="hljs-built_in">calc</span>(modi[x].pos);
+		&#125;
+		<span class="hljs-keyword">else</span> <span class="hljs-built_in">swap</span>(C[modi[x].pos],modi[x].val);
+	&#125;
+	
+	ll ans[maxn];
+&#125;
+
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> MOCAP;
+
+<span class="hljs-keyword">namespace</span> Tree_chain_partition&#123;
+	<span class="hljs-type">int</span> fa[maxn],size[maxn],son[maxn],dep[maxn],top[maxn];
+
+	<span class="hljs-type">int</span> st[maxn],ed[maxn],pot[maxn],dfn;
+	
+	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs1</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> f)</span></span>&#123;
+		st[u]=++dfn;pot[dfn]=u;
+		size[u]=<span class="hljs-number">1</span>;
+		fa[u]=f;
+		dep[u]=dep[f]<span class="hljs-number">+1</span>;
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;
+			<span class="hljs-type">int</span> v=to[i];
+			<span class="hljs-keyword">if</span>(v==f)<span class="hljs-keyword">continue</span>;
+			<span class="hljs-built_in">dfs1</span>(v,u);
+			size[u]+=size[v];
+			<span class="hljs-keyword">if</span>(size[v]&gt;size[son[u]])son[u]=v;
+		&#125;
+		ed[u]=++dfn;pot[dfn]=u;
+	&#125;
+	
+	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dfs2</span><span class="hljs-params">(<span class="hljs-type">int</span> u,<span class="hljs-type">int</span> topf)</span></span>&#123;
+		top[u]=topf;
+		<span class="hljs-keyword">if</span>(!son[u])<span class="hljs-keyword">return</span>;
+		<span class="hljs-built_in">dfs2</span>(son[u],topf);
+		<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=head[u];i;i=nxt[i])&#123;
+			<span class="hljs-type">int</span> v=to[i];
+			<span class="hljs-keyword">if</span>(v==fa[u]||v==son[u])<span class="hljs-keyword">continue</span>;
+			<span class="hljs-built_in">dfs2</span>(v,v);
+		&#125;
+	&#125;
+	
+	<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">lca</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> y)</span></span>&#123;
+		<span class="hljs-keyword">while</span>(top[x]!=top[y])&#123;
+			<span class="hljs-keyword">if</span>(dep[top[x]]&lt;dep[top[y]])<span class="hljs-built_in">swap</span>(x,y);
+			x=fa[top[x]];
+		&#125;
+		<span class="hljs-keyword">return</span> dep[x]&lt;dep[y]?x:y;
+	&#125;
+	
+&#125;
+
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> Tree_chain_partition;
+
+<span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span>
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">read</span><span class="hljs-params">(T &amp;x)</span></span>&#123;
+    x=<span class="hljs-number">0</span>;T f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    x*=f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-built_in">read</span>(n),<span class="hljs-built_in">read</span>(m),<span class="hljs-built_in">read</span>(q);
+	
+	block=<span class="hljs-built_in">pow</span>(n,(<span class="hljs-type">double</span>)<span class="hljs-number">2</span>/(<span class="hljs-type">double</span>)<span class="hljs-number">3</span>);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n&lt;&lt;<span class="hljs-number">1</span>;i++)&#123;
+		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-built_in">read</span>(V[i]);
+	&#125;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		<span class="hljs-built_in">read</span>(W[i]);
+	&#125;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,u,v;i&lt;n;i++)&#123;
+		<span class="hljs-built_in">read</span>(u),<span class="hljs-built_in">read</span>(v);
+		<span class="hljs-built_in">add</span>(u,v);<span class="hljs-built_in">add</span>(v,u);
+	&#125;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		<span class="hljs-built_in">read</span>(C[i]);
+	&#125;
+	
+	<span class="hljs-built_in">dfs1</span>(<span class="hljs-number">1</span>,<span class="hljs-number">0</span>);
+	<span class="hljs-built_in">dfs2</span>(<span class="hljs-number">1</span>,<span class="hljs-number">1</span>);
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>, stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>, stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	<span class="hljs-built_in">init</span>();
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,op;i&lt;=q;i++)&#123;
+		<span class="hljs-built_in">read</span>(op);
+		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">0</span>)&#123;
+			<span class="hljs-built_in">read</span>(modi[++cntm].pos);
+			<span class="hljs-built_in">read</span>(modi[cntm].val);
+		&#125;
+		<span class="hljs-keyword">if</span>(op==<span class="hljs-number">1</span>)&#123;
+			<span class="hljs-type">int</span> x,y;
+			<span class="hljs-built_in">read</span>(x),<span class="hljs-built_in">read</span>(y);
+			<span class="hljs-keyword">if</span>(st[x]&gt;st[y])<span class="hljs-built_in">swap</span>(x,y);
+			<span class="hljs-type">int</span> LCA=<span class="hljs-built_in">lca</span>(x,y);
+			mocap[++cntq].id=cntq,mocap[cntq].pre=cntm;
+			<span class="hljs-keyword">if</span>(LCA==x)mocap[cntq].l=st[x],mocap[cntq].r=st[y];
+			<span class="hljs-keyword">else</span> mocap[cntq].l=ed[x],mocap[cntq].r=st[y],mocap[cntq].lca=LCA;
+		&#125;
+	&#125;
+	
+	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+cntq);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;
+		<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[--l]);
+		<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)<span class="hljs-built_in">calc</span>(pot[l++]);
+		<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[r--]);
+		<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)<span class="hljs-built_in">calc</span>(pot[++r]);
+		<span class="hljs-keyword">while</span>(tim&lt;mocap[i].pre)<span class="hljs-built_in">update</span>(++tim);
+		<span class="hljs-keyword">while</span>(tim&gt;mocap[i].pre)<span class="hljs-built_in">update</span>(tim--);
+		<span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);
+		ans[mocap[i].id]=sum;
+		<span class="hljs-keyword">if</span>(mocap[i].lca)<span class="hljs-built_in">calc</span>(mocap[i].lca);
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cntq;i++)&#123;
+		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,ans[i]);
+	&#125;
+
+
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+</code></pre>
 
 <h2 id="回滚莫队（不删除莫队（少删除莫队））"><a href="#回滚莫队（不删除莫队（少删除莫队））" class="headerlink" title="回滚莫队（不删除莫队（少删除莫队））"></a>回滚莫队（不删除莫队（少删除莫队））</h2><p><del>首先这个玄学的名字是从题解里看到的。</del></p>
 <p><a href="https://www.luogu.com.cn/problem/P5906">P5906 【模板】回滚莫队&amp;不删除莫队</a></p>
@@ -848,27 +1655,191 @@
 <p>对于情况 $2$，我们要额外记录一个值，记录一个数在右区间中第一次出现的位置</p>
 <p>假如 $max$ 也在右区间中，相减，就得到了情况2的答案。</p>
 <h4 id="细节相关"><a href="#细节相关" class="headerlink" title="细节相关"></a>细节相关</h4><p>$1$：如果左右边界都在同一个块内就暴力计算</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;<br>	<span class="hljs-type">int</span> last[maxn],res=<span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)last[a[i]]=<span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;<br>		<span class="hljs-keyword">if</span>(!last[a[i]])last[a[i]]=i;<br>		<span class="hljs-keyword">else</span> res=<span class="hljs-built_in">max</span>(res,i-last[a[i]]);<br>	&#125;<br>	<span class="hljs-keyword">return</span> res;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;
+	<span class="hljs-type">int</span> last[maxn],res=<span class="hljs-number">0</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)last[a[i]]=<span class="hljs-number">0</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;
+		<span class="hljs-keyword">if</span>(!last[a[i]])last[a[i]]=i;
+		<span class="hljs-keyword">else</span> res=<span class="hljs-built_in">max</span>(res,i-last[a[i]]);
+	&#125;
+	<span class="hljs-keyword">return</span> res;
+&#125;
+</code></pre>
 
 <p>$2$：本题需要离散化</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-built_in">sort</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n);<br>	<span class="hljs-type">int</span> tmp=<span class="hljs-built_in">unique</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n)-num<span class="hljs-number">-1</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)a[i]=<span class="hljs-built_in">lower_bound</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+tmp,a[i])-num;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-built_in">sort</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n);
+	<span class="hljs-type">int</span> tmp=<span class="hljs-built_in">unique</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n)-num<span class="hljs-number">-1</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)a[i]=<span class="hljs-built_in">lower_bound</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+tmp,a[i])-num;
+&#125;
+</code></pre>
 
 <p>$3$ :由于回滚的原因，所以现在的左询问一定是小于上一次的左询问，现在的右询问一定大于上一次的右询问，所以原来莫队的四个 $while$ 只剩下了两个</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(r&lt;mocap[i].r)&#123;<br>	r++;mr[a[r]]=r;<br>	<span class="hljs-keyword">if</span>(!ml[a[r]])ml[a[r]]=r;<br>	ans=<span class="hljs-built_in">max</span>(ans,r-ml[a[r]]);<br>&#125;<br>		<br><span class="hljs-keyword">while</span>(l&gt;mocap[i].l)&#123;<br>	l--;<br>	<span class="hljs-keyword">if</span>(mr[a[l]])ans=<span class="hljs-built_in">max</span>(ans,mr[a[l]]-l);<br>	<span class="hljs-keyword">else</span> mr[a[l]]=l;<br>&#125;<br>		<br>Ans[mocap[i].id]=ans;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(r&lt;mocap[i].r)&#123;
+	r++;mr[a[r]]=r;
+	<span class="hljs-keyword">if</span>(!ml[a[r]])ml[a[r]]=r;
+	ans=<span class="hljs-built_in">max</span>(ans,r-ml[a[r]]);
+&#125;
+		
+<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)&#123;
+	l--;
+	<span class="hljs-keyword">if</span>(mr[a[l]])ans=<span class="hljs-built_in">max</span>(ans,mr[a[l]]-l);
+	<span class="hljs-keyword">else</span> mr[a[l]]=l;
+&#125;
+		
+Ans[mocap[i].id]=ans;
+</code></pre>
 
 <p>$4$：最后不要忘记把左端点再拉回来：</p>
 <p>同时有这样一个问题，再左端点走过去的时候，会影响贡献，又因为我们每次都要把左端点拉回最右侧，所以这个贡献对以后的询问是没什么用的，于是我们需要先记录一下当前的答案，再统计完左侧，记录完答案以后，把左端点拉回最右侧的时候去掉左侧的贡献，再把 $ans$ 更新回来就好了。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(l&lt;=nowr)&#123;<br>	<span class="hljs-keyword">if</span>(mr[a[l]]==l)mr[a[l]]=<span class="hljs-number">0</span>;<br>	l++;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(l&lt;=nowr)&#123;
+	<span class="hljs-keyword">if</span>(mr[a[l]]==l)mr[a[l]]=<span class="hljs-number">0</span>;
+	l++;
+&#125;
+</code></pre>
 
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> tmp=ans;<span class="hljs-comment">//在l,r之间</span><br><br>ans=tmp;<span class="hljs-comment">//把左端点拉回来以后</span><br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-type">int</span> tmp=ans;<span class="hljs-comment">//在l,r之间</span>
+
+ans=tmp;<span class="hljs-comment">//把左端点拉回来以后</span>
+</code></pre>
 
 <p>$5$：其实还有一个细节，就是 $memset$ 也许会影响常数大小，于是我们不必要每次清空整个数组，只需要记录每次更改了哪些就可以了。</p>
 <p>最后再把这些清零就行了。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span>()&#123;<br>	<span class="hljs-keyword">while</span>(r&lt;q[i].r)&#123;<br>		r++;<br>		mr[a[r]]=r; <br>		<span class="hljs-keyword">if</span>(!st[a[r]]) st[a[r]]=r,clear[++cn]=a[r]; <span class="hljs-comment">//就是这里</span><br>		ans=<span class="hljs-built_in">max</span>(ans,r-st[a[r]]); <br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cn;i++) ma[clear[i]]=st[clear[i]]=<span class="hljs-number">0</span>;<span class="hljs-comment">//在大循环外</span><br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">for</span>()&#123;
+	<span class="hljs-keyword">while</span>(r&lt;q[i].r)&#123;
+		r++;
+		mr[a[r]]=r; 
+		<span class="hljs-keyword">if</span>(!st[a[r]]) st[a[r]]=r,clear[++cn]=a[r]; <span class="hljs-comment">//就是这里</span>
+		ans=<span class="hljs-built_in">max</span>(ans,r-st[a[r]]); 
+	&#125;
+&#125;
+
+<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=cn;i++) ma[clear[i]]=st[clear[i]]=<span class="hljs-number">0</span>;<span class="hljs-comment">//在大循环外</span>
+</code></pre>
 
 <p>不过我没用，其实 $memset$ 的常数并不算太大，常数瓶颈并不在这里。<del>确信</del></p>
 <p>细节大概就这么多了。</p>
-<h3 id="CODE-2"><a href="#CODE-2" class="headerlink" title="CODE:"></a>CODE:</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2e5</span><span class="hljs-number">+5</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><br><span class="hljs-type">int</span> n,m,block,tot,ans;<br><br><span class="hljs-type">int</span> a[maxn],num[maxn],belong[maxn],Ans[maxn];<br><br><span class="hljs-type">int</span> ml[maxn],mr[maxn];<span class="hljs-comment">//ml是最早出现的位置，mr是最晚出现的位置</span><br><br><span class="hljs-type">int</span> nowr,l,r;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id;<br>	<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt;(<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&lt;a.r:belong[l]&lt;belong[a.l];<br>	&#125;<br>&#125;mocap[maxn]; <br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-built_in">sort</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n);<br>	<span class="hljs-type">int</span> tmp=<span class="hljs-built_in">unique</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n)-num<span class="hljs-number">-1</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)a[i]=<span class="hljs-built_in">lower_bound</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+tmp,a[i])-num;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;<br>	<span class="hljs-type">int</span> last[maxn],res=<span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)last[a[i]]=<span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;<br>		<span class="hljs-keyword">if</span>(!last[a[i]])last[a[i]]=i;<br>		<span class="hljs-keyword">else</span> res=<span class="hljs-built_in">max</span>(res,i-last[a[i]]);<br>	&#125;<br>	<span class="hljs-keyword">return</span> res;<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();<br>	block=<span class="hljs-built_in">sqrt</span>(n);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		a[i]=num[i]=<span class="hljs-built_in">read</span>();<br>		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;<br>	&#125;<br><br>	tot=belong[n];<br>	<br>	<span class="hljs-built_in">Discretization</span>();<br>	<br>	m=<span class="hljs-built_in">read</span>();<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		mocap[i].l=<span class="hljs-built_in">read</span>();mocap[i].r=<span class="hljs-built_in">read</span>();<br>		mocap[i].id=i;<br>	&#125;<br>	<br>	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>,i=<span class="hljs-number">1</span>;j&lt;=tot;j++)&#123;<br>		<span class="hljs-type">int</span> nowr=<span class="hljs-built_in">min</span>(n,j*block),l=nowr<span class="hljs-number">+1</span>,r=l<span class="hljs-number">-1</span>,ans=<span class="hljs-number">0</span>;<br>		<br>		<span class="hljs-built_in">memset</span>(ml,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(ml));<br>		<span class="hljs-built_in">memset</span>(mr,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(mr));<br>		<br>		<span class="hljs-keyword">for</span>(;belong[mocap[i].l]==j;i++)&#123;<br>			<span class="hljs-keyword">if</span>(belong[mocap[i].r]==j)&#123;<br>				Ans[mocap[i].id]=<span class="hljs-built_in">calc</span>(mocap[i].l,mocap[i].r);<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br>			<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)&#123;<br>				r++;mr[a[r]]=r;<br>				<span class="hljs-keyword">if</span>(!ml[a[r]])ml[a[r]]=r;<br>				ans=<span class="hljs-built_in">max</span>(ans,r-ml[a[r]]);<br>			&#125;<br>			<br>			<span class="hljs-type">int</span> tmp=ans;<br>			<br>			<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)&#123;<br>				l--;<br>				<span class="hljs-keyword">if</span>(mr[a[l]])ans=<span class="hljs-built_in">max</span>(ans,mr[a[l]]-l);<br>				<span class="hljs-keyword">else</span> mr[a[l]]=l;<span class="hljs-comment">//最后出现的位置可能在左区间中</span><br>			&#125;<br>			<br>			Ans[mocap[i].id]=ans;<br>			<br>			<span class="hljs-keyword">while</span>(l&lt;=nowr)&#123;<br>				<span class="hljs-keyword">if</span>(mr[a[l]]==l)mr[a[l]]=<span class="hljs-number">0</span>;<br>				l++;<br>			&#125;<br>			<br>			ans=tmp;<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,Ans[i]);<br>	&#125;<br><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><br></code></pre></td></tr></table></figure>
+<h3 id="CODE-2"><a href="#CODE-2" class="headerlink" title="CODE:"></a>CODE:</h3><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2e5</span><span class="hljs-number">+5</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+
+<span class="hljs-type">int</span> n,m,block,tot,ans;
+
+<span class="hljs-type">int</span> a[maxn],num[maxn],belong[maxn],Ans[maxn];
+
+<span class="hljs-type">int</span> ml[maxn],mr[maxn];<span class="hljs-comment">//ml是最早出现的位置，mr是最晚出现的位置</span>
+
+<span class="hljs-type">int</span> nowr,l,r;
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;
+	<span class="hljs-type">int</span> l,r,id;
+	
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt;(<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&lt;a.r:belong[l]&lt;belong[a.l];
+	&#125;
+&#125;mocap[maxn]; 
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-built_in">sort</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n);
+	<span class="hljs-type">int</span> tmp=<span class="hljs-built_in">unique</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n)-num<span class="hljs-number">-1</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)a[i]=<span class="hljs-built_in">lower_bound</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+tmp,a[i])-num;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;
+	<span class="hljs-type">int</span> last[maxn],res=<span class="hljs-number">0</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)last[a[i]]=<span class="hljs-number">0</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;
+		<span class="hljs-keyword">if</span>(!last[a[i]])last[a[i]]=i;
+		<span class="hljs-keyword">else</span> res=<span class="hljs-built_in">max</span>(res,i-last[a[i]]);
+	&#125;
+	<span class="hljs-keyword">return</span> res;
+&#125;
+
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();
+	block=<span class="hljs-built_in">sqrt</span>(n);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		a[i]=num[i]=<span class="hljs-built_in">read</span>();
+		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;
+	&#125;
+
+	tot=belong[n];
+	
+	<span class="hljs-built_in">Discretization</span>();
+	
+	m=<span class="hljs-built_in">read</span>();
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		mocap[i].l=<span class="hljs-built_in">read</span>();mocap[i].r=<span class="hljs-built_in">read</span>();
+		mocap[i].id=i;
+	&#125;
+	
+	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>,i=<span class="hljs-number">1</span>;j&lt;=tot;j++)&#123;
+		<span class="hljs-type">int</span> nowr=<span class="hljs-built_in">min</span>(n,j*block),l=nowr<span class="hljs-number">+1</span>,r=l<span class="hljs-number">-1</span>,ans=<span class="hljs-number">0</span>;
+		
+		<span class="hljs-built_in">memset</span>(ml,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(ml));
+		<span class="hljs-built_in">memset</span>(mr,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(mr));
+		
+		<span class="hljs-keyword">for</span>(;belong[mocap[i].l]==j;i++)&#123;
+			<span class="hljs-keyword">if</span>(belong[mocap[i].r]==j)&#123;
+				Ans[mocap[i].id]=<span class="hljs-built_in">calc</span>(mocap[i].l,mocap[i].r);
+				<span class="hljs-keyword">continue</span>;
+			&#125;
+			<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)&#123;
+				r++;mr[a[r]]=r;
+				<span class="hljs-keyword">if</span>(!ml[a[r]])ml[a[r]]=r;
+				ans=<span class="hljs-built_in">max</span>(ans,r-ml[a[r]]);
+			&#125;
+			
+			<span class="hljs-type">int</span> tmp=ans;
+			
+			<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)&#123;
+				l--;
+				<span class="hljs-keyword">if</span>(mr[a[l]])ans=<span class="hljs-built_in">max</span>(ans,mr[a[l]]-l);
+				<span class="hljs-keyword">else</span> mr[a[l]]=l;<span class="hljs-comment">//最后出现的位置可能在左区间中</span>
+			&#125;
+			
+			Ans[mocap[i].id]=ans;
+			
+			<span class="hljs-keyword">while</span>(l&lt;=nowr)&#123;
+				<span class="hljs-keyword">if</span>(mr[a[l]]==l)mr[a[l]]=<span class="hljs-number">0</span>;
+				l++;
+			&#125;
+			
+			ans=tmp;
+		&#125;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,Ans[i]);
+	&#125;
+
+
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+
+</code></pre>
 
 <h3 id="例题-AT1219-歴史の研究"><a href="#例题-AT1219-歴史の研究" class="headerlink" title="例题 AT1219 歴史の研究"></a>例题 AT1219 歴史の研究</h3><p><a href="https://www.luogu.com.cn/problem/AT1219">AT1219 歴史の研究</a></p>
 <p>首先这个题比上一个好写一些</p>
@@ -882,7 +1853,124 @@
 <p>开了 $int$ 然后 $WA$ 了，百思不得其解，然后发现要 $long \ long$</p>
 <p>好了其实别的几乎没有了，都是我比较傻逼</p>
 <p>代码放这了</p>
-<h4 id="CODE-3"><a href="#CODE-3" class="headerlink" title="CODE:"></a>CODE:</h4><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">1e5</span><span class="hljs-number">+5</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> int long long</span><br><br><span class="hljs-type">int</span> n,m,block,tot;<br><br><span class="hljs-type">int</span> a[maxn],num[maxn],ans[maxn],belong[maxn];<br><br><span class="hljs-type">int</span> c[maxn];<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-built_in">sort</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n);<br>	<span class="hljs-type">int</span> tmp=<span class="hljs-built_in">unique</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n)-num<span class="hljs-number">-1</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)a[i]=<span class="hljs-built_in">lower_bound</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+tmp,a[i])-num;<br>&#125;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id;<br>	<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&lt;a.r:belong[l]&lt;belong[a.l];<br>	&#125;<br>&#125;mocap[maxn];<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;<br>	<span class="hljs-type">int</span> res=<span class="hljs-number">0</span>;<br>	<span class="hljs-type">int</span> cntt[maxn];<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;<br>		cntt[a[i]]=<span class="hljs-number">0</span>;<br>	&#125;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;<br>		cntt[a[i]]++;<br>		res=<span class="hljs-built_in">max</span>(res,cntt[a[i]]*num[a[i]]);<br>	&#125;<br>	<br>	<span class="hljs-keyword">return</span> res;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();<br>	block=<span class="hljs-built_in">sqrt</span>(n);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		a[i]=num[i]=<span class="hljs-built_in">read</span>();<br>		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;<br>	&#125;<br>	<br>	tot=belong[n];<br>	<br>	<span class="hljs-built_in">Discretization</span>();<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		mocap[i].l=<span class="hljs-built_in">read</span>();mocap[i].r=<span class="hljs-built_in">read</span>();<br>		mocap[i].id=i;<br>	&#125;<br>	<br>	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>,i=<span class="hljs-number">1</span>;j&lt;=tot;j++)&#123;<br>		<span class="hljs-type">int</span> nowr=<span class="hljs-built_in">min</span>(n,j*block),l=nowr<span class="hljs-number">+1</span>,r=l<span class="hljs-number">-1</span>,sum=<span class="hljs-number">0</span>;<br>		<span class="hljs-built_in">memset</span>(c,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(c));<br>		<span class="hljs-keyword">for</span>(;belong[mocap[i].l]==j;i++)&#123;<br>			<span class="hljs-keyword">if</span>(belong[mocap[i].r]==j)&#123;<br>				ans[mocap[i].id]=<span class="hljs-built_in">calc</span>(mocap[i].l,mocap[i].r);<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br>			<br>			<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)&#123;<br>				r++;<br>				c[a[r]]++;<br>				sum=<span class="hljs-built_in">max</span>(sum,c[a[r]]*num[a[r]]);<br>			&#125;<br>			<br>			<span class="hljs-type">int</span> tmp=sum;<br>			<br>			<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)&#123;<br>				l--;<br>				c[a[l]]++;<br>				sum=<span class="hljs-built_in">max</span>(sum,c[a[l]]*num[a[l]]);<br>			&#125;<br>			<br>			ans[mocap[i].id]=sum;<br>			<br>			<span class="hljs-keyword">while</span>(l&lt;=nowr)&#123;<br>				c[a[l]]--;<br>				l++;<br>			&#125;<br>			<br>			sum=tmp;<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,ans[i]);<br>	&#125;<br>	<br>	<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<h4 id="CODE-3"><a href="#CODE-3" class="headerlink" title="CODE:"></a>CODE:</h4><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">1e5</span><span class="hljs-number">+5</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> int long long</span>
+
+<span class="hljs-type">int</span> n,m,block,tot;
+
+<span class="hljs-type">int</span> a[maxn],num[maxn],ans[maxn],belong[maxn];
+
+<span class="hljs-type">int</span> c[maxn];
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">Discretization</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-built_in">sort</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n);
+	<span class="hljs-type">int</span> tmp=<span class="hljs-built_in">unique</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+n)-num<span class="hljs-number">-1</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)a[i]=<span class="hljs-built_in">lower_bound</span>(num<span class="hljs-number">+1</span>,num<span class="hljs-number">+1</span>+tmp,a[i])-num;
+&#125;
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;
+	<span class="hljs-type">int</span> l,r,id;
+	
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt; (<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&lt;a.r:belong[l]&lt;belong[a.l];
+	&#125;
+&#125;mocap[maxn];
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;
+	<span class="hljs-type">int</span> res=<span class="hljs-number">0</span>;
+	<span class="hljs-type">int</span> cntt[maxn];
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;
+		cntt[a[i]]=<span class="hljs-number">0</span>;
+	&#125;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;
+		cntt[a[i]]++;
+		res=<span class="hljs-built_in">max</span>(res,cntt[a[i]]*num[a[i]]);
+	&#125;
+	
+	<span class="hljs-keyword">return</span> res;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>,f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span>(!<span class="hljs-built_in">isdigit</span>(ch))&#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>,<span class="hljs-string">&quot;r&quot;</span>,stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();
+	block=<span class="hljs-built_in">sqrt</span>(n);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		a[i]=num[i]=<span class="hljs-built_in">read</span>();
+		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;
+	&#125;
+	
+	tot=belong[n];
+	
+	<span class="hljs-built_in">Discretization</span>();
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		mocap[i].l=<span class="hljs-built_in">read</span>();mocap[i].r=<span class="hljs-built_in">read</span>();
+		mocap[i].id=i;
+	&#125;
+	
+	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> j=<span class="hljs-number">1</span>,i=<span class="hljs-number">1</span>;j&lt;=tot;j++)&#123;
+		<span class="hljs-type">int</span> nowr=<span class="hljs-built_in">min</span>(n,j*block),l=nowr<span class="hljs-number">+1</span>,r=l<span class="hljs-number">-1</span>,sum=<span class="hljs-number">0</span>;
+		<span class="hljs-built_in">memset</span>(c,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(c));
+		<span class="hljs-keyword">for</span>(;belong[mocap[i].l]==j;i++)&#123;
+			<span class="hljs-keyword">if</span>(belong[mocap[i].r]==j)&#123;
+				ans[mocap[i].id]=<span class="hljs-built_in">calc</span>(mocap[i].l,mocap[i].r);
+				<span class="hljs-keyword">continue</span>;
+			&#125;
+			
+			<span class="hljs-keyword">while</span>(r&lt;mocap[i].r)&#123;
+				r++;
+				c[a[r]]++;
+				sum=<span class="hljs-built_in">max</span>(sum,c[a[r]]*num[a[r]]);
+			&#125;
+			
+			<span class="hljs-type">int</span> tmp=sum;
+			
+			<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)&#123;
+				l--;
+				c[a[l]]++;
+				sum=<span class="hljs-built_in">max</span>(sum,c[a[l]]*num[a[l]]);
+			&#125;
+			
+			ans[mocap[i].id]=sum;
+			
+			<span class="hljs-keyword">while</span>(l&lt;=nowr)&#123;
+				c[a[l]]--;
+				l++;
+			&#125;
+			
+			sum=tmp;
+		&#125;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>,ans[i]);
+	&#125;
+	
+	
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+</code></pre>
 
 
 <h3 id="变式-Rmq-Problem-mex"><a href="#变式-Rmq-Problem-mex" class="headerlink" title="变式 Rmq Problem &#x2F; mex"></a>变式 Rmq Problem &#x2F; mex</h3><p><a href="https://www.luogu.com.cn/problem/P4137">P4137 Rmq Problem &#x2F; mex</a></p>
@@ -901,7 +1989,14 @@
 <p>而根据我们刚刚学回滚莫队所联想的只资瓷增加不资瓷删除的回滚莫队相类比，我们可以将每个块按照<strong>左端点递增排序，右端点递减排序</strong>。</p>
 <p>首先求出整个序列的 $mex$.</p>
 <p>然后我们让右端点从整个序列的右侧不断地向左删除，同时左端点向右删除，处理完了以后我们让左端点回滚到块的左端点。这样就可以实现了。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id;<br>	<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt;(<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&gt;a.r:belong[l]&lt;belong[a.l];<br>	&#125;<br>&#125;mocap[maxn]; 	<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;
+	<span class="hljs-type">int</span> l,r,id;
+	
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt;(<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&gt;a.r:belong[l]&lt;belong[a.l];
+	&#125;
+&#125;mocap[maxn]; 	
+</code></pre>
 
 <p>可以画个图理解一下：</p>
 <p><img src="https://cdn.luogu.com.cn/upload/image_hosting/rahnqr3l.png"></p>
@@ -915,7 +2010,16 @@
 <li>在只增不减的回滚莫队中：</li>
 </ul>
 <p>我们已经处理过当前询问内的贡献，现在需要扩大范围，但是当前的贡献也要保留，所以应该先跳动端点指针，然后再增加贡献：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(r&lt;mocap[i].r)&#123;<br>	r++;<br>	c[a[r]]++;<br>	sum=<span class="hljs-built_in">max</span>(sum,c[a[r]]*num[a[r]]);<br>&#125;<br><span class="hljs-keyword">while</span>(l&gt;mocap[i].l)&#123;<br>	l--;<br>	c[a[l]]++;<br>	sum=<span class="hljs-built_in">max</span>(sum,c[a[l]]*num[a[l]]);<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(r&lt;mocap[i].r)&#123;
+	r++;
+	c[a[r]]++;
+	sum=<span class="hljs-built_in">max</span>(sum,c[a[r]]*num[a[r]]);
+&#125;
+<span class="hljs-keyword">while</span>(l&gt;mocap[i].l)&#123;
+	l--;
+	c[a[l]]++;
+	sum=<span class="hljs-built_in">max</span>(sum,c[a[l]]*num[a[l]]);
+&#125;</code></pre>
 
 <p>（这两个片段是歴史の研究里面的）</p>
 <ul>
@@ -923,33 +2027,193 @@
 </ul>
 <p>再来看这道题，只删除不增加：</p>
 <p>我们需要缩小范围，也就是要逐个删除贡献，于是当前位置的贡献已经没有用了，所以要先删掉，才能移动指针去修改下一个位置：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(r&gt;mocap[i].r)&#123;<br>	<span class="hljs-keyword">if</span>(a[r]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[r]])p=<span class="hljs-built_in">min</span>(p,a[r]);<br>	r--;<br>&#125;<br><br><span class="hljs-keyword">while</span>(l&lt;mocap[i].l)&#123;<br>	<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[l]])tmp=<span class="hljs-built_in">min</span>(tmp,a[l]);<br>	l++;<br>&#125;<br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(r&gt;mocap[i].r)&#123;
+	<span class="hljs-keyword">if</span>(a[r]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[r]])p=<span class="hljs-built_in">min</span>(p,a[r]);
+	r--;
+&#125;
+
+<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)&#123;
+	<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[l]])tmp=<span class="hljs-built_in">min</span>(tmp,a[l]);
+	l++;
+&#125;</code></pre>
 
 <h5 id="关于左右端点的位置记录与移动"><a href="#关于左右端点的位置记录与移动" class="headerlink" title="关于左右端点的位置记录与移动"></a>关于左右端点的位置记录与移动</h5><p>因为以往的回滚都是要回到当前块的右端点，所以我们每次只记录右端点就可以了，但是这道题是要回到左端点，所以需要记录左端点。</p>
 <p>处理完一个块以后，我们要控制左端点移动到下一个快的左端点，所以这些问题都要注意：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> nowr=<span class="hljs-built_in">min</span>(n,j*block),l=nowr<span class="hljs-number">+1</span>,r=l<span class="hljs-number">-1</span>,sum=<span class="hljs-number">0</span>;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-type">int</span> nowr=<span class="hljs-built_in">min</span>(n,j*block),l=nowr<span class="hljs-number">+1</span>,r=l<span class="hljs-number">-1</span>,sum=<span class="hljs-number">0</span>;
+</code></pre>
 
 <p>（依然是歴史の研究里面的）</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> nowl=<span class="hljs-built_in">min</span>(n,(j<span class="hljs-number">-1</span>)*block)<span class="hljs-number">+1</span>,l=nowl,r=n,p=mex,nxtl=<span class="hljs-built_in">min</span>(n,j*block)<span class="hljs-number">+1</span>;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-type">int</span> nowl=<span class="hljs-built_in">min</span>(n,(j<span class="hljs-number">-1</span>)*block)<span class="hljs-number">+1</span>,l=nowl,r=n,p=mex,nxtl=<span class="hljs-built_in">min</span>(n,j*block)<span class="hljs-number">+1</span>;
+</code></pre>
 
 <p>（本题目）</p>
 <p>而且要注意，我们的右端点是要从整个序列的右端开始走的，所以要 $r&#x3D;n$ .</p>
 <p>然后就是把右端点拉回最右侧，左端点拉到下一个块，这个东西也是平常的回滚莫队没有的：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(r&lt;n)&#123;<br>	r++;<br>	<span class="hljs-keyword">if</span>(a[r]&lt;=n<span class="hljs-number">+1</span>)cnt[a[r]]++; <br>&#125;<br>		<br><span class="hljs-keyword">while</span>(l&lt;nxtl)&#123;<br>	<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[l]])mex=<span class="hljs-built_in">min</span>(mex,a[l]);<br>	l++;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(r&lt;n)&#123;
+	r++;
+	<span class="hljs-keyword">if</span>(a[r]&lt;=n<span class="hljs-number">+1</span>)cnt[a[r]]++; 
+&#125;
+		
+<span class="hljs-keyword">while</span>(l&lt;nxtl)&#123;
+	<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[l]])mex=<span class="hljs-built_in">min</span>(mex,a[l]);
+	l++;
+&#125;
+</code></pre>
 
 <h5 id="关于在同一个块内的暴力计算"><a href="#关于在同一个块内的暴力计算" class="headerlink" title="关于在同一个块内的暴力计算"></a>关于在同一个块内的暴力计算</h5><p>首先这个东西有两种实现方法;</p>
 <p>$1$：开一个全局数组，每次暴力算就先用一用，然后统计完再把贡献删掉：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span>(belong[mocap[i].r]==j)&#123;<br>	<span class="hljs-type">int</span> res=<span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=mocap[i].l;k&lt;=mocap[i].r;k++)&#123;<br>		<span class="hljs-keyword">if</span>(a[k]&lt;=n<span class="hljs-number">+1</span>)cntt[a[k]]++;<br>	&#125;<br>	<span class="hljs-keyword">while</span>(cntt[res])res++;<br>	ans[mocap[i].id]=res;<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=mocap[i].l;k&lt;=mocap[i].r;k++)&#123;<br>		<span class="hljs-keyword">if</span>(a[k]&lt;=n<span class="hljs-number">+1</span>)cntt[a[k]]--;<br>	&#125;<br>				<br>	<span class="hljs-keyword">continue</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-keyword">if</span>(belong[mocap[i].r]==j)&#123;
+	<span class="hljs-type">int</span> res=<span class="hljs-number">0</span>;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=mocap[i].l;k&lt;=mocap[i].r;k++)&#123;
+		<span class="hljs-keyword">if</span>(a[k]&lt;=n<span class="hljs-number">+1</span>)cntt[a[k]]++;
+	&#125;
+	<span class="hljs-keyword">while</span>(cntt[res])res++;
+	ans[mocap[i].id]=res;
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> k=mocap[i].l;k&lt;=mocap[i].r;k++)&#123;
+		<span class="hljs-keyword">if</span>(a[k]&lt;=n<span class="hljs-number">+1</span>)cntt[a[k]]--;
+	&#125;
+				
+	<span class="hljs-keyword">continue</span>;
+&#125;
+</code></pre>
 
 <p>但是我不喜欢。</p>
 <p>如果你和我一样，都喜欢单独搞一个函数，然后在函数里直接统计，这样就可以不删除贡献了，用完就可以扔了。<del>可以不负责的感觉好爽</del></p>
 <p>但是一定要记得初始化！！</p>
 <p>不然你会 $WA$ 的很惨~</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;<br>	<span class="hljs-type">int</span> res=<span class="hljs-number">0</span>,cntt[maxn];<br>	<span class="hljs-built_in">memset</span>(cntt,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(cntt));<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;<br>		<span class="hljs-keyword">if</span>(a[i]&lt;=n<span class="hljs-number">+1</span>)cntt[a[i]]++;<br>	&#125;<br>	<br>	<span class="hljs-keyword">while</span>(cntt[res])res++;<br>	<br>	<span class="hljs-keyword">return</span> res;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;
+	<span class="hljs-type">int</span> res=<span class="hljs-number">0</span>,cntt[maxn];
+	<span class="hljs-built_in">memset</span>(cntt,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(cntt));
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;
+		<span class="hljs-keyword">if</span>(a[i]&lt;=n<span class="hljs-number">+1</span>)cntt[a[i]]++;
+	&#125;
+	
+	<span class="hljs-keyword">while</span>(cntt[res])res++;
+	
+	<span class="hljs-keyword">return</span> res;
+&#125;
+</code></pre>
 
 <p>其他问题就没啥可说的了。</p>
 <p>放下代码</p>
-<h4 id="CODE：-2"><a href="#CODE：-2" class="headerlink" title="CODE："></a>CODE：</h4><figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2e5</span><span class="hljs-number">+5</span>;<br><br><span class="hljs-type">int</span> n,m,belong[maxn],block,tot;<br><br><span class="hljs-type">int</span> cnt[maxn],mex,ans[maxn];<br><br><span class="hljs-type">int</span> a[maxn];<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;<br>	<span class="hljs-type">int</span> l,r,id;<br>	<br>	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt;(<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;<br>		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&gt;a.r:belong[l]&lt;belong[a.l];<br>	&#125;<br>&#125;mocap[maxn]; <br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;<br>	<span class="hljs-type">int</span> res=<span class="hljs-number">0</span>,cntt[maxn];<br>	<span class="hljs-built_in">memset</span>(cntt,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(cntt));<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;<br>		<span class="hljs-keyword">if</span>(a[i]&lt;=n<span class="hljs-number">+1</span>)cntt[a[i]]++;<br>	&#125;<br>	<br>	<span class="hljs-keyword">while</span>(cntt[res])res++;<br>	<br>	<span class="hljs-keyword">return</span> res;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>, f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();<br>    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;<br>    <span class="hljs-keyword">return</span> x*f;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span><br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>, stdin);<br>    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>, stdout);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();<br>	block=<span class="hljs-built_in">sqrt</span>(n);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>		a[i]=<span class="hljs-built_in">read</span>();<br>		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;<br>		<span class="hljs-keyword">if</span>(a[i]&lt;=n<span class="hljs-number">+1</span>)cnt[a[i]]++;<br>	&#125;<br>	<br>	<span class="hljs-keyword">while</span>(cnt[mex])mex++;<br>	<br>	tot=belong[n];<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		mocap[i].l=<span class="hljs-built_in">read</span>();mocap[i].r=<span class="hljs-built_in">read</span>();<br>		mocap[i].id=i;<br>	&#125;<br>	<br>	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,j=<span class="hljs-number">1</span>;j&lt;=tot;j++)&#123;<br>		<span class="hljs-type">int</span> nowl=<span class="hljs-built_in">min</span>(n,(j<span class="hljs-number">-1</span>)*block)<span class="hljs-number">+1</span>,l=nowl,r=n,p=mex,nxtl=<span class="hljs-built_in">min</span>(n,j*block)<span class="hljs-number">+1</span>;<br>		<span class="hljs-keyword">for</span>(;belong[mocap[i].l]==j;i++)&#123;<br>			<span class="hljs-keyword">if</span>(belong[mocap[i].r]==j)&#123;<br>				ans[mocap[i].id]=<span class="hljs-built_in">calc</span>(mocap[i].l,mocap[i].r);<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br>			<br>			<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)&#123;<br>				<span class="hljs-keyword">if</span>(a[r]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[r]])p=<span class="hljs-built_in">min</span>(p,a[r]);<br>				r--;<br>			&#125;<br>			<br>			<span class="hljs-type">int</span> tmp=p;<br>			<br>			<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)&#123;<br>				<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[l]])tmp=<span class="hljs-built_in">min</span>(tmp,a[l]);<br>				l++;<br>			&#125;<br>			<br>			ans[mocap[i].id]=tmp;<br>			<br>			<span class="hljs-keyword">while</span>(l&gt;nowl)&#123;<br>			    l--;<br>				<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>)cnt[a[l]]++;<br>			&#125;<br>		&#125;<br>		<br>		<span class="hljs-keyword">while</span>(r&lt;n)&#123;<br>			r++;<br>			<span class="hljs-keyword">if</span>(a[r]&lt;=n<span class="hljs-number">+1</span>)cnt[a[r]]++; <br>		&#125;<br>		<br>		<span class="hljs-keyword">while</span>(l&lt;nxtl)&#123;<br>			<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[l]])mex=<span class="hljs-built_in">min</span>(mex,a[l]);<br>			l++;<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ans[i]);<br>	&#125;<br><br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><br></code></pre></td></tr></table></figure>
+<h4 id="CODE：-2"><a href="#CODE：-2" class="headerlink" title="CODE："></a>CODE：</h4><pre><code class="hljs cpp"><span class="hljs-comment">//#define LawrenceSivan</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> ll;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> INF 0x3f3f3f3f</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> re register</span>
+<span class="hljs-type">const</span> <span class="hljs-type">int</span> maxn=<span class="hljs-number">2e5</span><span class="hljs-number">+5</span>;
+
+<span class="hljs-type">int</span> n,m,belong[maxn],block,tot;
+
+<span class="hljs-type">int</span> cnt[maxn],mex,ans[maxn];
+
+<span class="hljs-type">int</span> a[maxn];
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">MOCAP</span>&#123;
+	<span class="hljs-type">int</span> l,r,id;
+	
+	<span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span> &lt;(<span class="hljs-type">const</span> MOCAP &amp;a)<span class="hljs-type">const</span>&#123;
+		<span class="hljs-keyword">return</span> belong[l]==belong[a.l]?r&gt;a.r:belong[l]&lt;belong[a.l];
+	&#125;
+&#125;mocap[maxn]; 
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">calc</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r)</span></span>&#123;
+	<span class="hljs-type">int</span> res=<span class="hljs-number">0</span>,cntt[maxn];
+	<span class="hljs-built_in">memset</span>(cntt,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(cntt));
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=l;i&lt;=r;i++)&#123;
+		<span class="hljs-keyword">if</span>(a[i]&lt;=n<span class="hljs-number">+1</span>)cntt[a[i]]++;
+	&#125;
+	
+	<span class="hljs-keyword">while</span>(cntt[res])res++;
+	
+	<span class="hljs-keyword">return</span> res;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title">read</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">0</span>, f=<span class="hljs-number">1</span>;<span class="hljs-type">char</span> ch=<span class="hljs-built_in">getchar</span>();
+    <span class="hljs-keyword">while</span> (!<span class="hljs-built_in">isdigit</span>(ch)) &#123;<span class="hljs-keyword">if</span>(ch==<span class="hljs-string">&#x27;-&#x27;</span>)f=<span class="hljs-number">-1</span>;ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">isdigit</span>(ch))&#123;x=x*<span class="hljs-number">10</span>+(ch^<span class="hljs-number">48</span>);ch=<span class="hljs-built_in">getchar</span>();&#125;
+    <span class="hljs-keyword">return</span> x*f;
+&#125;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> LawrenceSivan</span>
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.in&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>, stdin);
+    <span class="hljs-built_in">freopen</span>(<span class="hljs-string">&quot;aa.out&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>, stdout);
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+	n=<span class="hljs-built_in">read</span>();m=<span class="hljs-built_in">read</span>();
+	block=<span class="hljs-built_in">sqrt</span>(n);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;
+		a[i]=<span class="hljs-built_in">read</span>();
+		belong[i]=(i<span class="hljs-number">-1</span>)/block<span class="hljs-number">+1</span>;
+		<span class="hljs-keyword">if</span>(a[i]&lt;=n<span class="hljs-number">+1</span>)cnt[a[i]]++;
+	&#125;
+	
+	<span class="hljs-keyword">while</span>(cnt[mex])mex++;
+	
+	tot=belong[n];
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		mocap[i].l=<span class="hljs-built_in">read</span>();mocap[i].r=<span class="hljs-built_in">read</span>();
+		mocap[i].id=i;
+	&#125;
+	
+	<span class="hljs-built_in">sort</span>(mocap<span class="hljs-number">+1</span>,mocap<span class="hljs-number">+1</span>+m);
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>,j=<span class="hljs-number">1</span>;j&lt;=tot;j++)&#123;
+		<span class="hljs-type">int</span> nowl=<span class="hljs-built_in">min</span>(n,(j<span class="hljs-number">-1</span>)*block)<span class="hljs-number">+1</span>,l=nowl,r=n,p=mex,nxtl=<span class="hljs-built_in">min</span>(n,j*block)<span class="hljs-number">+1</span>;
+		<span class="hljs-keyword">for</span>(;belong[mocap[i].l]==j;i++)&#123;
+			<span class="hljs-keyword">if</span>(belong[mocap[i].r]==j)&#123;
+				ans[mocap[i].id]=<span class="hljs-built_in">calc</span>(mocap[i].l,mocap[i].r);
+				<span class="hljs-keyword">continue</span>;
+			&#125;
+			
+			<span class="hljs-keyword">while</span>(r&gt;mocap[i].r)&#123;
+				<span class="hljs-keyword">if</span>(a[r]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[r]])p=<span class="hljs-built_in">min</span>(p,a[r]);
+				r--;
+			&#125;
+			
+			<span class="hljs-type">int</span> tmp=p;
+			
+			<span class="hljs-keyword">while</span>(l&lt;mocap[i].l)&#123;
+				<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[l]])tmp=<span class="hljs-built_in">min</span>(tmp,a[l]);
+				l++;
+			&#125;
+			
+			ans[mocap[i].id]=tmp;
+			
+			<span class="hljs-keyword">while</span>(l&gt;nowl)&#123;
+			    l--;
+				<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>)cnt[a[l]]++;
+			&#125;
+		&#125;
+		
+		<span class="hljs-keyword">while</span>(r&lt;n)&#123;
+			r++;
+			<span class="hljs-keyword">if</span>(a[r]&lt;=n<span class="hljs-number">+1</span>)cnt[a[r]]++; 
+		&#125;
+		
+		<span class="hljs-keyword">while</span>(l&lt;nxtl)&#123;
+			<span class="hljs-keyword">if</span>(a[l]&lt;=n<span class="hljs-number">+1</span>&amp;&amp;!--cnt[a[l]])mex=<span class="hljs-built_in">min</span>(mex,a[l]);
+			l++;
+		&#125;
+	&#125;
+	
+	<span class="hljs-keyword">for</span>(re <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=m;i++)&#123;
+		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ans[i]);
+	&#125;
+
+
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;
+
+</code></pre>
 
         </div>
         <!-- .entry-content -->
@@ -1077,7 +2341,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2024 LawrenceSivan<br>
+      &copy; 2026 LawrenceSivan<br>
       powered_by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
