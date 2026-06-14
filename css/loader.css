@@ -1,33 +1,99 @@
-/* @import url('https://fonts.googleapis.com/css?family=Nunito+Sans+800'); */
-body {
-  align-items: center;
+#site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
+  margin: 0;
+  background: #fff;
+  color: #0e232e;
   font-family: 'Ubuntu', sans-serif;
   font-size: 1.5em;
   font-weight: bold;
-  height: 100vh;
-  justify-content: center;
-  margin: 0;
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition: opacity .45s ease, visibility .45s ease;
 }
-.loader-svg {
-  height: 200px;
-  stroke-width:4;
+
+#site-loader.site-loader--hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
-.pig {
-  stroke-dasharray: 319 319;
-  stroke-dashoffset: 0px;
+
+#site-loader .site-loader__svg {
+  width: min(200px, 48vw);
+  height: auto;
+  stroke-width: 4;
 }
-.calculator {
-  stroke-dasharray: 0 252;
-  stroke-dashoffset: 0px;
-}
-.wallet {
-  stroke-dasharray: 0 240;
-  stroke-dashoffset: 0px;
-}
-.loading {
-  margin-bottom: 30px;
-  text-align: center;
+
+#site-loader .site-loader__text {
   width: 200px;
+  margin-top: 18px;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+#site-loader .pig {
+  --loader-stroke-length: 319;
+  stroke-dasharray: var(--loader-stroke-length) var(--loader-stroke-length);
+  stroke-dashoffset: var(--loader-stroke-length);
+  animation: site-loader-draw 2.4s ease-in-out infinite;
+}
+
+#site-loader .calculator,
+#site-loader .calculator-inside {
+  display: none;
+}
+
+#site-loader .wallet,
+#site-loader .wallet-inside {
+  display: none;
+}
+
+#site-loader .pig-inside {
+  animation: site-loader-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes site-loader-draw {
+  0% {
+    opacity: .25;
+    stroke-dashoffset: var(--loader-stroke-length);
+  }
+
+  45%,
+  65% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  100% {
+    opacity: .25;
+    stroke-dashoffset: var(--loader-stroke-length);
+  }
+}
+
+@keyframes site-loader-pulse {
+  0%,
+  100% {
+    opacity: .45;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #site-loader .pig,
+  #site-loader .calculator,
+  #site-loader .wallet,
+  #site-loader .pig-inside {
+    animation: none;
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
 }
