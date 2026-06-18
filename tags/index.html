@@ -796,19 +796,19 @@
                 </a>
                 
                 
-                <a href="/tags/%E5%BF%AB%E9%80%9F%E8%8E%AB%E6%AF%94%E4%B9%8C%E6%96%AF%E5%8F%98%E6%8D%A2-%E5%BF%AB%E9%80%9F%E6%B2%83%E5%B0%94%E4%BB%80%E5%8F%98%E6%8D%A2-FWT-FMT/" title="快速莫比乌斯变换,快速沃尔什变换,FWT,FMT: 1">
+                <a href="/tags/%E5%9B%BE%E9%9B%86/" title="图集: 1">
                     <span class="chip center-align waves-effect waves-light
                              chip-default "
-                            data-tagname="快速莫比乌斯变换,快速沃尔什变换,FWT,FMT" style="background-color: #F5EEF8;">快速莫比乌斯变换,快速沃尔什变换,FWT,FMT
+                            data-tagname="图集" style="background-color: #F5EEF8;">图集
                         <span class="tag-length">1</span>
                     </span>
                 </a>
                 
                 
-                <a href="/tags/%E5%9B%BE%E9%9B%86/" title="图集: 1">
+                <a href="/tags/%E5%BF%AB%E9%80%9F%E8%8E%AB%E6%AF%94%E4%B9%8C%E6%96%AF%E5%8F%98%E6%8D%A2-%E5%BF%AB%E9%80%9F%E6%B2%83%E5%B0%94%E4%BB%80%E5%8F%98%E6%8D%A2-FWT-FMT/" title="快速莫比乌斯变换,快速沃尔什变换,FWT,FMT: 1">
                     <span class="chip center-align waves-effect waves-light
                              chip-default "
-                            data-tagname="图集" style="background-color: #D5F5E3;">图集
+                            data-tagname="快速莫比乌斯变换,快速沃尔什变换,FWT,FMT" style="background-color: #D5F5E3;">快速莫比乌斯变换,快速沃尔什变换,FWT,FMT
                         <span class="tag-length">1</span>
                     </span>
                 </a>
@@ -827,12 +827,48 @@
     </div>
 </div>
 
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/wallleap/cdn/css/jqcloud.css">
-<style type="text/css">
+    <style type="text/css">
     #tag-wordcloud {
         width: 100%;
-        height: 300px;
+        height: 320px;
     }
+
+    #tag-wordcloud.jqcloud {
+        position: relative;
+        overflow: hidden;
+        font-size: 10px;
+        line-height: normal;
+    }
+
+    #tag-wordcloud.jqcloud span {
+        box-sizing: border-box;
+        display: block;
+        padding: 0;
+    }
+
+    #tag-wordcloud.jqcloud a {
+        color: inherit;
+        display: inline-block;
+        line-height: 1.15;
+        text-decoration: none;
+        transition: color .2s ease, opacity .2s ease;
+    }
+
+    #tag-wordcloud.jqcloud a:hover {
+        color: #FE9600;
+        opacity: .85;
+    }
+
+    #tag-wordcloud.jqcloud span.w10 { color: #0cf; font-size: 550%; }
+    #tag-wordcloud.jqcloud span.w9 { color: #0cf; font-size: 500%; }
+    #tag-wordcloud.jqcloud span.w8 { color: #0cf; font-size: 450%; }
+    #tag-wordcloud.jqcloud span.w7 { color: #39d; font-size: 400%; }
+    #tag-wordcloud.jqcloud span.w6 { color: #90c5f0; font-size: 350%; }
+    #tag-wordcloud.jqcloud span.w5 { color: #90a0dd; font-size: 300%; }
+    #tag-wordcloud.jqcloud span.w4 { color: #90c5f0; font-size: 250%; }
+    #tag-wordcloud.jqcloud span.w3 { color: #a0ddff; font-size: 200%; }
+    #tag-wordcloud.jqcloud span.w2 { color: #99ccee; font-size: 150%; }
+    #tag-wordcloud.jqcloud span.w1 { color: #aab5f0; font-size: 100%; }
 </style>
 
 <div class="container" data-aos="fade-up">
@@ -840,15 +876,215 @@
         <div id="tag-wordcloud" class="card-content"></div>
     </div>
 </div>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/LawrenceSivan/cdn@master/js/jquery22.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/wallleap/cdn/js/jqcloud-1.0.4.js"></script>
+<script type="text/javascript" src="/js/jquery.min.js"></script>
 <script type="text/javascript">
+    (function ($) {
+        if ($.fn.jQCloud) return;
+
+        $.fn.jQCloud = function (words, options) {
+            var settings = $.extend({
+                autoResize: false,
+                gap: 12,
+                maxSteps: 1600,
+                minHeight: 320,
+                padding: 18
+            }, options);
+
+            function intersects(rect, placed) {
+                for (var i = 0; i < placed.length; i++) {
+                    var other = placed[i];
+                    if (!(rect.left >= other.right ||
+                        rect.right <= other.left ||
+                        rect.top >= other.bottom ||
+                        rect.bottom <= other.top)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            function buildRect(left, top, width, height, gap) {
+                return {
+                    left: left - gap,
+                    top: top - gap,
+                    right: left + width + gap,
+                    bottom: top + height + gap
+                };
+            }
+
+            function fitWord($word, maxWidth) {
+                var fontSize = parseFloat($word.css('font-size')) || 16;
+                var attempts = 0;
+
+                $word.css({
+                    maxWidth: 'none',
+                    textAlign: '',
+                    whiteSpace: 'nowrap'
+                });
+
+                while ($word.outerWidth() > maxWidth && fontSize > 16 && attempts < 18) {
+                    fontSize = Math.max(16, fontSize * 0.9);
+                    $word.css('font-size', fontSize + 'px');
+                    attempts++;
+                }
+
+                if ($word.outerWidth() > maxWidth) {
+                    $word.css({
+                        maxWidth: maxWidth,
+                        textAlign: 'center',
+                        whiteSpace: 'normal'
+                    });
+                }
+            }
+
+            function findSpiral(width, height, wordWidth, wordHeight, placed, padding, gap, maxSteps, index) {
+                var centerX = width / 2;
+                var centerY = height / 2;
+                var maxLeft = width - padding - wordWidth;
+                var maxTop = height - padding - wordHeight;
+
+                for (var step = 0; step < maxSteps; step++) {
+                    var angle = (step + index * 23) * 0.38;
+                    var radius = 5 * Math.sqrt(step);
+                    var left = centerX + Math.cos(angle) * radius - wordWidth / 2;
+                    var top = centerY + Math.sin(angle) * radius - wordHeight / 2;
+
+                    left = Math.max(padding, Math.min(maxLeft, left));
+                    top = Math.max(padding, Math.min(maxTop, top));
+
+                    var rect = buildRect(left, top, wordWidth, wordHeight, gap);
+                    if (!intersects(rect, placed)) {
+                        return { left: left, top: top, rect: rect };
+                    }
+                }
+
+                return null;
+            }
+
+            function findGrid(width, height, wordWidth, wordHeight, placed, padding, gap) {
+                var maxLeft = width - padding - wordWidth;
+                var maxTop = height - padding - wordHeight;
+                var yStep = Math.max(6, Math.floor(wordHeight / 3));
+                var xStep = Math.max(8, Math.floor(wordWidth / 6));
+
+                for (var top = padding; top <= maxTop; top += yStep) {
+                    for (var left = padding; left <= maxLeft; left += xStep) {
+                        var rect = buildRect(left, top, wordWidth, wordHeight, gap);
+                        if (!intersects(rect, placed)) {
+                            return { left: left, top: top, rect: rect };
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            function render($el) {
+                var width = $el.width() || $el.parent().width() || 600;
+                var height = settings.minHeight;
+                var maxWordWidth = Math.max(120, width - settings.padding * 2);
+                var maxWeight = 1;
+                var minWeight = Number.MAX_VALUE;
+                var placed = [];
+                var orderedWords = words.slice().sort(function (a, b) {
+                    return (b.weight || 1) - (a.weight || 1) || b.text.length - a.text.length;
+                });
+
+                $el.empty().addClass('jqcloud').height(height);
+
+                $.each(words, function (_, word) {
+                    maxWeight = Math.max(maxWeight, word.weight || 1);
+                    minWeight = Math.min(minWeight, word.weight || 1);
+                });
+
+                if (minWeight === Number.MAX_VALUE) minWeight = 1;
+
+                $.each(orderedWords, function (index, word) {
+                    var weight = word.weight || 1;
+                    var range = maxWeight - minWeight;
+                    var classIndex = range === 0
+                        ? 6
+                        : Math.max(1, Math.min(10, Math.round(((weight - minWeight) / range) * 9) + 1));
+                    var $word = $('<span/>')
+                        .addClass('w' + classIndex)
+                        .css({
+                            position: 'absolute',
+                            whiteSpace: 'nowrap',
+                            left: 0,
+                            top: 0
+                        });
+
+                    if (word.link) {
+                        $('<a/>', {
+                            href: word.link,
+                            text: word.text,
+                            title: word.text
+                        }).appendTo($word);
+                    } else {
+                        $word.text(word.text);
+                    }
+
+                    $el.append($word);
+                    fitWord($word, maxWordWidth);
+
+                    var wordWidth = Math.ceil($word.outerWidth());
+                    var wordHeight = Math.ceil($word.outerHeight());
+                    var position = null;
+                    var growCount = 0;
+
+                    while (!position && growCount < 8) {
+                        position = findSpiral(width, height, wordWidth, wordHeight, placed, settings.padding, settings.gap, settings.maxSteps, index);
+                        if (!position) {
+                            position = findGrid(width, height, wordWidth, wordHeight, placed, settings.padding, settings.gap);
+                        }
+                        if (!position) {
+                            height += Math.max(80, wordHeight + settings.gap * 3);
+                            $el.height(height);
+                            growCount++;
+                        }
+                    }
+
+                    if (!position) {
+                        var fallbackLeft = settings.padding;
+                        var fallbackTop = Math.max(settings.padding, height - settings.padding - wordHeight);
+                        position = {
+                            left: fallbackLeft,
+                            top: fallbackTop,
+                            rect: buildRect(fallbackLeft, fallbackTop, wordWidth, wordHeight, settings.gap)
+                        };
+                    }
+
+                    placed.push(position.rect);
+                    $word.css({
+                        left: position.left,
+                        top: position.top
+                    });
+                });
+            }
+
+            return this.each(function () {
+                var $el = $(this);
+                render($el);
+
+                if (settings.autoResize) {
+                    $(window).off('resize.tagWordcloud').on('resize.tagWordcloud', function () {
+                        clearTimeout($el.data('tagWordcloudTimer'));
+                        $el.data('tagWordcloudTimer', setTimeout(function () {
+                            render($el);
+                        }, 150));
+                    });
+                }
+            });
+        };
+    })(jQuery);
+
     
 
-    $('#tag-wordcloud').jQCloud([{"text":"做题记录","weight":1,"link":"https://lawrencesivan.github.io/tags/%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/"},{"text":"快速莫比乌斯变换,快速沃尔什变换,FWT,FMT","weight":1,"link":"https://lawrencesivan.github.io/tags/%E5%BF%AB%E9%80%9F%E8%8E%AB%E6%AF%94%E4%B9%8C%E6%96%AF%E5%8F%98%E6%8D%A2-%E5%BF%AB%E9%80%9F%E6%B2%83%E5%B0%94%E4%BB%80%E5%8F%98%E6%8D%A2-FWT-FMT/"},{"text":"图集","weight":1,"link":"https://lawrencesivan.github.io/tags/%E5%9B%BE%E9%9B%86/"},{"text":"悦读","weight":1,"link":"https://lawrencesivan.github.io/tags/%E6%82%A6%E8%AF%BB/"}], {
+    $('#tag-wordcloud').jQCloud([{"text":"做题记录","weight":1,"link":"/tags/%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/"},{"text":"图集","weight":1,"link":"/tags/%E5%9B%BE%E9%9B%86/"},{"text":"快速莫比乌斯变换,快速沃尔什变换,FWT,FMT","weight":1,"link":"/tags/%E5%BF%AB%E9%80%9F%E8%8E%AB%E6%AF%94%E4%B9%8C%E6%96%AF%E5%8F%98%E6%8D%A2-%E5%BF%AB%E9%80%9F%E6%B2%83%E5%B0%94%E4%BB%80%E5%8F%98%E6%8D%A2-FWT-FMT/"},{"text":"悦读","weight":1,"link":"/tags/%E6%82%A6%E8%AF%BB/"}], {
         autoResize: true
     });
 </script>
+
 
 </main>
     </div>    
